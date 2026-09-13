@@ -1,0 +1,7 @@
+name: pde_discovery
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - numpy=2.4
+  - scipy=1.17

@@ -1,0 +1,27 @@
+{
+  "problems": [
+    "burgers",
+    "kdv"
+  ],
+  "grids": [
+    256
+  ],
+  "noise": [
+    0.0,
+    0.01,
+    0.1,
+    0.5,
+    1.0
+  ],
+  "seeds": 10,
+  "sparsity": null,
+  "l1": [
+    1e-06,
+    0.0001,
+    0.01
+  ],
+  "centers": 11,
+  "maxiter": 300,
+  "tol": 1e-08,
+  "output": "results/selection_comparison"
+}
