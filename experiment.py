@@ -175,10 +175,10 @@ def comparison_tables(trials, paper=False):
         for problem, grid in sorted({(r["problem"], r["grid"]) for r in trials}):
             groups = [[r for r in trials if (r["problem"], r["grid"], r["noise"], r["method"]) ==
                        (problem, grid, noise, method)] for method in methods]
-            title = {"kdv": "KdV", "burgers": "Burgers", "signal": "Strong/weak"}[problem]
+            title = {"kdv": "KdV", "burgers": "Burgers", "signal": "Strong/weak"}.get(problem, problem)
             if len({r["grid"] for r in trials if r["problem"] == problem}) > 1:
                 title += f" ({grid})"
-            metrics = (("Top-3 hits", "tp"), ("Strong E₂", "strong_error"), ("Full E₂", "coefficient_error")) if problem == "signal" else (
+            metrics = (("Top-3 hits", "tp"), ("Strong E₂", "strong_error"), ("Full E₂", "coefficient_error")) if problem == "signal" or problem.endswith("D") else (
                 ("E∞", "coefficient_linf"), ("E₂", "coefficient_error"), ("Support", "support_exact"))
             for metric, key in (*metrics, ("Time (s)", "total_seconds"), ("Optimizer", "optimizer_success")):
                 values = []

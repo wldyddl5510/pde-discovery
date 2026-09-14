@@ -5,8 +5,10 @@ from pathlib import Path
 import numpy as np
 from scipy.signal import convolve2d
 from scipy.integrate import simpson
+from scipy import sparse
 
 import experiment
+import dimension_experiment
 import wsindy
 import wendy
 import wendy_mle
@@ -23,6 +25,50 @@ def make_system(name, grid=64, centers=5, noise=0.):
 
 
 class NumericalChecks(unittest.TestCase):
+    def test_five_dimensional_identifiability(self):
+        _, _, _, _, target, strong, _, settings = dimension_experiment.data(5)
+        checks = settings['validation']
+        self.assertEqual((len(target), len(strong)), (21, 3))
+        self.assertEqual(np.count_nonzero(target == .001), 18)
+        self.assertEqual(checks['spatial_wavevector_rank'], 5)
+        self.assertEqual(checks['design_rank'], 21)
+        self.assertLess(checks['spatial_orthogonality_error'], 1e-12)
+        self.assertLess(checks['relative_clean_weak_residual'], 1e-10)
+        self.assertLess(checks['relative_noiseless_dense_error'], 1e-10)
+        self.assertGreater(checks['relative_weak_term_effect'], 1e-4)
+
+    def test_multidimensional_fourier_derivatives_and_noise(self):
+        nx, nt = 8, 17
+        x = np.linspace(-np.pi, np.pi, nx, endpoint=False)
+        points = np.stack(np.meshgrid(x, x, indexing='ij'), axis=-1).reshape(-1, 2)
+        wavevectors = np.array([[1, 0], [0, 1], [1, 1], [1, -1]])
+        alpha, target, _ = dimension_experiment.model(2)
+        _, operators = dimension_experiment.fourier_operators(wavevectors, alpha)
+        phase = points@wavevectors.T
+        basis = np.stack((np.sqrt(2)*np.cos(phase), np.sqrt(2)*np.sin(phase)), axis=-1).reshape(nx**2, -1)
+        coefficients = np.arange(1., basis.shape[1]+1)
+        field = (basis@coefficients).reshape(nx, nx)
+        frequencies = np.meshgrid(np.fft.fftfreq(nx)*nx, np.fft.fftfreq(nx)*nx, indexing='ij')
+        for derivative, operator in zip(alpha, operators):
+            symbol = (1j*frequencies[0])**derivative[0]*(1j*frequencies[1])**derivative[1]
+            expected = np.fft.ifftn(np.fft.fftn(field)*symbol).real.ravel()
+            np.testing.assert_allclose(basis@(operator@coefficients), expected, atol=1e-12)
+        t = np.linspace(0, .5, nt)
+        weights = np.full(nt, t[1]-t[0])
+        weights[[0, -1]] *= .5
+        wt = weights*wsindy._bump(t, .25, .25)
+        dwt = -weights*wsindy._bump(t, .25, .25, derivative=1)
+        A = (sparse.kron(dwt[None, :], sparse.eye(basis.shape[1])),)
+        A += tuple(sparse.kron(wt[None, :], op) for op in operators)
+        orders = ((0, 0, 1),)+tuple(tuple(a)+(0,) for a in alpha)
+        system = wsindy.WeakSystem(np.tile(coefficients, nt), A, wsindy.polynomial_dictionary(1)[1:], orders)
+        projection = sparse.kron(sparse.eye(nt), sparse.csr_matrix(basis.T/nx**2))
+        physical_jacobian = (A[0]-sum(w*a for w, a in zip(target, A[1:])))@projection
+        sigma = .1
+        cov = wendy.ResidualCovariance(system, np.arange(len(target)), sigma/np.sqrt(nx**2))
+        expected = sigma**2*(physical_jacobian@physical_jacobian.T).toarray()+cov.ridge*np.eye(system.K)
+        np.testing.assert_allclose(cov.matrix(target), expected, atol=1e-15, rtol=1e-12)
+
     def test_strong_weak_pde_generator(self):
         x, t = np.linspace(-np.pi, np.pi, 129), np.linspace(0, .5, 129)
         w = experiment.SIGNAL.w_star(J=7)

@@ -2,7 +2,7 @@
 
 **[Results: tables and figure](results/paper_comparison.md)**
 
-[Implementation corrections](results/implementation_check.md): L1 convergence checks, SVD test conditioning, and second-order MLE optimization. All 21 numerical tests pass.
+[Implementation corrections](results/implementation_check.md): L1 convergence checks, SVD test conditioning, and second-order MLE optimization. All 23 numerical tests pass.
 
 Compare WSINDy, WENDy, and WENDy-MLE on Burgers and KdV using the
 WSINDy paper's data and candidate library. Notation follows Section 2 of `pde_discovery.pdf`.
@@ -13,6 +13,7 @@ WSINDy paper's data and candidate library. Notation follows Section 2 of `pde_di
 | `wendy.py` | IRLS with HT or L1 selection |
 | `wendy_mle.py` | Weak likelihood with HT or L1 selection |
 | `experiment.py` | Synthetic experiments and summary table |
+| `dimension_experiment.py` | Exact linear PDEs in one and five spatial dimensions |
 | `report.py` | Rebuild the paper comparison and figure from saved results |
 
 ```sh
@@ -47,7 +48,19 @@ OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python experiment.py \
   --output results/my_strong_weak
 ```
 
-Noise is iid Gaussian with σ = noise ratio × RMS(clean u). WENDy variants receive σ.
+**[Five spatial dimensions: tables](results/spatial_dimension/summary.md)**
+
+A linear reaction–advection–diffusion PDE on [−π,π)⁵ has 21 coefficients: three of magnitude 1 and eighteen of magnitude 0.001.
+An exact Fourier solution and Fourier weak tests keep the experiment quick. The 1D reference uses the same operator family;
+both cases have 32,768 spatial observations × 129 times, one seed, and 0–100% noise.
+This is a separate benchmark from the nonlinear strong/weak experiment above.
+
+```sh
+OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python dimension_experiment.py \
+  --output results/my_spatial_dimension
+```
+
+Noise is iid Gaussian with σ = noise ratio × RMS(clean u). WENDy variants receive σ (adjusted for Fourier projection in the dimension experiment).
 The following settings describe the paper comparison:
 HT keeps the s largest rescaled coefficients (Burgers s=1, KdV s=2).
 L1 uses λ=αλ_ref, α∈{1e-10, 1e-8, 1e-6, 1e-4, .01}, with λ_ref=max|X₀ᵀy₀|/K from whitening by C(0).
