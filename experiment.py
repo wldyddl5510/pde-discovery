@@ -132,52 +132,30 @@ def support_metrics(w, w_star):
 
 
 def write_tables(out, trials, paper=False):
-    specs = {
-        "support": [("정확한 support 복원율 (%)", "support_exact", np.mean, 100)],
-        "coefficient_accuracy": [("전체 계수 상대 L2 오차 (%)", "coefficient_error", np.mean if paper else np.median, 100)],
-        "runtime": [("전체 실행 시간 중앙값 (초)", "total_seconds", np.median, 1),
-                    ("Optimizer 정상 종료 비율 (%)", "optimizer_success", np.mean, 100)],
-    }
-    if paper:
-        specs["support"].append(("논문 TPR 평균: TP/(TP+FP+FN)", "tpr", np.mean, 1))
-        specs["coefficient_accuracy"].append(("논문 E∞ 평균 (%)", "coefficient_linf", np.mean, 100))
+    aggregate = np.mean if paper else np.median
+    lines = ["# Results", "", "Support and optimizer completion are counts; time is median seconds.",
+             f"E₂ and E∞ are relative errors ({'mean' if paper else 'median'} over seeds), not percentages.",
+             "Failed fits are included; inf denotes a nonfinite error; — means unavailable. L1 labels give α in λ=αλ_ref.", ""]
     groups = {}
     for row in trials:
-        groups.setdefault((row["problem"], row["grid"]), []).append(row)
-    for name, metrics in specs.items():
-        lines = ["열은 잡음 비율 σ/RMS(u)입니다. L1 값은 λ_ref에 곱하는 상대 penalty입니다.", ""]
-        if name == "coefficient_accuracy":
-            lines += ["E₂=||w_hat-w_star||₂/||w_star||₂; E∞는 실제 비영 계수들의 최대 상대 오차입니다. "
-                      + ("논문과 같이 seed 평균을 사용합니다." if paper else "seed 중앙값을 사용합니다."), ""]
-        if name == "runtime":
-            lines += ["Weak form 구성, 초기화, covariance 준비, 최적화와 HT를 포함합니다. 데이터 생성 및 파일 저장은 제외합니다.", ""]
-            workers = json.loads((out/"config.json").read_text()).get("workers", 1)
-            lines += [f"FFT / 공분산 스레드 상한: {workers}. BLAS 설정은 config.json과 README의 실행 명령을 참고하세요.", ""]
-        for (problem, grid), rows in groups.items():
-            noises = sorted(set(r["noise"] for r in rows))
-            methods = sorted(set(r["method"] for r in rows), key=lambda m:
-                             ("MLE" in m, m != "WSINDy", "L1" in m, float(m.split("=")[-1]) if "=" in m else 0))
-            grouped = {(m, n): [r for r in rows if r["method"] == m and r["noise"] == n]
-                       for m in methods for n in noises}
-            samples = [grouped[methods[0], n] for n in noises]
-            title = "KdV" if problem == "kdv" else "Burgers"
-            dimensions = grid if isinstance(grid, str) else f"{grid}×{grid}"
-            lines += [f"## {title} · {dimensions}", "",
-                      "실제 σ: " + ", ".join(f"{r[0]['sigma']:.4g}" for r in samples) + ".",
-                      "반복 횟수: " + ", ".join(str(len(r)) for r in samples) + ".", ""]
-            for label, field, aggregate, scale in metrics:
-                lines += [f"**{label}**", "", "| 방법 | " + " | ".join(f"{100*n:g}%" for n in noises) + " |",
-                          "|---|" + "---:|"*len(noises)]
-                for method in methods:
-                    values = [format(scale*aggregate([0. if field == "tpr" and not r["support_valid"] else r[field]
-                              for r in grouped[method, noise]]), ".4g") for noise in noises]
-                    lines.append("| " + method + " | " + " | ".join(values) + " |")
-                lines.append("")
-        failed = sum(not r["optimizer_success"] for r in trials)
-        if name == "support":
-            lines += ["비유한 계수로 끝난 수치 실패는 support 복원 실패 및 TPR=0으로 집계합니다.", ""]
-        lines += [f"전체 {len(trials)}회 중 optimizer 미수렴 {failed}회도 포함했습니다. 종료 상태와 추정 계수는 trials.csv에 있습니다.", ""]
-        (out/f"{name}.md").write_text("\n".join(lines))
+        groups.setdefault((row["problem"], row["grid"], row["noise"]), {}).setdefault(row["method"], []).append(row)
+    for (problem, grid, noise), methods in sorted(groups.items()):
+        lines += [f"## {'KdV' if problem == 'kdv' else 'Burgers'} · {grid} · {100*noise:g}% noise", "",
+                  "| Method | Support | E₂ | E∞ | Time (s) | Optimizer |",
+                  "|---|---:|---:|---:|---:|---:|"]
+        for method in sorted(methods, key=lambda m: ("MLE" in m, m != "WSINDy", "L1" in m, float(m.split("=")[-1]) if "=" in m else 0)):
+            rows = methods[method]
+            n = len(rows)
+            e2, einf = (aggregate([r.get(key, np.nan) for r in rows]) for key in ("coefficient_error", "coefficient_linf"))
+            einf = "—" if np.isnan(einf) else f"{einf:.3g}"
+            support, success = (sum(r[key] for r in rows) for key in ("support_exact", "optimizer_success"))
+            seconds = np.median([r["total_seconds"] for r in rows])
+            lines.append(f"| {method} | {support}/{n} | {e2:.3g} | {einf} | {seconds:.4g} | {success}/{n} |")
+        lines.append("")
+    lines += ["E₂ = ‖ŵ−w★‖₂/‖w★‖₂; E∞ = max relative error on true nonzero terms.",
+              "Noise = σ/RMS(clean u). Time includes weak-form assembly and fitting, excluding data generation and file writing.",
+              "Settings: [config.json](config.json). Raw fits: [trials.csv](trials.csv).", ""]
+    (out/"summary.md").write_text("\n".join(lines))
 
 
 def run(args):
@@ -264,7 +242,7 @@ def run(args):
                         print(f"{name} grid={grid} noise={noise:g} seed={seed}: " + ", ".join(
                             f"{r['method']} error={r['coefficient_error']:.3g}" for r in current), flush=True)
     write_tables(out, trials, paper)
-    print(f"Saved {len(trials)} fits and three comparison tables to {out}")
+    print(f"Saved {len(trials)} fits and summary.md to {out}")
     return trials
 
 
