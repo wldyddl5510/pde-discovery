@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path
 
 import numpy as np
+from scipy.signal import convolve2d
 
 import experiment
 import wsindy
@@ -21,6 +22,101 @@ def make_system(name, grid=64, centers=5, noise=0.):
 
 
 class NumericalChecks(unittest.TestCase):
+    def test_l1_objective_scaling_and_tiny_penalty(self):
+        b = np.array([3., -.7, .1])
+        for penalty in (.2, 1e-10):
+            for normalizer in (1., 1e12):
+                result = wendy.l1_minimize(lambda w: (.5*np.sum((w-b)**2)/normalizer, (w-b)/normalizer),
+                                           b.copy(), penalty/normalizer, np.ones(3), 1000, 1e-8)
+                expected = np.sign(b)*np.maximum(np.abs(b)-penalty, 0.)
+                np.testing.assert_allclose(result.x, expected, atol=penalty*.01, rtol=0.)
+                self.assertTrue(result.success, result.message)
+                self.assertGreater(result.nit, 0)
+
+    def test_lasso_correlated_design(self):
+        X = np.random.default_rng(3).normal(size=(40, 5))
+        X[:, 1] += .9*X[:, 0]
+        target, penalty = np.array([1., 0., -.5, 0., 0.]), .02
+        y = X@target+X@np.linalg.solve(X.T@X, len(X)*penalty*np.sign(target))
+        result = wendy.lasso(X, y, penalty)
+        self.assertTrue(result.success, result.message)
+        np.testing.assert_allclose(result.x, target, atol=1e-12)
+
+    def test_time_limit_is_not_convergence(self):
+        system, target = make_system('kdv', noise=.02)
+        for method in (wendy, wendy_mle):
+            result = method.fit(system, sigma=.02, sparsity=2, time_limit=1e-9)
+            self.assertFalse(result.success)
+            self.assertEqual(result.message, 'Time limit')
+            self.assertEqual(result.iterations, 0)
+            np.testing.assert_array_equal(result.w, result.history[-1].w)
+
+    @unittest.skipUnless(Path('tmp/WSINDy_PDE/datasets/burgers.mat').exists(), 'Original paper data not cached')
+    def test_noiseless_paper_lasso_kkt(self):
+        x, t, u, _ = experiment.paper_data('burgers')
+        raw = experiment.paper_system('burgers', u, x, t)
+        system = wendy.orthonormalize(raw)
+        result = wendy.fit(raw, sigma=0., l1=1e-10)
+        X, y = system.X_hat[:, system.admissible], system.Y_hat
+        w = result.w[system.admissible]
+        reference = np.max(np.abs(X.T@y/len(y)))
+        penalty = 1e-10*reference
+        gradient = X.T@(X@w-y)/len(y)
+        violation = np.where(w != 0, np.abs(gradient+penalty*np.sign(w)), np.maximum(np.abs(gradient)-penalty, 0))
+        self.assertLess(np.max(violation), .01*penalty)
+        self.assertTrue(result.success, result.message)
+        self.assertGreater(result.iterations, 0)
+
+    def test_projected_pde_operators_and_hessian_product(self):
+        x, t = np.linspace(-4, 4, 64), np.linspace(0, 3, 64)
+        U = 2+np.cos(x)[None, :]*np.exp(-t[:, None])
+        raw = wsindy.ConvolutionSystem(U, x, t, (12, 12), (6, 6))
+        system = wendy.orthonormalize(raw, max_rows=12)
+        support, w = np.array([0, 9, 22, 6, 48]), np.array([.1, -.5, -.1, .02, .02])
+        cov = wendy.ResidualCovariance(system, support, .03)
+        np.testing.assert_allclose(cov.operators[1]@cov.operators[1].T, np.eye(system.K), atol=1e-12)
+        terms = raw.data_jacobian_terms(support)
+        for raw_term, projected_term in zip(terms, system.data_jacobian_terms(support)):
+            np.testing.assert_allclose(projected_term.toarray(), system.projection@raw_term.toarray(), atol=1e-12)
+        factor = system.projection@(terms[0]+sum(a*A for a, A in zip(w, terms[1:]))).toarray()
+        np.testing.assert_allclose(cov.matrix(w), .03**2*factor@factor.T+cov.ridge*np.eye(system.K), atol=1e-12)
+        np.testing.assert_allclose(system.Y_hat, cov.operators[0]@system.U, atol=1e-12)
+        for j in support:
+            np.testing.assert_allclose(system.X_hat[:, j], cov.operators[j//7+1]@system.U**(j%7), atol=1e-10)
+        objective = wendy_mle.WeakLikelihood(system.X_hat[:, support], system.Y_hat, cov)
+        direction = np.array([.2, -.1, .3, .05, -.02])
+        analytic = objective.hessp(w, direction)
+        numeric = (objective.gradient(w+1e-6*direction)-objective.gradient(w-1e-6*direction))/2e-6
+        np.testing.assert_allclose(analytic, numeric, rtol=2e-5, atol=1e-5)
+
+    def test_convolution_data_jacobian(self):
+        # Perturb rescaled observations with fixed kernels/scales, independently of CSR assembly.
+        x, t = np.linspace(-4, 4, 64), np.linspace(0, 3, 64)
+        U = 2+np.cos(x)[None, :]*np.exp(-t[:, None])
+        system = wsindy.ConvolutionSystem(U, x, t, (12, 12), (12, 12))
+        support, w = np.array([0, 9, 22, 6, 48]), np.array([.1, -.5, -.1, .02, .02])
+        def residual(v):
+            v = v.reshape(system.shape)
+            def apply(values, dx, dt):
+                kernel = np.outer(system.wt[dt], system.wx[dx])
+                return convolve2d(values, kernel, mode='valid')[::12, ::12].ravel()
+            return apply(v, 0, 1)-sum(a*apply(v**(i%7), i//7, 0) for i, a in zip(support, w))
+        direction = np.random.default_rng(7).normal(size=system.n)
+        numeric = (residual(system.U+1e-6*direction)-residual(system.U-1e-6*direction))/2e-6
+        terms = system.data_jacobian_terms(support)
+        analytic = (terms[0]+sum(a*A for a, A in zip(w, terms[1:])))@direction
+        np.testing.assert_allclose(numeric, analytic, rtol=1e-7, atol=1e-9)
+
+    def test_irls_step_matches_gls(self):
+        system, _ = make_system('kdv', noise=.02)
+        support, initial = np.array([1, 6, 13]), np.zeros(system.S*system.J)
+        X, y = system.X_hat[:, support], system.Y_hat
+        covariance = wendy.ResidualCovariance(system, support, .02).matrix(initial[support])
+        inverse_X = np.linalg.solve(covariance, X)
+        expected = np.linalg.solve(X.T@inverse_X, inverse_X.T@y)
+        actual = wendy.fit(system, sigma=.02, support=support, initial=initial, maxiter=1)
+        np.testing.assert_allclose(actual.w[support], expected, rtol=1e-9)
+
     def test_convolution_covariance_and_likelihood(self):
         x, t = np.linspace(-4, 4, 80), np.linspace(0, 3, 80)
         U = 2+np.cos(x)[None, :]*np.exp(-t[:, None])
@@ -162,7 +258,7 @@ class NumericalChecks(unittest.TestCase):
         # Independent exact LASSO solution for an orthogonal design.
         b, penalty = np.array([3., -.7, .1]), .2
         result = wendy.l1_minimize(lambda w: (.5*np.sum((w-b)**2), w-b),
-                                   np.zeros(3), penalty, np.array([.5, 2., 4.]), 7., 1000, 1e-10)
+                                   np.zeros(3), penalty, np.array([.5, 2., 4.]), 1000, 1e-10)
         expected = np.sign(b)*np.maximum(np.abs(b)-penalty, 0.)
         np.testing.assert_allclose(result.x, expected, atol=1e-8)
         self.assertTrue(result.success)

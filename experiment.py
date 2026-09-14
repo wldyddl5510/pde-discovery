@@ -2,6 +2,7 @@
 import argparse
 import csv
 import json
+import hashlib
 import os
 import platform
 from dataclasses import dataclass
@@ -182,6 +183,9 @@ def run(args):
     out = Path(args.output)
     paper = args.setup == "paper"
     config = {k: v for k, v in vars(args).items() if k != "resume"}
+    config["solver_sha256"] = {name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
+                               for name in ("wsindy.py", "wendy.py", "wendy_mle.py", "experiment.py")}
+    config["wendy_test_basis"] = dict(condition_limit=1e4, information_target=.95, max_rows=200)
     config["environment"] = dict(python=platform.python_version(), numpy=np.__version__, scipy=scipy_version,
                                  platform=platform.platform(), blas={name: os.environ.get(name) for name in
                                  ("OPENBLAS_NUM_THREADS", "VECLIB_MAXIMUM_THREADS")})
@@ -189,7 +193,7 @@ def run(args):
         config["data_source"] = PAPER_SOURCE
         config["selection_units"] = "rescaled coefficients; errors reported in original units"
     if args.l1 and any(m != "WSINDy" for m in args.methods):
-        config["l1_evaluation"] = "direct residual"
+        config["l1_evaluation"] = "active-set SVD LASSO (IRLS); KKT-certified L-BFGS-B (MLE)"
     if args.resume:
         previous = json.loads((out/"config.json").read_text())
         changed = [k for k in config if k != "output" and config[k] != previous.get(k)
@@ -242,7 +246,8 @@ def run(args):
                                 result = module.fit(system, thresholds=np.logspace(-4, 0, 50) if paper else None,
                                                     threshold_scale=coefficient_scale if paper else None)
                             else:
-                                result = module.fit(system, sigma=fit_sigma, maxiter=args.maxiter, tol=args.tol, **selection)
+                                result = module.fit(system, sigma=fit_sigma, maxiter=args.maxiter, tol=args.tol,
+                                                    time_limit=args.time_limit, **selection)
                         except (np.linalg.LinAlgError, FloatingPointError) as exc:
                             result = wsindy.FitResult(np.full_like(w_star, np.nan), [], perf_counter()-start, 0, False, str(exc))
                         estimate = coefficient_scale*result.w
@@ -275,10 +280,11 @@ def parse_args():
     parser.add_argument("--seeds", type=int, default=3)
     parser.add_argument("--workers", type=int, default=1, help="FFT and exact convolution-covariance threads")
     parser.add_argument("--sparsity", type=int, help="HT term count; default Burgers=1, KdV=2")
-    parser.add_argument("--l1", nargs="*", type=float, default=[1e-6, 1e-4, .01], help="Fixed relative L1 strengths")
+    parser.add_argument("--l1", nargs="*", type=float, default=[1e-10, 1e-8, 1e-6, 1e-4, .01], help="Fixed relative L1 strengths")
     parser.add_argument("--centers", type=int, default=11)
     parser.add_argument("--maxiter", type=int, default=300)
     parser.add_argument("--tol", type=float, default=1e-8)
+    parser.add_argument("--time-limit", type=float, default=200., help="Seconds per fit; checked between numerical operations")
     parser.add_argument("--output", default="results/pde_"+datetime.now().strftime("%Y%m%d_%H%M%S"))
     parser.add_argument("--resume", action="store_true", help="Continue an existing output with identical settings")
     args = parser.parse_args()
@@ -286,6 +292,8 @@ def parse_args():
         parser.error("Require grids>=32, seeds/workers>=1, finite noise>=0, centers>=4 and positive finite tolerances/maxiter")
     if not np.isfinite(args.l1).all() or any(v <= 0 for v in args.l1) or (args.sparsity is not None and not 1 <= args.sparsity <= 10):
         parser.error("Require finite L1 strengths>0 and 1<=sparsity<=10")
+    if not np.isfinite(args.time_limit) or args.time_limit <= 0:
+        parser.error("Require a positive finite time limit")
     return args
 
 

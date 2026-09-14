@@ -13,8 +13,8 @@ from experiment import comparison_tables, load_csv, write_tables
 def main():
     root = Path(__file__).resolve().parent / "results"
     reference = load_csv(root / "wsindy_paper_reference/trials.csv")
-    comparison = load_csv(root / "paper_method_comparison/trials.csv")
-    config = json.loads((root / "paper_method_comparison/config.json").read_text())
+    comparison = load_csv(root / "paper_method_corrected/trials.csv")
+    config = json.loads((root / "paper_method_corrected/config.json").read_text())
     expected = sum(1 if m == "WSINDy" else 1+len(config["l1"]) for m in config["methods"]) * len(config["problems"]) * sum(
         config["seeds"] if noise else 1 for noise in config["noise"])
     problems = {"burgers": "Burgers", "kdv": "KdV"}
@@ -24,17 +24,20 @@ def main():
              "Errors are mean relative errors, not %. Support / optimizer are counts; time is median seconds.", ""]
     lines += comparison_tables(comparison, paper=True)
     if len(comparison) < expected:
-        lines.insert(2, f"**Saved fits: {len(comparison)}/{expected}. The smaller-λ sweep is incomplete; cells use saved fits only. — means unavailable.**\n")
+        lines.insert(2, f"**Saved fits: {len(comparison)}/{expected}. The corrected sweep is running; cells use completed fits only. — means unavailable.**\n")
     lines += ["E₂ = ‖ŵ−w★‖₂/‖w★‖₂; E∞ = max relative error on true nonzero terms.",
               "Failed fits remain included; inf = nonfinite error. Optimizer completion does not imply recovery.",
               "[WSINDy Table 5](https://arxiv.org/html/2007.02848v3#S5.T5): noiseless E∞ = 4.3e-5 (Burgers), 3.1e-7 (KdV).", "",
               "![WSINDy coefficient errors versus noise](coefficient_error.png)", "",
-              "WSINDy noise sweep: mean errors over 200 seeds per positive noise level, following Figure 6.",
+              "Existing WSINDy noise sweep: mean errors over 200 seeds per positive noise level, following Figure 6.",
               "WENDy variants were tested only at 0% and 20%; the figure shows our WSINDy measurements.", "",
-              "Same PDE extensions and settings: known σ, maxiter=300, tol=1e-8; full covariance.",
-              "Runtime: Apple M4 / Python, FFT/covariance up to 4 threads, BLAS 1; includes failed fits, excludes data generation and file writing.",
+              "Corrected solvers: known σ, maxiter=300, tol=1e-8; 200 s per fit. Timeouts are failures.",
+              "WENDy tests use SVD orthonormalization: 52 equations for Burgers, 200 for KdV; WSINDy retains 784 / 1443.",
+              "The data, windows, 43 candidates, noise seeds, and α grid match the previous comparison; the test basis and λ_ref change.",
+              "Runtime: Apple M4 / Python, FFT up to 4 threads, BLAS 1; includes test-basis preparation and failed fits, excludes data generation and file writing.",
               "Rescaling follows author code (−1/5), differing from printed Eq. 4.8 (−1/6).", "",
-              "Data: [method comparison](paper_method_comparison/summary.md) ·",
+              "[Corrected fits](paper_method_corrected/summary.md) · [Previous fits](paper_method_comparison/summary.md) ·",
+              "[Implementation checks](implementation_check.md) ·",
               "[WSINDy sweep](wsindy_paper_reference/summary.md) · [legacy baseline](selection_comparison/summary.md).", ""]
     (root / "paper_comparison.md").write_text("\n".join(lines))
 
@@ -54,9 +57,7 @@ def main():
         fig.savefig(root / "coefficient_error.png", dpi=200)
         fig.savefig(root / "coefficient_error.pdf")
         plt.close(fig)
-    for folder in ("paper_method_comparison", "wsindy_paper_reference", "selection_comparison"):
-        out = root / folder
-        write_tables(out, load_csv(out / "trials.csv"), paper=folder != "selection_comparison")
+    write_tables(root / "paper_method_corrected", comparison, paper=True)
 
 
 if __name__ == "__main__":

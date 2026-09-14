@@ -132,6 +132,11 @@ class ConvolutionSystem(WeakSystem):
         return indices, kernels
 
     def data_jacobian_terms(self, support):
+        if hasattr(self, "test_derivatives"):
+            def operator(i):
+                t, x = self.test_derivatives[i]
+                return sparse.csr_matrix(np.einsum("kt,kx->ktx", t, x).reshape(self.K, self.n))
+            return [operator(0)]+[-operator(i//self.J+1).multiply(self.features[i%self.J].df(self.U)) for i in support]
         indices, kernels = self.stencil
         ptr = np.arange(self.K+1, dtype=np.int32)*indices.shape[1]
         def operator(i):

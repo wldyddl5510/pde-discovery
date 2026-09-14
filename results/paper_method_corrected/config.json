@@ -1,0 +1,58 @@
+{
+  "setup": "paper",
+  "methods": [
+    "WSINDy",
+    "WENDy",
+    "WENDy-MLE"
+  ],
+  "problems": [
+    "burgers",
+    "kdv"
+  ],
+  "grids": [
+    256
+  ],
+  "noise": [
+    0.0,
+    0.2
+  ],
+  "seeds": 3,
+  "workers": 4,
+  "sparsity": null,
+  "l1": [
+    1e-10,
+    1e-08,
+    1e-06,
+    0.0001,
+    0.01
+  ],
+  "centers": 11,
+  "maxiter": 300,
+  "tol": 1e-08,
+  "time_limit": 200.0,
+  "output": "results/paper_method_corrected",
+  "solver_sha256": {
+    "wsindy.py": "919e129ecf04a5bc612a0f27884efe6115fd17c8d4f4cd6edadc450e0013ce35",
+    "wendy.py": "8cb01778a6eb0511c99469d8cbfa5df57276167b7b0939ee746ba9771e2dd53f",
+    "wendy_mle.py": "bbefa0445fc9c083b7f47179c1c2f461926594bb2a10113ebbea0e81aa24c776",
+    "experiment.py": "38c56127712053d3b51c49cad1068b8a8c62859ef17e5f38b47ec30bcca11d79"
+  },
+  "wendy_test_basis": {
+    "condition_limit": 10000.0,
+    "information_target": 0.95,
+    "max_rows": 200
+  },
+  "environment": {
+    "python": "3.11.16",
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "platform": "macOS-15.7.3-arm64-arm-64bit",
+    "blas": {
+      "OPENBLAS_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1"
+    }
+  },
+  "data_source": "https://raw.githubusercontent.com/dm973/WSINDy_PDE/95686ccd9e32e3a9f62acfb3014fb77d5ef039ab",
+  "selection_units": "rescaled coefficients; errors reported in original units",
+  "l1_evaluation": "active-set SVD LASSO (IRLS); KKT-certified L-BFGS-B (MLE)"
+}
