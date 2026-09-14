@@ -2,10 +2,13 @@
 from dataclasses import dataclass, field
 from time import perf_counter
 from typing import Callable
+from functools import cached_property
+from math import comb, factorial
 
 import numpy as np
 from numpy.polynomial import Polynomial
 from scipy import sparse
+from scipy.signal import fftconvolve
 
 
 @dataclass(frozen=True)
@@ -79,6 +82,61 @@ class WeakSystem:
             s0, j = divmod(int(index), self.J)
             terms.append(-self.A[s0+1].multiply(self.features[j].df(self.U)).tocsr())
         return terms
+
+
+class ConvolutionSystem(WeakSystem):
+    """WSINDy Tables 3--4; FFT weak form in rescaled coordinates."""
+    def __init__(self, U, x, t, windows, strides, workers=1):
+        U = np.asarray(U, dtype=float)
+        self.workers = workers
+        self.shape, self.strides = U.shape, strides
+        mx, mt = windows
+        dx, dt = x[1]-x[0], t[1]-t[0]
+        px = max(7, int(np.ceil(np.log(1e-10)/np.log((2*mx-1)/mx**2))))
+        pt = max(2, int(np.ceil(np.log(1e-10)/np.log((2*mt-1)/mt**2))))
+        # Author implementation get_scales.m / wsindy_pde_fun.m.
+        au = (np.linalg.norm(U**6)/np.linalg.norm(U))**(1/5)
+        gx, gt = (comb(px, 3)*factorial(6))**(1/6)/(mx*dx), 1/(mt*dt)
+        self.noise_scale = 1/au
+        self.U, self.n = (U/au).ravel(), U.size
+        self.features, self.S, self.J = polynomial_dictionary(6), 7, 7
+        self.alpha = ((0, 1),)+tuple((d, 0) for d in range(7))
+        self.coefficient_scale = np.array([au**(1-j)*gx**(-d)*gt for d in range(7) for j in range(7)])
+        def weights(m, p, d, h, scale):
+            z = np.linspace(-1, 1, 2*m+1)
+            v = (Polynomial([1, 0, -1])**p).deriv(d)(z)/(m*h*scale)**d/(2*m+1)
+            v[[0, -1]] = 0.
+            return v
+        self.wx = [weights(mx, px, d, dx, gx) for d in range(7)]
+        self.wt = [weights(mt, pt, d, dt, gt) for d in range(2)]
+        def apply(v, d, order_t):
+            a = fftconvolve(v, self.wx[d][None, :], mode="valid", axes=1)[:, ::strides[1]]
+            return fftconvolve(a, self.wt[order_t][:, None], mode="valid", axes=0)[::strides[0]].ravel()
+        self.Y_hat = apply(U/au, 0, 1)
+        self.K = len(self.Y_hat)
+        self.X_hat = np.column_stack([np.zeros(self.K) if j == 0 and d else
+                                     apply((U/au)**j, d, 0)
+                                     for d in range(7) for j in range(7)])
+        self.admissible = np.array([d*7+j for d in range(7) for j in range(7) if not (j == 0 and d)])
+
+    @cached_property
+    def stencil(self):
+        """One shared CSR index pattern; translated kernels need no dense A_s."""
+        nt, nx = self.shape
+        st, sx = self.strides
+        mt, mx = (len(self.wt[0])-1)//2, (len(self.wx[0])-1)//2
+        starts = (np.arange(0, nt-2*mt, st)[:, None]*nx+np.arange(0, nx-2*mx, sx)).ravel()
+        local = (np.arange(2*mt+1)[:, None]*nx+np.arange(2*mx+1)).ravel()
+        indices = (starts[:, None]+local).astype(np.int32)
+        kernels = np.array([np.outer(self.wt[dt][::-1], self.wx[dx][::-1]).ravel() for dx, dt in self.alpha])
+        return indices, kernels
+
+    def data_jacobian_terms(self, support):
+        indices, kernels = self.stencil
+        ptr = np.arange(self.K+1, dtype=np.int32)*indices.shape[1]
+        def operator(i):
+            return sparse.csr_matrix((np.tile(kernels[i], self.K), indices.ravel(), ptr), shape=(self.K, self.n))
+        return [operator(0)]+[-operator(i//self.J+1).multiply(self.features[i%self.J].df(self.U)) for i in support]
 
 
 def _bump(grid, center, radius, derivative=0, degree=7):
@@ -170,7 +228,7 @@ def prepare_fit(system, support=None, initial=None):
     return support, X_hat, w
 
 
-def fit(system, *, support=None, thresholds=None):
+def fit(system, *, support=None, thresholds=None, threshold_scale=None):
     """MSTLS (WSINDy Eqs. 4.4--4.6); explicit support requests weak OLS."""
     start = perf_counter()
     indices, X_hat, w_ls = prepare_fit(system, support)
@@ -181,13 +239,14 @@ def fit(system, *, support=None, thresholds=None):
     thresholds = np.logspace(-5, -.05, 60) if thresholds is None else np.asarray(thresholds)
     if len(thresholds) == 0 or not np.isfinite(thresholds).all() or np.any(thresholds <= 0):
         raise ValueError("thresholds must be finite and positive")
-    ratio = np.linalg.norm(system.Y_hat)/np.maximum(np.linalg.norm(X_hat, axis=0), 1e-30)
+    scale = np.ones(len(indices)) if threshold_scale is None else np.asarray(threshold_scale)[indices]
+    ratio = np.linalg.norm(system.Y_hat)/np.maximum(np.linalg.norm(X_hat, axis=0), 1e-30)*scale
     def branch(lam, record=False):
         w = w_ls.copy()
         history = [Iterate(0, perf_counter()-start, expand(system, indices, w))] if record else []
         previous = np.ones(len(w), dtype=bool)
         for iteration in range(1, len(w)+2):
-            active = (np.abs(w) >= lam*np.maximum(1, ratio)) & (np.abs(w) <= np.minimum(1, ratio)/lam)
+            active = (np.abs(w*scale) >= lam*np.maximum(1, ratio)) & (np.abs(w*scale) <= np.minimum(1, ratio)/lam)
             w = np.zeros_like(w)
             w[active] = least_squares(X_hat[:, active], system.Y_hat)
             if record:

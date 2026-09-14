@@ -1,5 +1,6 @@
 """Numerical tests for Section 2 notation and all three PDE estimators."""
 import unittest
+from pathlib import Path
 
 import numpy as np
 
@@ -20,6 +21,41 @@ def make_system(name, grid=64, centers=5, noise=0.):
 
 
 class NumericalChecks(unittest.TestCase):
+    def test_convolution_covariance_and_likelihood(self):
+        x, t = np.linspace(-4, 4, 80), np.linspace(0, 3, 80)
+        U = 2+np.cos(x)[None, :]*np.exp(-t[:, None])
+        system = wsindy.ConvolutionSystem(U, x, t, (12, 12), (12, 12))
+        support, w = np.array([0, 9, 22, 6, 48]), np.array([.1, -.5, -.1, .02, .02])
+        covariance = wendy.ResidualCovariance(system, support, .03)
+        terms = system.data_jacobian_terms(support)
+        L = terms[0]+sum(value*A for value, A in zip(w, terms[1:]))
+        np.testing.assert_allclose(system.Y_hat, terms[0]@system.U, atol=1e-13)
+        np.testing.assert_allclose(system.X_hat[:, 9], -terms[2]@system.U/2, atol=1e-13)
+        np.testing.assert_allclose(system.X_hat[:, 22], -terms[3]@system.U, atol=1e-13)
+        np.testing.assert_allclose(covariance.matrix(w), .03**2*(L@L.T).toarray()+
+                                   covariance.ridge*np.eye(system.K), rtol=1e-9, atol=1e-13)
+        objective = wendy_mle.WeakLikelihood(system.X_hat[:, support], system.Y_hat, covariance)
+        gradient = objective.gradient(w)
+        numeric = [(objective.value(w+np.eye(len(w))[j]*1e-6)-objective.value(w-np.eye(len(w))[j]*1e-6))/2e-6
+                   for j in range(len(w))]
+        np.testing.assert_allclose(gradient, numeric, rtol=1e-4, atol=1e-4)
+        system.workers = 2
+        parallel = wendy.ResidualCovariance(system, support, .03)
+        parallel_objective = wendy_mle.WeakLikelihood(system.X_hat[:, support], system.Y_hat, parallel)
+        np.testing.assert_allclose(parallel_objective.gradient(w), gradient, rtol=1e-12)
+
+    @unittest.skipUnless(Path('tmp/WSINDy_PDE/datasets/KdV.mat').exists(), 'Original paper data not cached')
+    def test_paper_table5(self):
+        for name, K, reference in (('burgers', 784, 4.3e-5), ('kdv', 1443, 3.1e-7)):
+            x, t, u, target = experiment.paper_data(name)
+            system = experiment.paper_system(name, u, x, t)
+            self.assertEqual((system.K, len(system.admissible)), (K, 43))
+            result = wsindy.fit(system, thresholds=np.logspace(-4, 0, 50), threshold_scale=system.coefficient_scale)
+            estimate = system.coefficient_scale*result.w
+            np.testing.assert_array_equal(np.flatnonzero(estimate), np.flatnonzero(target))
+            error = np.max(np.abs((estimate-target)[target != 0]/target[target != 0]))
+            self.assertAlmostEqual(error/reference, 1., delta=.02)
+
     def test_support_metrics(self):
         score = experiment.support_metrics(np.array([7., 0., 9.]), np.array([1., 1., 0.]))
         self.assertEqual((score['tp'], score['fp'], score['fn']), (1, 1, 1))

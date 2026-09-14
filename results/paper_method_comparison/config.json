@@ -1,0 +1,44 @@
+{
+  "setup": "paper",
+  "methods": [
+    "WSINDy",
+    "WENDy",
+    "WENDy-MLE"
+  ],
+  "problems": [
+    "burgers",
+    "kdv"
+  ],
+  "grids": [
+    256
+  ],
+  "noise": [
+    0.0,
+    0.2
+  ],
+  "seeds": 3,
+  "workers": 4,
+  "sparsity": null,
+  "l1": [
+    1e-06,
+    0.0001,
+    0.01
+  ],
+  "centers": 11,
+  "maxiter": 300,
+  "tol": 1e-08,
+  "output": "results/paper_method_comparison",
+  "environment": {
+    "python": "3.11.16",
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "platform": "macOS-15.7.3-arm64-arm-64bit",
+    "blas": {
+      "OPENBLAS_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1"
+    }
+  },
+  "data_source": "https://raw.githubusercontent.com/dm973/WSINDy_PDE/95686ccd9e32e3a9f62acfb3014fb77d5ef039ab",
+  "selection_units": "rescaled coefficients; errors reported in original units",
+  "l1_evaluation": "direct residual"
+}

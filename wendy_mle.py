@@ -10,12 +10,14 @@ from wendy import ResidualCovariance, hard_threshold, l1_minimize, penalty_refer
 
 
 class WeakLikelihood:
-    """Cached likelihood with analytic gradient and Hessian."""
+    """Cached likelihood and gradient; analytic Hessian for small systems."""
     def __init__(self, X_hat, Y_hat, covariance):
         self.X_hat, self.Y_hat, self.covariance = X_hat, Y_hat, covariance
         self._w = None
 
     def evaluate(self, w, with_hessian=True):
+        if self.covariance.direct and with_hessian:
+            raise ValueError("The convolution covariance uses gradient-only optimization")
         if self._w is not None and np.array_equal(w, self._w) and (not with_hessian or self._hessian is not None):
             return self._value, self._gradient, self._hessian
         K, q = self.X_hat.shape
@@ -23,10 +25,10 @@ class WeakLikelihood:
         chol = cholesky(self.covariance.matrix(w), lower=True)
         inverse = cho_solve((chol, True), np.eye(K))
         v = cho_solve((chol, True), R)
-        dC = self.covariance.gradient(w)
         Q = inverse-np.outer(v, v)
         value = (np.log(np.diag(chol)).sum()+.5*R@v)/K
-        gradient = (-self.X_hat.T@v+.5*np.einsum("ij,aij->a", Q, dC))/K
+        gradient = (-self.X_hat.T@v+.5*self.covariance.contract_gradient(w, Q))/K
+        dC = self.covariance.gradient(w) if with_hessian else None
         hessian = np.empty((q, q)) if with_hessian else None
         for j in range(q if with_hessian else 0):
             dv = inverse@(-self.X_hat[:, j]-dC[j]@v)
@@ -72,6 +74,14 @@ def fit(system, *, sigma, sparsity=None, l1=0., support=None, initial=None,
         lambda_max, scale, normalizer = penalty_reference(X_hat, system.Y_hat, covariance)
         result = l1_minimize(lambda v: objective.evaluate(v, False)[:2], w, l1*lambda_max,
                              scale, normalizer, maxiter, tol, callback)
+    elif covariance.direct:
+        _, scale, _ = penalty_reference(X_hat, system.Y_hat, covariance)
+        def scaled_objective(z):
+            value, gradient, _ = objective.evaluate(scale*z, False)
+            return value, scale*gradient
+        result = minimize(scaled_objective, w/scale, jac=True, method="BFGS",
+                          callback=lambda z: callback(scale*z), options={"gtol": tol, "maxiter": maxiter})
+        result.x *= scale
     else:
         result = minimize(objective.value, w, jac=objective.gradient, hess=objective.hessian,
                           method="trust-exact", callback=callback,

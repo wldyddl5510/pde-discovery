@@ -1,97 +1,137 @@
-# PDE coefficient selection
+# Sparse PDE coefficient recovery
 
-Minimal PDE implementations using Section 2 of `pde_discovery.pdf`:
-`wsindy.py` (weak form and MSTLS), `wendy.py` (IRLS and sparse helpers),
-`wendy_mle.py` (likelihood and MLE), `experiment.py` (data and comparison tables).
+`wsindy.py`: weak form / MSTLS; `wendy.py`: IRLS / HT / L1;
+`wendy_mle.py`: weak likelihood; `experiment.py`: synthetic data and three tables.
+Notation follows Section 2 of `pde_discovery.pdf`.
 
 ```sh
 conda activate pde_discovery
-OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python experiment.py
+OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python experiment.py \
+  --setup paper --noise 0 .2 --seeds 3 --workers 4 \
+  --output results/my_comparison
 python -m unittest -v test_wendy
 ```
 
-Default: Burgers and KdV, 256² grid, five paired seeds per nonzero noise level.
-`--noise 0 .01 .1 .5 1` specifies sigma/RMS(u); Tables and raw results also show actual
-sigma. Noiseless data run once. Example of a smaller run:
+`--setup paper` is the default. Original author datasets are downloaded once
+into ignored `tmp/WSINDy_PDE/datasets/`, pinned to commit
+`95686ccd9e32e3a9f62acfb3014fb77d5ef039ab` of
+[WSINDy_PDE](https://github.com/dm973/WSINDy_PDE).
+
+Full-covariance fits at this resolution can take minutes per fit, so the
+method comparison takes hours. To reproduce the faster WSINDy noise sweep:
 
 ```sh
-python experiment.py --grids 128 --noise 0 .1 --seeds 1 --output results/my_trial
+OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python experiment.py \
+  --methods WSINDy --noise 0 .1 .2 .5 1 --seeds 200 \
+  --output results/my_wsindy_reference
 ```
 
-## Selection and objectives
+| Paper Tables 3–4 | Burgers | KdV |
+|---|---:|---:|
+| Grid (space × time) | 256 × 256 | 400 × 601 |
+| Polynomial powers / spatial derivatives | 0–6 / 0–6 | 0–6 / 0–6 |
+| Test half-widths (mx, mt), grid steps | (60, 60) | (45, 80) |
+| Query strides (sx, st) | (5, 5) | (8, 12) |
+| Test polynomial degrees (px, pt) | (7, 7) | (8, 7) |
+| Weak equations × fitted columns | 784 × 43 | 1443 × 43 |
 
-Every estimator starts from the full admissible library and observed weak OLS.
-There are no oracle/discovery modes or WSINDy-selected inputs to WENDy.
+The full vector has J=S=7 and 49 entries in operator-major order; six
+constant-derivative columns are structural zeros. Burgers has Python
+`w[9]=-.5`; KdV additionally has `w[22]=-1`, i.e.
+`u_t=-.5 D_x(u²)-D_x³(u)`. These are PDF indices w_10 and w_23.
 
-| Variant | Coefficient selection |
+The weak form uses the author's separable FFT convolution and rescaling,
+with fixed Table 3 windows, decay tolerance 1e-10 and 50 MSTLS thresholds
+log-spaced from 1e-4 to 1. The rescaling follows the author code where its
+formula differs from the printed paper; both Table 5 errors are reproduced.
+
+## Selection and estimation
+
+Every method starts with the full admissible library and observed weak OLS.
+WENDy methods receive the known injected sigma. There is no oracle support
+or WSINDy-based initialization. HT/L1 are our sparse PDE extensions of
+WENDy and WENDy-MLE, not their original sparse discovery algorithms.
+
+| Variant | Selection |
 |---|---|
-| WSINDy | MSTLS, including its threshold search and support refit |
-| WENDy HT | Full-library IRLS, then keep the largest s raw absolute coefficients |
-| WENDy-MLE HT | Full-library MLE, then the same hard threshold |
-| WENDy L1 | Add lambda times sum(abs(w)) to each frozen-covariance GLS subproblem |
-| WENDy-MLE L1 | Add lambda times sum(abs(w)) to the weak negative log likelihood |
+| WSINDy | MSTLS threshold search with support refitting |
+| WENDy HT / WENDy-MLE HT | Full-library fit, then keep s largest absolute rescaled coefficients |
+| WENDy L1 / WENDy-MLE L1 | Penalize sum of absolute rescaled coefficients; no HT |
 
-HT knows only the term count: Burgers s=1, KdV s=2 (`--sparsity` overrides it).
-It does not refit after thresholding. L1 does not use s or the true support,
-and there is no post-selection refit. Thus L1 shrinkage contributes to error.
-These HT/L1 extensions are experimental PDE adaptations, not native sparse
-selection algorithms from the original WENDy or WENDy-MLE papers.
+HT knows s=1 for Burgers and s=2 for KdV. No HT/L1 post-selection refit is
+performed. In paper mode, fitting and selection use rescaled coordinates;
+estimates are converted back to physical units for coefficient errors.
+Rescaling is computed from observed U and held fixed during each fit; sigma
+is transformed to those same coordinates.
+For `ConvolutionSystem`, direct fits take `sigma*system.noise_scale` and return
+rescaled coefficients. The runner saves `system.coefficient_scale*result.w`.
+The L1 GLS objective evaluates the residual directly, avoiding cancellation
+from expanding the quadratic through X.T@X.
+The penalty is alpha * lambda_ref with alpha in {1e-6, 1e-4, .01} and
+lambda_ref=max(abs(X_0.T@y_0))/K, where X_0,y_0 are whitened by C(0).
+The reference is fixed per fit; no alpha is chosen using ground truth.
 
 ```text
 R(w) = Y_hat - X_hat w
-C(w) = sigma² L(w)L(w).T + ridge I
 L(w) = A_0 - sum_sj w_sj A_s diag(f'_j(U))
-WENDy step: min_w R(w).T inv(C(w_old)) R(w)/(2K) + lambda ||w||_1
-MLE: min_w [logdet C(w) + R(w).T inv(C(w)) R(w)]/(2K) + lambda ||w||_1
+C(w) = sigma² L(w)L(w).T + ridge I
+WENDy: minimize R(w).T inv(C(w_old)) R(w)/(2K) + lambda ||w||_1
+MLE: minimize [logdet C(w) + R(w).T inv(C(w)) R(w)]/(2K) + lambda ||w||_1
 ```
 
-The default relative L1 strengths are `--l1 1e-6 1e-4 .01`. All are reported;
-none is chosen using true coefficients or support. With X_0,y_0 whitened by
-C(0), set lambda = alpha * max(abs(X_0.T @ y_0))/K, fixed throughout each fit.
-This is the zero-solution threshold for the reference GLS LASSO, not a claim
-about the nonconvex MLE optimum. Raw coefficients are penalized: feature units
-and correlated polynomial columns affect selection. Internal variable scaling
-only conditions the optimizer and does not change this penalty.
-L1 uses w=positive-negative with L-BFGS-B bounds; HT MLE uses trust-exact.
-At sigma=0 both covariance methods use ordinary weak LS, retaining HT or L1.
+The full covariance is retained. Shared sparse stencils avoid storing all
+43² covariance blocks. `--workers` controls FFT and covariance threads
+(default 1); splitting exact products into blocks does not approximate C.
+MLE uses scaled BFGS for the large paper system and trust-exact for the small
+legacy system. L1 uses L-BFGS-B with split nonnegative variables. At sigma=0,
+both covariance methods fall back to ordinary weak LS with HT/L1.
+The ridge is 1e-10 times mean(diag(sigma² A_0 A_0.T)).
 
-## Data and notation
+## Experiments and tables
 
-The dictionary is {1,u,u²,u³}. Burgers has w_7=-0.5 in u_t=-0.5 D_x(u²).
-KdV additionally has w_14=-1 multiplying D_x³(u). Other entries are zero.
-Burgers uses the WSINDy paper's exact entropy solution with x,u divided by
-1000; KdV uses a different exact two-soliton trajectory of the paper's PDE.
+- [Paper comparison](results/paper_comparison.md): setup, published WSINDy
+  results versus this implementation, and the method comparison.
+- `results/wsindy_paper_reference/`: WSINDy, noise ratios 0, .1, .2, .5, 1;
+  200 seeds per positive level and one noiseless run, one thread.
+- `results/paper_method_comparison/`: all nine variants, noise ratios 0 and .2;
+  three paired seeds at .2 and one noiseless run, four threads.
+- `results/selection_comparison/`: retained historical small-library baseline.
 
-A_s[k,i]=(-1)^|alpha^s| D^alpha^s psi_k(z_i) Delta z_i;
-Y_hat=A_0 U, X_hat[:,(s-1)*J+j]=A_s f_j(U). Coefficients retain all S*J entries
-in operator-major order. Python j is zero-based; w retains the full operator-major vector.
-Structural zero columns, e.g. D_x(1), remain zero and are excluded from fits.
-U is flattened in (time,space) order, alpha=(dx,dt). The code follows Eq. (5),
-resolving the PDF's inconsistent transpose and Taylor sign.
+Each run writes only `config.json`, `trials.csv`, `support.md`,
+`coefficient_accuracy.md`, and `runtime.md`. Paper-mode tables use:
 
-These experiments use fixed compact polynomial test functions, trapezoidal
-quadrature, full residual covariance, and known injected sigma. They are not
-full reproductions of the original software. The fixed ridge is 1e-10 times
-mean(diag(sigma² A_0 A_0.T)); quadrature error at shocks remains.
+| Metric | Definition |
+|---|---|
+| Exact support recovery | Percentage with FP=FN=0 |
+| Paper TPR | Mean TP/(TP+FP+FN), not recall or exact recovery |
+| E2 | Mean ||w_hat-w_star||₂ / ||w_star||₂, in physical units |
+| E∞ | Mean maximum relative error on true nonzero coefficients |
+| Runtime | Median seconds including weak-form assembly and all fitting |
 
-## Outputs
+Data loading/generation and file writing are excluded from runtime. Support
+uses abs(rescaled coefficient)>1e-12. Nonfinite fits count as failed recovery;
+their TPR is scored as zero in tables and coefficient errors as infinity.
+Optimizer failures remain in all summaries and are flagged in `trials.csv`.
+Optimizer termination alone does not imply correct coefficients.
+On a numerical exception, iteration count 0 means unavailable, not zero work.
+Interrupted runs can continue with the same command plus `--resume`; completed
+fits are skipped and changes to saved settings are rejected.
 
-Only the latest comparison is kept in `results/selection_comparison/`:
+Noise is additive iid Gaussian with sigma=noise_ratio*RMS(clean u), following
+paper Eq. 5.1. Actual sigma is also recorded. Defaults are noise ratios 0 and
+.2 with three noisy seeds, not the paper's complete 41-level × 200-seed sweep.
+`--maxiter 300` and `--tol 1e-8` control the iterative fits. An iteration limit
+is reported as nonconvergence, not accepted as a converged solution.
 
-- [support.md](results/selection_comparison/support.md): exact support recovery
-  percentage, with methods as rows and noise levels as columns.
-- [coefficient_accuracy.md](results/selection_comparison/coefficient_accuracy.md):
-  median relative coefficient error (%) in the same layout; lower is better.
-- `trials.csv`: per-seed estimates (`w`, a JSON vector), errors, support metrics,
-  timing and optimizer status. This is the single source for both tables.
-- `config.json`: experiment arguments. The saved run uses ten paired seeds.
+`--setup legacy` reproduces the previous degree-3, 121-test-function setup
+with scaled Burgers and a different KdV trajectory. Only legacy mode uses
+`--grids` and `--centers`; its HT/L1 uses physical coefficients and its error
+tables use medians. The saved historical baseline predates the direct-residual
+L1 evaluation; the mathematical objective is unchanged. For example:
 
-Support is abs(w)>1e-12. Nonfinite fits count as failed recovery and have infinite
-coefficient error. Failed optimizer results remain included and are flagged;
-optimizer termination does not imply recovery of the true coefficients.
-Runtime includes weak-form setup, OLS initialization, covariance construction
-and fitting. Estimators retain their in-memory iteration histories; the runner
-exports only final estimates. No plots or separate trace/summary files are made.
+```sh
+python experiment.py --setup legacy --grids 128 --noise 0 .1 --seeds 1
+```
 
 Sources: [WSINDy](https://arxiv.org/abs/2007.02848),
 [WENDy](https://arxiv.org/abs/2302.13271),

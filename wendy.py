@@ -1,15 +1,17 @@
 """WENDy IRLS: C(w)=sigma^2 L(w)L(w)^T+ridge I; L=dR/dU."""
 from time import perf_counter
+from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 from scipy.linalg import cholesky, solve_triangular
 from scipy.optimize import minimize
+from scipy import sparse
 
-from wsindy import FitResult, Iterate, expand, prepare_fit, fit as weak_fit, least_squares
+from wsindy import ConvolutionSystem, FitResult, Iterate, expand, prepare_fit, fit as weak_fit, least_squares
 
 
 def hard_threshold(w, sparsity):
-    """Keep the largest raw |w_j|; no support refit."""
+    """Keep the largest input |w_j|; no support refit."""
     if sparsity is None:
         return w.copy()
     if not isinstance(sparsity, (int, np.integer)) or not 1 <= sparsity <= len(w):
@@ -47,10 +49,20 @@ def penalty_reference(X, y, covariance):
 
 
 class ResidualCovariance:
-    """Cache Gram blocks of L(w)=A_0-sum w_sj A_s diag(f_j'(U))."""
+    """C(w) via cached Gram blocks or shared convolution stencils."""
     def __init__(self, system, support, sigma, ridge=1e-10):
         if not np.isfinite(sigma) or sigma <= 0 or not np.isfinite(ridge) or ridge <= 0:
             raise ValueError("Covariance requires positive finite sigma and ridge")
+        self.direct = isinstance(system, ConvolutionSystem)
+        if self.direct:
+            self.system, self.support, self.sigma = system, support, sigma
+            self.indices, self.kernels = system.stencil
+            ptr = np.arange(system.K+1, dtype=np.int32)*self.indices.shape[1]
+            self.L = sparse.csr_matrix((np.empty(self.indices.size), self.indices.ravel(), ptr),
+                                       shape=(system.K, system.n))
+            self.ridge = ridge*sigma**2*np.sum(self.kernels[0]**2)
+            self._w = None
+            return
         terms = system.data_jacobian_terms(support)
         m, K = len(terms), system.K
         self.H = np.empty((m, m, K, K))
@@ -61,11 +73,48 @@ class ResidualCovariance:
         self.ridge = ridge*max(np.trace(self.H[0, 0])/K, np.finfo(float).tiny)
 
     def matrix(self, w):
+        if self.direct:
+            if self._w is not None and np.array_equal(w, self._w):
+                return self._C
+            s = self.system
+            full = expand(s, self.support, w)
+            full = full.reshape(s.S, s.J)
+            values = np.broadcast_to(self.kernels[0], self.indices.shape).copy()
+            for d in range(s.S):
+                derivative = np.polynomial.polynomial.polyval(s.U, np.arange(1, s.J)*full[d, 1:])
+                values -= derivative[self.indices]*self.kernels[d+1]
+            self.L.data[:] = values.ravel()
+            self.LT = self.L.T.tocsr()
+            C = self.sigma**2*self.blocks(lambda a, b: (self.L[a:b]@self.LT).toarray())
+            C.flat[::s.K+1] += self.ridge
+            self._w, self._C = w.copy(), C
+            return C
         z = np.r_[1., w]
         C = np.einsum("a,b,abij->ij", z, z, self.H, optimize=True)
         C = (C+C.T)/2
         C.flat[::len(C)+1] += self.ridge
         return C
+
+    def blocks(self, function):
+        edges = np.linspace(0, self.system.K, self.system.workers+1, dtype=int)
+        if self.system.workers == 1:
+            return function(0, self.system.K)
+        with ThreadPoolExecutor(self.system.workers) as pool:
+            return np.concatenate(list(pool.map(lambda ab: function(*ab), zip(edges[:-1], edges[1:]))))
+
+    def contract_gradient(self, w, Q):
+        """Exact trace(Q dC/dw), without storing 43 dense derivative matrices."""
+        if not self.direct:
+            return np.einsum("ij,aij->a", Q, self.gradient(w))
+        self.matrix(w)
+        s = self.system
+        weighted = self.blocks(lambda a, b: (self.LT@Q[:, a:b])[self.indices[a:b], np.arange(b-a)[:, None]])
+        gradient = np.zeros(s.S*s.J)
+        powers = np.array([j*s.U**(j-1) for j in range(1, s.J)])
+        for d in range(s.S):
+            h = np.bincount(self.indices.ravel(), weights=(weighted*self.kernels[d+1]).ravel(), minlength=s.n)
+            gradient[d*s.J+1:(d+1)*s.J] = -2*self.sigma**2*(powers@h)
+        return gradient[self.support]
 
     def gradient(self, w):
         one = np.einsum("b,abij->aij", np.r_[1., w], self.H[1:], optimize=True)
@@ -96,9 +145,9 @@ def fit(system, *, sigma, sparsity=None, l1=0., support=None, initial=None,
             chol = cholesky(covariance.matrix(w), lower=True)
             X, y = solve_triangular(chol, X, lower=True), solve_triangular(chol, y, lower=True)
         if l1:
-            gram, rhs = X.T@X/system.K, X.T@y/system.K
             def objective(v):
-                return .5*v@gram@v-rhs@v, gram@v-rhs
+                residual = y-X@v
+                return .5*residual@residual/system.K, -X.T@residual/system.K
             inner = l1_minimize(objective, w, l1*lambda_max, scale, normalizer, 2000, tol)
             new = inner.x
             if not inner.success:
