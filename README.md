@@ -2,7 +2,7 @@
 
 **[Results: tables and figure](results/paper_comparison.md)**
 
-[Implementation corrections](results/implementation_check.md): L1 convergence checks, SVD test conditioning, and second-order MLE optimization. All 20 numerical tests pass.
+[Implementation corrections](results/implementation_check.md): L1 convergence checks, SVD test conditioning, and second-order MLE optimization. All 21 numerical tests pass.
 
 Compare WSINDy, WENDy, and WENDy-MLE on Burgers and KdV using the
 WSINDy paper's data and candidate library. Notation follows Section 2 of `pde_discovery.pdf`.
@@ -34,7 +34,21 @@ For the WSINDy noise sweep, use `--methods WSINDy --noise 0 .1 .2 .5 1 --seeds 2
 Each run saves `summary.md`, `trials.csv`, and `config.json`. Tables have methods as columns, one table per noise level.
 Add `--resume` to continue or extend the L1 grid; completed fits are reused; settings and recorded solver hashes must match.
 
+**[Strong signals with weak background: tables](results/strong_weak/summary.md)**
+
+A separate quick experiment uses 19 coefficients: three of magnitude 1 and sixteen of magnitude 0.001.
+The periodic PDE includes every weak term. One paired noise seed covers 0–100% noise.
+Tables report recovery of the three dominant coordinates, strong/full coefficient error, and runtime.
+
+```sh
+OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python experiment.py \
+  --setup signal --grids 129 --centers 8 --noise 0 .01 .05 .1 .2 .5 1 \
+  --seeds 1 --workers 1 --l1 1e-4 --maxiter 1000 --time-limit 5 \
+  --output results/my_strong_weak
+```
+
 Noise is iid Gaussian with σ = noise ratio × RMS(clean u). WENDy variants receive σ.
+The following settings describe the paper comparison:
 HT keeps the s largest rescaled coefficients (Burgers s=1, KdV s=2).
 L1 uses λ=αλ_ref, α∈{1e-10, 1e-8, 1e-6, 1e-4, .01}, with λ_ref=max|X₀ᵀy₀|/K from whitening by C(0).
 All methods start from the full library; HT/L1 have no post-selection refit.

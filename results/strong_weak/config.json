@@ -1,0 +1,111 @@
+{
+  "setup": "signal",
+  "methods": [
+    "WSINDy",
+    "WENDy",
+    "WENDy-MLE"
+  ],
+  "problems": [
+    "signal"
+  ],
+  "grids": [
+    129
+  ],
+  "noise": [
+    0.0,
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.5,
+    1.0
+  ],
+  "seeds": 1,
+  "workers": 1,
+  "sparsity": null,
+  "l1": [
+    0.0001
+  ],
+  "centers": 8,
+  "maxiter": 1000,
+  "tol": 1e-08,
+  "time_limit": 5.0,
+  "output": "results/strong_weak",
+  "solver_sha256": {
+    "wsindy.py": "919e129ecf04a5bc612a0f27884efe6115fd17c8d4f4cd6edadc450e0013ce35",
+    "wendy.py": "8cb01778a6eb0511c99469d8cbfa5df57276167b7b0939ee746ba9771e2dd53f",
+    "wendy_mle.py": "bbefa0445fc9c083b7f47179c1c2f461926594bb2a10113ebbea0e81aa24c776",
+    "experiment.py": "f9b0088cd612b49806df00d29172c186718bb3995f292b415d9ea67780dfd7f0"
+  },
+  "environment": {
+    "python": "3.11.16",
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "platform": "macOS-15.7.3-arm64-arm-64bit",
+    "blas": {
+      "OPENBLAS_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1"
+    }
+  },
+  "model": {
+    "coefficients": [
+      [
+        0.001,
+        -1.0,
+        0.001,
+        0.001,
+        0.001,
+        0.001,
+        0.001
+      ],
+      [
+        0.0,
+        0.001,
+        -1.0,
+        0.001,
+        0.001,
+        0.001,
+        0.001
+      ],
+      [
+        0.0,
+        1.0,
+        0.001,
+        0.001,
+        0.001,
+        0.001,
+        0.001
+      ]
+    ],
+    "strong_indices": [
+      1,
+      9,
+      15
+    ],
+    "boundary": "periodic",
+    "xlim": [
+      -3.141592653589793,
+      3.141592653589793
+    ],
+    "tlim": [
+      0.0,
+      0.5
+    ],
+    "half_widths": [
+      0.8,
+      0.06
+    ],
+    "initial": "(0.65*sin(x)+0.3*cos(2*x)+0.2*sin(3*x))/1.15",
+    "solver": "Fourier (degree-six dealiasing), DOP853 rtol=1e-10 atol=1e-12"
+  },
+  "support_metric": "Top-three estimated magnitudes versus the three dominant true coordinates",
+  "selection_units": "original nondimensional coefficients",
+  "l1_evaluation": "active-set SVD LASSO (IRLS); KKT-certified L-BFGS-B (MLE)",
+  "validation": {
+    "129": {
+      "relative_grid_refinement_error": 9.273193967131327e-08,
+      "relative_weak_term_effect": 0.000981834482315075,
+      "relative_clean_weak_residual": 1.0893798642126499e-06
+    }
+  }
+}

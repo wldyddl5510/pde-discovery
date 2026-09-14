@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 from scipy.signal import convolve2d
+from scipy.integrate import simpson
 
 import experiment
 import wsindy
@@ -22,6 +23,23 @@ def make_system(name, grid=64, centers=5, noise=0.):
 
 
 class NumericalChecks(unittest.TestCase):
+    def test_strong_weak_pde_generator(self):
+        x, t = np.linspace(-np.pi, np.pi, 129), np.linspace(0, .5, 129)
+        w = experiment.SIGNAL.w_star(J=7)
+        u = experiment.strong_weak(x, t)
+        refined = experiment.strong_weak(np.linspace(-np.pi, np.pi, 257), t)[:, ::2]
+        self.assertEqual(np.count_nonzero(np.abs(w) == 1), 3)
+        self.assertEqual(np.count_nonzero(w == .001), 16)
+        np.testing.assert_array_equal(u[:, 0], u[:, -1])
+        self.assertLess(np.linalg.norm(u-refined)/np.linalg.norm(u), 2e-7)
+        dominant = np.zeros_like(w)
+        dominant[experiment.STRONG] = w[experiment.STRONG]
+        self.assertGreater(np.linalg.norm(u-experiment.strong_weak(x, t, dominant))/np.linalg.norm(u), 1e-4)
+        # Periodic flux and diffusion integrate to zero; only reaction changes the mean.
+        mean = u[:, :-1].mean(axis=1)
+        reaction = np.polynomial.polynomial.polyval(u[:, :-1], w[:7]).mean(axis=1)
+        self.assertLess(abs(mean[-1]-mean[0]-simpson(reaction, x=t)), 1e-10)
+
     def test_l1_objective_scaling_and_tiny_penalty(self):
         b = np.array([3., -.7, .1])
         for penalty in (.2, 1e-10):

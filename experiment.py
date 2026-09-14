@@ -14,6 +14,7 @@ from urllib.request import urlretrieve
 import numpy as np
 from scipy.special import softmax
 from scipy.io import loadmat
+from scipy.integrate import solve_ivp
 from scipy.fft import set_workers
 from scipy import __version__ as scipy_version
 
@@ -45,6 +46,31 @@ def kdv(x, t):
     return 12*np.sum(probabilities*(slopes-mean)**2, axis=0)
 
 
+STRONG = np.array([1, 9, 15])
+SIGNAL_COEFFICIENTS = np.full(21, .001)
+SIGNAL_COEFFICIENTS[[7, 14]] = 0  # Spatial derivatives of constants vanish.
+SIGNAL_COEFFICIENTS[STRONG] = [-1., -1., 1.]
+
+
+def strong_weak(x, t, coefficients=SIGNAL_COEFFICIENTS):
+    """Periodic u_t = sum_{d=0}^2 D_x^d sum_{j=0}^6 w[d,j] u^j."""
+    n = len(x)-1
+    modes = np.fft.fftfreq(n)*n
+    k = 2*np.pi*modes/(x[-1]-x[0])
+    keep = np.abs(modes) <= (n-1)//7  # Dealias degree-six products.
+    initial = (.65*np.sin(x[:-1])+.3*np.cos(2*x[:-1])+.2*np.sin(3*x[:-1]))/1.15
+
+    def rhs(time, u):
+        spectrum = sum((1j*k)**d*np.fft.fft(np.polynomial.polynomial.polyval(u, c))
+                       for d, c in enumerate(np.asarray(coefficients).reshape(3, 7)))
+        return np.fft.ifft(keep*spectrum).real
+
+    sol = solve_ivp(rhs, (t[0], t[-1]), initial, t_eval=t, method="DOP853", rtol=1e-10, atol=1e-12)
+    if not sol.success:
+        raise RuntimeError(sol.message)
+    return np.column_stack((sol.y.T, sol.y.T[:, 0]))
+
+
 @dataclass(frozen=True)
 class Problem:
     xlim: tuple
@@ -70,6 +96,9 @@ PROBLEMS = {
                    ((0, 1), (0, 0), (1, 0), (2, 0), (3, 0)),
                    {(2, 2): -.5, (4, 1): -1.}, kdv),
 }
+SIGNAL = Problem((-np.pi, np.pi), (0., .5), (.8, .06),
+                 ((0, 1), (0, 0), (1, 0), (2, 0)),
+                 {(i//7+1, i % 7): w for i, w in enumerate(SIGNAL_COEFFICIENTS) if w}, strong_weak)
 
 PAPER_SOURCE = "https://raw.githubusercontent.com/dm973/WSINDy_PDE/95686ccd9e32e3a9f62acfb3014fb77d5ef039ab"
 
@@ -107,7 +136,7 @@ def save_csv(path, records, append=False):
 def load_csv(path):
     with path.open() as f:
         rows = list(csv.DictReader(f))
-    text_fields = {"problem", "grid", "method", "status", "w", "selected_terms"}
+    text_fields = {"problem", "grid", "method", "status", "w", "selected_terms", "selected_strong"}
     for row in rows:
         for key, value in row.items():
             if key not in text_fields:
@@ -146,18 +175,20 @@ def comparison_tables(trials, paper=False):
         for problem, grid in sorted({(r["problem"], r["grid"]) for r in trials}):
             groups = [[r for r in trials if (r["problem"], r["grid"], r["noise"], r["method"]) ==
                        (problem, grid, noise, method)] for method in methods]
-            title = "KdV" if problem == "kdv" else "Burgers"
+            title = {"kdv": "KdV", "burgers": "Burgers", "signal": "Strong/weak"}[problem]
             if len({r["grid"] for r in trials if r["problem"] == problem}) > 1:
                 title += f" ({grid})"
-            for metric, key in (("E∞", "coefficient_linf"), ("E₂", "coefficient_error"),
-                                ("Support", "support_exact"), ("Time (s)", "total_seconds"),
-                                ("Optimizer", "optimizer_success")):
+            metrics = (("Top-3 hits", "tp"), ("Strong E₂", "strong_error"), ("Full E₂", "coefficient_error")) if problem == "signal" else (
+                ("E∞", "coefficient_linf"), ("E₂", "coefficient_error"), ("Support", "support_exact"))
+            for metric, key in (*metrics, ("Time (s)", "total_seconds"), ("Optimizer", "optimizer_success")):
                 values = []
                 for rows in groups:
                     if not rows or key not in rows[0]:
                         value = "—"
                     elif key in ("support_exact", "optimizer_success"):
                         value = f"{sum(r[key] for r in rows)}/{len(rows)}"
+                    elif key == "tp":
+                        value = f"{sum(r[key] for r in rows):g}/{3*len(rows)}"
                     else:
                         average = np.median if key == "total_seconds" else aggregate
                         value = format(average([r[key] for r in rows]), ".4g" if key == "total_seconds" else ".3g")
@@ -168,12 +199,28 @@ def comparison_tables(trials, paper=False):
 
 
 def write_tables(out, trials, paper=False):
+    signal = all(r["problem"] == "signal" for r in trials)
     lines = ["# Results", "", "W = WENDy; MLE = WENDy-MLE; W:α / MLE:α use L1 penalty λ=αλ_ref.",
              "Support and optimizer completion are counts; time is median seconds.",
              f"E₂ and E∞ are relative errors ({'mean' if paper else 'median'} over seeds), not percentages.",
              "Failed fits are included; inf denotes a nonfinite error; — means unavailable.", ""]
+    if signal:
+        settings = json.loads((out/"config.json").read_text())
+        lines = ["# Strong signals with weak background coefficients", "",
+                 "19 candidate terms: three coefficients of magnitude 1, sixteen of magnitude 0.001.",
+                 "The leading PDE is u_t = −u − D_x(u²) + D_x²(u); all weak terms are included in the simulated PDE.",
+                 "Library: D_x^d(u^j), d=0,1,2 and j=0,…,6, excluding spatial derivatives of constants.",
+                 f"Seeds: {settings['seeds']} (one at zero noise); HT keeps {settings['sparsity'] or 3} terms. "
+                 f"Budget: {settings['maxiter']} iterations / {settings['time_limit']:g} seconds per fit.",
+                 "W = WENDy; MLE = WENDy-MLE; W:α / MLE:α use L1 penalty λ=αλ_ref.",
+                 "Top-3 hits counts correctly ranked dominant coordinates (out of three), not a probability over seeds.",
+                 "E₂ is relative coefficient error, not a percentage. Optimizer counts fits meeting their stopping criterion; failed fits remain included.", ""]
     lines += comparison_tables(trials, paper)
-    lines += ["E₂ = ‖ŵ−w★‖₂/‖w★‖₂; E∞ = max relative error on true nonzero terms.",
+    if signal:
+        lines += ["Perfect three-term truncation still gives Full E₂=0.00231 because the weak coefficients are nonzero.",
+                  "At zero noise, MLE uses the WENDy least-squares/LASSO fallback."]
+    lines += ["Strong E₂ uses the three dominant coordinates; Full E₂ uses all 19 coefficients." if signal else
+              "E₂ = ‖ŵ−w★‖₂/‖w★‖₂; E∞ = max relative error on true nonzero terms.",
               "Noise = σ/RMS(clean u). Time includes weak-form assembly and fitting, excluding data generation and file writing.",
               "Settings: [config.json](config.json). Raw fits: [trials.csv](trials.csv).", ""]
     (out/"summary.md").write_text("\n".join(lines))
@@ -182,6 +229,7 @@ def write_tables(out, trials, paper=False):
 def run(args):
     out = Path(args.output)
     paper = args.setup == "paper"
+    signal = args.setup == "signal"
     config = {k: v for k, v in vars(args).items() if k != "resume"}
     config["solver_sha256"] = {name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
                                for name in ("wsindy.py", "wendy.py", "wendy_mle.py", "experiment.py")}
@@ -192,6 +240,16 @@ def run(args):
     if paper:
         config["data_source"] = PAPER_SOURCE
         config["selection_units"] = "rescaled coefficients; errors reported in original units"
+    if signal:
+        config["problems"] = ["signal"]
+        config["model"] = dict(coefficients=SIGNAL_COEFFICIENTS.reshape(3, 7).tolist(),
+                               strong_indices=STRONG.tolist(), boundary="periodic", xlim=SIGNAL.xlim,
+                               tlim=SIGNAL.tlim, half_widths=SIGNAL.half_widths,
+                               initial="(0.65*sin(x)+0.3*cos(2*x)+0.2*sin(3*x))/1.15",
+                               solver="Fourier (degree-six dealiasing), DOP853 rtol=1e-10 atol=1e-12")
+        config["support_metric"] = "Top-three estimated magnitudes versus the three dominant true coordinates"
+        config["selection_units"] = "original nondimensional coefficients"
+        config.pop("wendy_test_basis")
     if args.l1 and any(m != "WSINDy" for m in args.methods):
         config["l1_evaluation"] = "active-set SVD LASSO (IRLS); KKT-certified L-BFGS-B (MLE)"
     if args.resume:
@@ -206,9 +264,9 @@ def run(args):
         trials = []
     (out/"config.json").write_text(json.dumps(config, indent=2))
     completed = {(r["problem"], r["grid"], r["noise"], r["seed"], r["method"]) for r in trials}
-    for name in args.problems:
-        problem = PROBLEMS[name]
-        sparsity = args.sparsity if args.sparsity is not None else len(problem.target)
+    for name in ["signal"] if signal else args.problems:
+        problem = SIGNAL if signal else PROBLEMS[name]
+        sparsity = args.sparsity if args.sparsity is not None else (3 if signal else len(problem.target))
         methods = [("WSINDy", wsindy, {})] if "WSINDy" in args.methods else []
         for label, module in (("WENDy", wendy), ("WENDy-MLE", wendy_mle)):
             if label in args.methods:
@@ -220,10 +278,20 @@ def run(args):
                 grid, operator_seconds = f"{len(x)}×{len(t)}", 0.
             else:
                 x, t = np.linspace(*problem.xlim, grid), np.linspace(*problem.tlim, grid)
-                u, w_star = problem.solution(x, t), problem.w_star()
+                u, w_star = problem.solution(x, t), problem.w_star(J=7 if signal else 4)
                 start = perf_counter()
                 A = wsindy.build_test_matrices(x, t, problem.alpha, problem.half_widths, args.centers)
                 operator_seconds = perf_counter()-start
+                if signal:
+                    refined = strong_weak(np.linspace(*problem.xlim, 2*grid-1), t)[:, ::2]
+                    dominant = np.zeros_like(w_star)
+                    dominant[STRONG] = w_star[STRONG]
+                    clean = wsindy.WeakSystem(u, A, wsindy.polynomial_dictionary(6), problem.alpha)
+                    config.setdefault("validation", {})[str(grid)] = dict(
+                        relative_grid_refinement_error=float(np.linalg.norm(u-refined)/np.linalg.norm(u)),
+                        relative_weak_term_effect=float(np.linalg.norm(u-strong_weak(x, t, dominant))/np.linalg.norm(u)),
+                        relative_clean_weak_residual=float(np.linalg.norm(clean.R(w_star))/np.linalg.norm(clean.Y_hat)))
+                    (out/"config.json").write_text(json.dumps(config, indent=2))
             for noise in args.noise:
                 for seed in range(args.seeds if noise else 1):
                     key = (name, grid, noise, seed)
@@ -233,7 +301,7 @@ def run(args):
                     U = u+sigma*np.random.default_rng(seed).normal(size=u.shape)
                     start = perf_counter()
                     system = (paper_system(name, U, x, t, args.workers) if paper else
-                              wsindy.WeakSystem(U, A, wsindy.polynomial_dictionary(), problem.alpha))
+                              wsindy.WeakSystem(U, A, wsindy.polynomial_dictionary(6 if signal else 3), problem.alpha))
                     common_seconds = operator_seconds+perf_counter()-start
                     coefficient_scale = system.coefficient_scale if paper else np.ones_like(w_star)
                     fit_sigma = sigma*system.noise_scale if paper else sigma
@@ -260,6 +328,16 @@ def run(args):
                                    status=result.message, iterations=result.iterations, fit_seconds=result.seconds,
                                    total_seconds=common_seconds+result.seconds, w=json.dumps(estimate.tolist()),
                                    selected_terms=json.dumps(np.flatnonzero(np.abs(result.w) > 1e-12).tolist()))
+                        if signal:
+                            strong_error = np.linalg.norm((estimate-w_star)[STRONG])/np.linalg.norm(w_star[STRONG])
+                            dominant = np.zeros_like(estimate)
+                            selected = np.argsort(np.abs(estimate))[-3:]
+                            dominant[selected] = estimate[selected]
+                            target = np.zeros_like(w_star)
+                            target[STRONG] = w_star[STRONG]
+                            row.update(support_metrics(dominant if np.isfinite(estimate).all() else estimate, target),
+                                       strong_error=float(strong_error) if np.isfinite(strong_error) else float("inf"),
+                                       selected_strong=json.dumps(np.flatnonzero(np.abs(dominant) > 1e-12).tolist()))
                         trials.append(row)
                         save_csv(out/"trials.csv", [row], append=True)
                         completed.add((*key, method))
@@ -272,7 +350,7 @@ def run(args):
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--setup", choices=["paper", "legacy"], default="paper")
+    parser.add_argument("--setup", choices=["paper", "legacy", "signal"], default="paper")
     parser.add_argument("--methods", nargs="+", choices=["WSINDy", "WENDy", "WENDy-MLE"], default=["WSINDy", "WENDy", "WENDy-MLE"])
     parser.add_argument("--problems", nargs="+", choices=list(PROBLEMS), default=list(PROBLEMS))
     parser.add_argument("--grids", nargs="+", type=int, default=[256])
