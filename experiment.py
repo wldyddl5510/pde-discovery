@@ -131,27 +131,47 @@ def support_metrics(w, w_star):
                 tpr=tp/(tp+fp+fn) if tp+fp+fn else 1.)
 
 
-def write_tables(out, trials, paper=False):
+def comparison_tables(trials, paper=False):
+    """One table per noise level, with methods as columns."""
     aggregate = np.mean if paper else np.median
-    lines = ["# Results", "", "Support and optimizer completion are counts; time is median seconds.",
-             f"E₂ and E∞ are relative errors ({'mean' if paper else 'median'} over seeds), not percentages.",
-             "Failed fits are included; inf denotes a nonfinite error; — means unavailable. L1 labels give α in λ=αλ_ref.", ""]
-    groups = {}
-    for row in trials:
-        groups.setdefault((row["problem"], row["grid"], row["noise"]), {}).setdefault(row["method"], []).append(row)
-    for (problem, grid, noise), methods in sorted(groups.items()):
-        lines += [f"## {'KdV' if problem == 'kdv' else 'Burgers'} · {grid} · {100*noise:g}% noise", "",
-                  "| Method | Support | E₂ | E∞ | Time (s) | Optimizer |",
-                  "|---|---:|---:|---:|---:|---:|"]
-        for method in sorted(methods, key=lambda m: ("MLE" in m, m != "WSINDy", "L1" in m, float(m.split("=")[-1]) if "=" in m else 0)):
-            rows = methods[method]
-            n = len(rows)
-            e2, einf = (aggregate([r.get(key, np.nan) for r in rows]) for key in ("coefficient_error", "coefficient_linf"))
-            einf = "—" if np.isnan(einf) else f"{einf:.3g}"
-            support, success = (sum(r[key] for r in rows) for key in ("support_exact", "optimizer_success"))
-            seconds = np.median([r["total_seconds"] for r in rows])
-            lines.append(f"| {method} | {support}/{n} | {e2:.3g} | {einf} | {seconds:.4g} | {success}/{n} |")
+    methods = sorted({r["method"] for r in trials}, key=lambda m:
+                     ("MLE" in m, m != "WSINDy", "L1" in m, float(m.split("=")[-1]) if "=" in m else 0))
+    labels = [m.replace("WENDy-MLE", "MLE").replace("WENDy", "W").replace(" L1=", ":").replace(" HT", "-HT")
+              for m in methods]
+    lines = []
+    for noise in sorted({r["noise"] for r in trials}):
+        lines += [f"## Noise {100*noise:g}%", "", "| PDE / metric | " + " | ".join(labels) + " |",
+                  "|---|" + "---:|"*len(methods)]
+        for problem, grid in sorted({(r["problem"], r["grid"]) for r in trials}):
+            groups = [[r for r in trials if (r["problem"], r["grid"], r["noise"], r["method"]) ==
+                       (problem, grid, noise, method)] for method in methods]
+            title = "KdV" if problem == "kdv" else "Burgers"
+            if len({r["grid"] for r in trials if r["problem"] == problem}) > 1:
+                title += f" ({grid})"
+            for metric, key in (("E∞", "coefficient_linf"), ("E₂", "coefficient_error"),
+                                ("Support", "support_exact"), ("Time (s)", "total_seconds"),
+                                ("Optimizer", "optimizer_success")):
+                values = []
+                for rows in groups:
+                    if not rows or key not in rows[0]:
+                        value = "—"
+                    elif key in ("support_exact", "optimizer_success"):
+                        value = f"{sum(r[key] for r in rows)}/{len(rows)}"
+                    else:
+                        average = np.median if key == "total_seconds" else aggregate
+                        value = format(average([r[key] for r in rows]), ".4g" if key == "total_seconds" else ".3g")
+                    values.append(value)
+                lines.append(f"| {title} · {metric} | " + " | ".join(values) + " |")
         lines.append("")
+    return lines
+
+
+def write_tables(out, trials, paper=False):
+    lines = ["# Results", "", "W = WENDy; MLE = WENDy-MLE; W:α / MLE:α use L1 penalty λ=αλ_ref.",
+             "Support and optimizer completion are counts; time is median seconds.",
+             f"E₂ and E∞ are relative errors ({'mean' if paper else 'median'} over seeds), not percentages.",
+             "Failed fits are included; inf denotes a nonfinite error; — means unavailable.", ""]
+    lines += comparison_tables(trials, paper)
     lines += ["E₂ = ‖ŵ−w★‖₂/‖w★‖₂; E∞ = max relative error on true nonzero terms.",
               "Noise = σ/RMS(clean u). Time includes weak-form assembly and fitting, excluding data generation and file writing.",
               "Settings: [config.json](config.json). Raw fits: [trials.csv](trials.csv).", ""]
@@ -172,7 +192,8 @@ def run(args):
         config["l1_evaluation"] = "direct residual"
     if args.resume:
         previous = json.loads((out/"config.json").read_text())
-        changed = [k for k in config if k != "output" and config[k] != previous.get(k)]
+        changed = [k for k in config if k != "output" and config[k] != previous.get(k)
+                   and not (k == "l1" and set(previous[k]) <= set(config[k]))]
         if changed:
             raise ValueError("Cannot resume changed settings: "+", ".join(changed))
         trials = load_csv(out/"trials.csv")
@@ -237,10 +258,8 @@ def run(args):
                         trials.append(row)
                         save_csv(out/"trials.csv", [row], append=True)
                         completed.add((*key, method))
-                    if seed == 0 or (seed+1)%25 == 0 or seed == args.seeds-1:
-                        current = [r for r in trials if (r["problem"], r["grid"], r["noise"], r["seed"]) == key]
-                        print(f"{name} grid={grid} noise={noise:g} seed={seed}: " + ", ".join(
-                            f"{r['method']} error={r['coefficient_error']:.3g}" for r in current), flush=True)
+                        print(f"{name} noise={noise:g} seed={seed} {method}: E2={error:.3g}, "
+                              f"{result.seconds:.1f}s, success={result.success}", flush=True)
     write_tables(out, trials, paper)
     print(f"Saved {len(trials)} fits and summary.md to {out}")
     return trials

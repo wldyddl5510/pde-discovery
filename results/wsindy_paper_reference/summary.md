@@ -1,68 +1,84 @@
 # Results
 
+W = WENDy; MLE = WENDy-MLE; W:α / MLE:α use L1 penalty λ=αλ_ref.
 Support and optimizer completion are counts; time is median seconds.
 E₂ and E∞ are relative errors (mean over seeds), not percentages.
-Failed fits are included; inf denotes a nonfinite error; — means unavailable. L1 labels give α in λ=αλ_ref.
+Failed fits are included; inf denotes a nonfinite error; — means unavailable.
 
-## Burgers · 256×256 · 0% noise
+## Noise 0%
 
-| Method | Support | E₂ | E∞ | Time (s) | Optimizer |
-|---|---:|---:|---:|---:|---:|
-| WSINDy | 1/1 | 4.31e-05 | 4.31e-05 | 0.03524 | 1/1 |
+| PDE / metric | WSINDy |
+|---|---:|
+| Burgers · E∞ | 4.31e-05 |
+| Burgers · E₂ | 4.31e-05 |
+| Burgers · Support | 1/1 |
+| Burgers · Time (s) | 0.03524 |
+| Burgers · Optimizer | 1/1 |
+| KdV · E∞ | 3.14e-07 |
+| KdV · E₂ | 2.84e-07 |
+| KdV · Support | 1/1 |
+| KdV · Time (s) | 0.1125 |
+| KdV · Optimizer | 1/1 |
 
-## Burgers · 256×256 · 10% noise
+## Noise 10%
 
-| Method | Support | E₂ | E∞ | Time (s) | Optimizer |
-|---|---:|---:|---:|---:|---:|
-| WSINDy | 199/200 | 0.173 | 0.00227 | 0.03903 | 200/200 |
+| PDE / metric | WSINDy |
+|---|---:|
+| Burgers · E∞ | 0.00227 |
+| Burgers · E₂ | 0.173 |
+| Burgers · Support | 199/200 |
+| Burgers · Time (s) | 0.03903 |
+| Burgers · Optimizer | 200/200 |
+| KdV · E∞ | 0.014 |
+| KdV · E₂ | 0.0125 |
+| KdV · Support | 198/200 |
+| KdV · Time (s) | 0.1322 |
+| KdV · Optimizer | 200/200 |
 
-## Burgers · 256×256 · 20% noise
+## Noise 20%
 
-| Method | Support | E₂ | E∞ | Time (s) | Optimizer |
-|---|---:|---:|---:|---:|---:|
-| WSINDy | 200/200 | 0.00423 | 0.00423 | 0.03955 | 200/200 |
+| PDE / metric | WSINDy |
+|---|---:|
+| Burgers · E∞ | 0.00423 |
+| Burgers · E₂ | 0.00423 |
+| Burgers · Support | 200/200 |
+| Burgers · Time (s) | 0.03955 |
+| Burgers · Optimizer | 200/200 |
+| KdV · E∞ | 0.018 |
+| KdV · E₂ | 0.0161 |
+| KdV · Support | 198/200 |
+| KdV · Time (s) | 0.1329 |
+| KdV · Optimizer | 200/200 |
 
-## Burgers · 256×256 · 50% noise
+## Noise 50%
 
-| Method | Support | E₂ | E∞ | Time (s) | Optimizer |
-|---|---:|---:|---:|---:|---:|
-| WSINDy | 200/200 | 0.0107 | 0.0107 | 0.04022 | 200/200 |
+| PDE / metric | WSINDy |
+|---|---:|
+| Burgers · E∞ | 0.0107 |
+| Burgers · E₂ | 0.0107 |
+| Burgers · Support | 200/200 |
+| Burgers · Time (s) | 0.04022 |
+| Burgers · Optimizer | 200/200 |
+| KdV · E∞ | 0.0551 |
+| KdV · E₂ | 0.19 |
+| KdV · Support | 188/200 |
+| KdV · Time (s) | 0.1338 |
+| KdV · Optimizer | 200/200 |
 
-## Burgers · 256×256 · 100% noise
+## Noise 100%
 
-| Method | Support | E₂ | E∞ | Time (s) | Optimizer |
-|---|---:|---:|---:|---:|---:|
-| WSINDy | 197/200 | 0.0565 | 0.0235 | 0.04053 | 200/200 |
-
-## KdV · 400×601 · 0% noise
-
-| Method | Support | E₂ | E∞ | Time (s) | Optimizer |
-|---|---:|---:|---:|---:|---:|
-| WSINDy | 1/1 | 2.84e-07 | 3.14e-07 | 0.1125 | 1/1 |
-
-## KdV · 400×601 · 10% noise
-
-| Method | Support | E₂ | E∞ | Time (s) | Optimizer |
-|---|---:|---:|---:|---:|---:|
-| WSINDy | 198/200 | 0.0125 | 0.014 | 0.1322 | 200/200 |
-
-## KdV · 400×601 · 20% noise
-
-| Method | Support | E₂ | E∞ | Time (s) | Optimizer |
-|---|---:|---:|---:|---:|---:|
-| WSINDy | 198/200 | 0.0161 | 0.018 | 0.1329 | 200/200 |
-
-## KdV · 400×601 · 50% noise
-
-| Method | Support | E₂ | E∞ | Time (s) | Optimizer |
-|---|---:|---:|---:|---:|---:|
-| WSINDy | 188/200 | 0.19 | 0.0551 | 0.1338 | 200/200 |
-
-## KdV · 400×601 · 100% noise
-
-| Method | Support | E₂ | E∞ | Time (s) | Optimizer |
-|---|---:|---:|---:|---:|---:|
-| WSINDy | 192/200 | 0.107 | 0.0788 | 0.1344 | 200/200 |
+| PDE / metric | WSINDy |
+|---|---:|
+| Burgers · E∞ | 0.0235 |
+| Burgers · E₂ | 0.0565 |
+| Burgers · Support | 197/200 |
+| Burgers · Time (s) | 0.04053 |
+| Burgers · Optimizer | 200/200 |
+| KdV · E∞ | 0.0788 |
+| KdV · E₂ | 0.107 |
+| KdV · Support | 192/200 |
+| KdV · Time (s) | 0.1344 |
+| KdV · Optimizer | 200/200 |
 
 E₂ = ‖ŵ−w★‖₂/‖w★‖₂; E∞ = max relative error on true nonzero terms.
 Noise = σ/RMS(clean u). Time includes weak-form assembly and fitting, excluding data generation and file writing.
