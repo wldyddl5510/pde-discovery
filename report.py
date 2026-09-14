@@ -19,26 +19,27 @@ def main():
         config["seeds"] if noise else 1 for noise in config["noise"])
     problems = {"burgers": "Burgers", "kdv": "KdV"}
     lines = ["# PDE recovery", "",
-             "Burgers 256×256; KdV 400×601; 43 candidate terms. Planned repeats: 1 at 0% noise, 3 at 20% noise.",
+             "Burgers 256×256; KdV 400×601; 43 candidate terms. Repeats: 1 at 0% noise, 3 at 20% noise.",
              "W = WENDy; MLE = WENDy-MLE. W:α / MLE:α use λ=αλ_ref; HT keeps the known number of terms.",
              "Errors are mean relative errors, not %. Support / optimizer are counts; time is median seconds.", ""]
     lines += comparison_tables(comparison, paper=True)
     if len(comparison) < expected:
-        lines.insert(2, f"**Saved fits: {len(comparison)}/{expected}. The corrected sweep is running; cells use completed fits only. — means unavailable.**\n")
+        lines.insert(2, f"**Saved fits: {len(comparison)}/{expected}. The corrected sweep is incomplete; cells use completed fits only. — means unavailable.**\n")
+    else:
+        failed = sum(not r["optimizer_success"] for r in comparison)
+        timeouts = sum(r["status"] == "Time limit" for r in comparison)
+        lines.insert(2, f"**{len(comparison)}/{expected} trials recorded. {failed} failed convergence checks, including {timeouts} timeouts.**\n")
     lines += ["E₂ = ‖ŵ−w★‖₂/‖w★‖₂; E∞ = max relative error on true nonzero terms.",
-              "Failed fits remain included; inf = nonfinite error. Optimizer completion does not imply recovery.",
+              "Failed fits are included. Optimizer completion does not imply support recovery.",
+              "Time includes weak-form assembly and fitting. Budget: 300 iterations / 200 s per fit; known σ, tol=1e-8.",
+              "WENDy uses 52 / 200 SVD test equations (Burgers / KdV); WSINDy uses 784 / 1443.",
+              "Data, windows, candidates, seeds, and α match the previous run; the WENDy test basis and λ_ref change.",
               "[WSINDy Table 5](https://arxiv.org/html/2007.02848v3#S5.T5): noiseless E∞ = 4.3e-5 (Burgers), 3.1e-7 (KdV).", "",
               "![WSINDy coefficient errors versus noise](coefficient_error.png)", "",
-              "Existing WSINDy noise sweep: mean errors over 200 seeds per positive noise level, following Figure 6.",
-              "WENDy variants were tested only at 0% and 20%; the figure shows our WSINDy measurements.", "",
-              "Corrected solvers: known σ, maxiter=300, tol=1e-8; 200 s per fit. Timeouts are failures.",
-              "WENDy tests use SVD orthonormalization: 52 equations for Burgers, 200 for KdV; WSINDy retains 784 / 1443.",
-              "The data, windows, 43 candidates, noise seeds, and α grid match the previous comparison; the test basis and λ_ref change.",
-              "Runtime: Apple M4 / Python, FFT up to 4 threads, BLAS 1; includes test-basis preparation and failed fits, excludes data generation and file writing.",
-              "Rescaling follows author code (−1/5), differing from printed Eq. 4.8 (−1/6).", "",
+              "Existing WSINDy sweep: 200 seeds per positive noise level. WENDy variants were tested at 0% and 20% only.", "",
               "[Corrected fits](paper_method_corrected/summary.md) · [Previous fits](paper_method_comparison/summary.md) ·",
               "[Implementation checks](implementation_check.md) ·",
-              "[WSINDy sweep](wsindy_paper_reference/summary.md) · [legacy baseline](selection_comparison/summary.md).", ""]
+              "[WSINDy sweep](wsindy_paper_reference/summary.md).", ""]
     (root / "paper_comparison.md").write_text("\n".join(lines))
 
     with plt.rc_context({"font.size": 11, "axes.spines.top": False, "axes.spines.right": False}):
@@ -58,6 +59,9 @@ def main():
         fig.savefig(root / "coefficient_error.pdf")
         plt.close(fig)
     write_tables(root / "paper_method_corrected", comparison, paper=True)
+    if len(comparison) < expected:
+        summary = root / "paper_method_corrected/summary.md"
+        summary.write_text(summary.read_text().replace("# Results\n", f"# Results\n\n**Incomplete: {len(comparison)}/{expected} fits saved.**\n", 1))
 
 
 if __name__ == "__main__":

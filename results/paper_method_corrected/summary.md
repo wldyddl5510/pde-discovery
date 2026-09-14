@@ -1,10 +1,9 @@
-# PDE recovery
+# Results
 
-**104/104 trials recorded. 34 failed convergence checks, including 19 timeouts.**
-
-Burgers 256×256; KdV 400×601; 43 candidate terms. Repeats: 1 at 0% noise, 3 at 20% noise.
-W = WENDy; MLE = WENDy-MLE. W:α / MLE:α use λ=αλ_ref; HT keeps the known number of terms.
-Errors are mean relative errors, not %. Support / optimizer are counts; time is median seconds.
+W = WENDy; MLE = WENDy-MLE; W:α / MLE:α use L1 penalty λ=αλ_ref.
+Support and optimizer completion are counts; time is median seconds.
+E₂ and E∞ are relative errors (mean over seeds), not percentages.
+Failed fits are included; inf denotes a nonfinite error; — means unavailable.
 
 ## Noise 0%
 
@@ -37,16 +36,5 @@ Errors are mean relative errors, not %. Support / optimizer are counts; time is 
 | KdV · Optimizer | 3/3 | 3/3 | 3/3 | 3/3 | 3/3 | 3/3 | 3/3 | 0/3 | 0/3 | 0/3 | 0/3 | 0/3 | 1/3 |
 
 E₂ = ‖ŵ−w★‖₂/‖w★‖₂; E∞ = max relative error on true nonzero terms.
-Failed fits are included. Optimizer completion does not imply support recovery.
-Time includes weak-form assembly and fitting. Budget: 300 iterations / 200 s per fit; known σ, tol=1e-8.
-WENDy uses 52 / 200 SVD test equations (Burgers / KdV); WSINDy uses 784 / 1443.
-Data, windows, candidates, seeds, and α match the previous run; the WENDy test basis and λ_ref change.
-[WSINDy Table 5](https://arxiv.org/html/2007.02848v3#S5.T5): noiseless E∞ = 4.3e-5 (Burgers), 3.1e-7 (KdV).
-
-![WSINDy coefficient errors versus noise](coefficient_error.png)
-
-Existing WSINDy sweep: 200 seeds per positive noise level. WENDy variants were tested at 0% and 20% only.
-
-[Corrected fits](paper_method_corrected/summary.md) · [Previous fits](paper_method_comparison/summary.md) ·
-[Implementation checks](implementation_check.md) ·
-[WSINDy sweep](wsindy_paper_reference/summary.md).
+Noise = σ/RMS(clean u). Time includes weak-form assembly and fitting, excluding data generation and file writing.
+Settings: [config.json](config.json). Raw fits: [trials.csv](trials.csv).
