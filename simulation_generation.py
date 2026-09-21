@@ -31,6 +31,11 @@ class SimulationData:
 
 # The mixed derivative in div(D grad(u**2)) has coefficient 2 * D[0, 1].
 _POROUS_MEDIUM_DIFFUSION = ((0.3, -0.4), (-0.4, 1.0))
+_POROUS_MEDIUM_DIFFUSION_3D = (
+    (0.3, -0.1, 0.05),
+    (-0.1, 0.7, -0.08),
+    (0.05, -0.08, 1.0),
+)
 
 
 def anisotropic_porous_medium_solution(x, y, t) -> np.ndarray:
@@ -65,6 +70,41 @@ def anisotropic_porous_medium_solution(x, y, t) -> np.ndarray:
     sqrt_time = np.sqrt(t)
     profile = normalization - quadratic_form / (16.0 * sqrt_time)
     return np.maximum(profile, 0.0) / sqrt_time
+
+
+def anisotropic_porous_medium_solution_3d(x, y, z, t) -> np.ndarray:
+    """Evaluate the mass-one 3D Barenblatt weak solution for t > 0.
+
+    For u_t = div(D grad(u**2)), the 3D similarity exponents are 3/5 and
+    1/5. With q = (x,y,z) D^{-1} (x,y,z)^T, the solution is
+
+        u = t**(-3/5) * max(C - q / (20 * t**(2/5)), 0).
+
+    Integrating the ellipsoidal profile gives mass
+    sqrt(det(D)) * (8*pi/15) * 20**(3/2) * C**(5/2), which fixes C.
+    The moving front is nonsmooth; the PDE holds there in the weak sense.
+    """
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    z = np.asarray(z, dtype=float)
+    t = np.asarray(t, dtype=float)
+    if not np.all(np.isfinite(t)) or np.any(t <= 0):
+        raise ValueError("The Barenblatt solution requires finite times t > 0.")
+
+    diffusion = np.array(_POROUS_MEDIUM_DIFFUSION_3D)
+    inverse_diffusion = np.linalg.inv(diffusion)
+    determinant = np.linalg.det(diffusion)
+    normalization = (15.0 / (8.0 * np.pi * 20.0**1.5 * np.sqrt(determinant)))**0.4
+    quadratic_form = (
+        inverse_diffusion[0, 0] * x**2
+        + inverse_diffusion[1, 1] * y**2
+        + inverse_diffusion[2, 2] * z**2
+        + 2.0 * inverse_diffusion[0, 1] * x * y
+        + 2.0 * inverse_diffusion[0, 2] * x * z
+        + 2.0 * inverse_diffusion[1, 2] * y * z
+    )
+    profile = normalization - quadratic_form / (20.0 * t**0.4)
+    return np.maximum(profile, 0.0) / t**0.6
 
 
 def add_gaussian_noise(
@@ -138,6 +178,56 @@ def generate_anisotropic_porous_medium(
     return SimulationData(
         name="anisotropic_porous_medium",
         spatial_grid=(x, y),
+        time=time,
+        u_true=u_true,
+        u_observed=u_observed,
+        noise_std=noise_std,
+        true_coefficients=true_coefficients,
+    )
+
+
+def generate_anisotropic_porous_medium_3d(
+    *,
+    nx: int = 32,
+    ny: int = 32,
+    nz: int = 32,
+    nt: int = 16,
+    x_bounds: tuple[float, float] = (-5.0, 5.0),
+    y_bounds: tuple[float, float] = (-5.0, 5.0),
+    z_bounds: tuple[float, float] = (-5.0, 5.0),
+    time_bounds: tuple[float, float] = (0.5, 2.5),
+    noise_ratio: float = 0.0,
+    seed: int | None = None,
+) -> SimulationData:
+    """Generate a separate 3D anisotropic porous-medium experiment.
+
+    D is fixed, symmetric positive definite, and has three nonzero mixed
+    entries. The default domain contains the exact solution's support at
+    every observation time. Custom bounds change only the observation
+    window, as in the 2D generator. No numerical time stepping is used.
+    """
+    x = _uniform_grid(x_bounds, nx, "x")
+    y = _uniform_grid(y_bounds, ny, "y")
+    z = _uniform_grid(z_bounds, nz, "z")
+    time = _uniform_grid(time_bounds, nt, "time")
+    u_true = anisotropic_porous_medium_solution_3d(
+        x[:, None, None, None], y[None, :, None, None],
+        z[None, None, :, None], time[None, None, None, :],
+    )
+    u_observed, noise_std = add_gaussian_noise(u_true, noise_ratio, seed)
+
+    diffusion = _POROUS_MEDIUM_DIFFUSION_3D
+    true_coefficients = {
+        ((2, 0, 0), 2): diffusion[0][0],
+        ((1, 1, 0), 2): 2.0 * diffusion[0][1],
+        ((1, 0, 1), 2): 2.0 * diffusion[0][2],
+        ((0, 2, 0), 2): diffusion[1][1],
+        ((0, 1, 1), 2): 2.0 * diffusion[1][2],
+        ((0, 0, 2), 2): diffusion[2][2],
+    }
+    return SimulationData(
+        name="anisotropic_porous_medium_3d",
+        spatial_grid=(x, y, z),
         time=time,
         u_true=u_true,
         u_observed=u_observed,

@@ -6,7 +6,9 @@ import numpy as np
 
 from simulation_generation import (
     anisotropic_porous_medium_solution,
+    anisotropic_porous_medium_solution_3d,
     generate_anisotropic_porous_medium,
+    generate_anisotropic_porous_medium_3d,
 )
 
 
@@ -136,6 +138,96 @@ class PorousMediumTests(unittest.TestCase):
             with self.subTest(settings=settings):
                 with self.assertRaises(ValueError):
                     generate_anisotropic_porous_medium(**settings)
+
+
+class PorousMedium3DTests(unittest.TestCase):
+    def test_grid_coefficients_boundary_and_noise(self):
+        data = generate_anisotropic_porous_medium_3d(nx=25, ny=27, nz=29, nt=5, noise_ratio=1, seed=7)
+        self.assertEqual(data.name, "anisotropic_porous_medium_3d")
+        self.assertEqual(data.u_true.shape, (25, 27, 29, 5))
+        self.assertEqual(data.true_coefficients, {
+            ((2, 0, 0), 2): 0.3, ((1, 1, 0), 2): -0.2, ((1, 0, 1), 2): 0.1,
+            ((0, 2, 0), 2): 0.7, ((0, 1, 1), 2): -0.16, ((0, 0, 2), 2): 1.0,
+        })
+        for axis, grid in enumerate(data.spatial_grid):
+            np.testing.assert_array_equal(grid[[0, -1]], [-5, 5])
+            self.assertTrue(np.all(np.take(data.u_true, [0, -1], axis=axis) == 0))
+        self.assertTrue(np.any(data.u_true > 0))
+        self.assertTrue(np.all(data.u_true >= 0))
+        self.assertAlmostEqual(data.noise_std, np.sqrt(np.mean(data.u_true**2)))
+        repeated = generate_anisotropic_porous_medium_3d(nx=25, ny=27, nz=29, nt=5, noise_ratio=1, seed=7)
+        np.testing.assert_array_equal(data.u_observed, repeated.u_observed)
+        for settings in ({"nz": 1}, {"z_bounds": (5, -5)}, {"time_bounds": (0, 1)}):
+            with self.subTest(settings=settings), self.assertRaises(ValueError):
+                generate_anisotropic_porous_medium_3d(**settings)
+
+    def test_unit_mass_under_grid_refinement(self):
+        errors = []
+        for size in (65, 129):
+            data = generate_anisotropic_porous_medium_3d(nx=size, ny=size, nz=size, nt=3)
+            mass = data.u_true
+            for grid in data.spatial_grid:
+                mass = np.trapezoid(mass, grid, axis=0)
+            errors.append(np.max(np.abs(mass - 1)))
+        self.assertLess(errors[1], 1e-4)
+        self.assertLess(errors[1], errors[0] / 3)
+
+    def test_pointwise_pde_with_all_mixed_derivatives(self):
+        u = anisotropic_porous_medium_solution_3d
+        coordinates = np.array([[0.1, 0.4, -0.3], [0.2, -0.1, 0.2], [-0.1, 0.3, 0.1]])
+        t = np.array([0.6, 1.0, 2.0])
+        coefficients = generate_anisotropic_porous_medium_3d(nx=3, ny=3, nz=3, nt=2).true_coefficients
+        errors = []
+        for h in (0.02, 0.01):
+            dt = h**2
+            lhs = (u(*coordinates, t + dt) - u(*coordinates, t - dt)) / (2 * dt)
+            center = u(*coordinates, t)**2
+            rhs = np.zeros_like(t)
+            for (derivative, power), coefficient in coefficients.items():
+                axes = np.flatnonzero(derivative)
+                if len(axes) == 1:
+                    shift = np.zeros_like(coordinates)
+                    shift[axes[0]] = h
+                    value = (u(*(coordinates + shift), t)**2 - 2*center + u(*(coordinates - shift), t)**2) / h**2
+                else:
+                    value = np.zeros_like(t)
+                    for first in (-1, 1):
+                        for second in (-1, 1):
+                            shifted = coordinates.copy()
+                            shifted[axes[0]] += first * h
+                            shifted[axes[1]] += second * h
+                            value += first * second * u(*shifted, t)**2 / (4*h**2)
+                rhs += coefficient * value
+            errors.append(np.max(np.abs(lhs - rhs)))
+        self.assertLess(errors[1], 6e-5)
+        self.assertLess(errors[1], 0.3 * errors[0])
+
+    def test_weak_pde_across_the_moving_front(self):
+        errors = []
+        for size, nt in ((65, 33), (129, 65)):
+            grid = np.linspace(-5, 5, size)
+            time = np.linspace(0.5, 2.5, nt)
+            x, y, z = grid[:, None, None], grid[None, :, None], grid[None, None, :]
+            bx, dx, dxx = bump_derivatives(x, radius=4)
+            by, dy, dyy = bump_derivatives(y, radius=4)
+            bz, dz, dzz = bump_derivatives(z, radius=4)
+            bt, dt, _ = bump_derivatives(time - 1.5, radius=1)
+            weights = trapezoid_weights(grid)
+            volume_weights = weights[:, None, None] * weights[None, :, None] * weights[None, None, :]
+            spatial_test = bx * by * bz * volume_weights
+            rhs_test = (
+                0.3*dxx*by*bz - 0.2*dx*dy*bz + 0.1*dx*by*dz
+                + 0.7*bx*dyy*bz - 0.16*bx*dy*dz + bx*by*dzz
+            ) * volume_weights
+            lhs, rhs = 0.0, 0.0
+            # Integrate one time slice at a time to bound the test's memory use.
+            for index, (t, weight) in enumerate(zip(time, trapezoid_weights(time))):
+                value = anisotropic_porous_medium_solution_3d(x, y, z, t)
+                lhs -= dt[index] * weight * np.sum(spatial_test * value)
+                rhs += bt[index] * weight * np.sum(rhs_test * value**2)
+            errors.append(abs(lhs - rhs) / abs(rhs))
+        self.assertLess(errors[1], 2e-4)
+        self.assertLess(errors[1], errors[0] / 3)
 
 
 if __name__ == "__main__":

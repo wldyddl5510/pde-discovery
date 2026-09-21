@@ -42,6 +42,19 @@ coefficient: `((1, 1), 2)` means `d_xy(u^2)`. Unlisted terms have coefficient ze
 This ground-truth mapping is for evaluation; it does not restrict the library
 used by an estimator. Additional experiments can reuse `add_gaussian_noise`.
 
+For three spatial dimensions, use the separate
+`generate_anisotropic_porous_medium_3d(nx=32, ny=32, nz=32, nt=16, noise_ratio=1, seed=0)`
+generator. It returns arrays in `(x, y, z, t)` order on `[-5,5]^3` and `[0.5,2.5]`.
+`anisotropic_porous_medium_solution_3d(x, y, z, t)` evaluates its exact mass-one
+Barenblatt weak solution at arbitrary broadcastable coordinates. The diffusion
+matrix, exact formula, and measured results are recorded in [results.md](results.md).
+The same estimators accept this data directly; their full 3D library has 55
+spatial derivative operators and 5 polynomial powers, hence 275 coefficients.
+Weak-method `half_widths`, `strides`, and `test_degrees` each need four entries,
+in `(x, y, z, t)` order. `experiments.py --instance anisotropic_porous_medium_3d`
+selects this generator; `--nz` controls its third spatial axis. Use `--append`
+to preserve existing results when writing another experiment to the same report.
+
 ## SINDy
 
 ```python
@@ -364,7 +377,7 @@ Additional controls are `--wendy-rho-1`, `--wendy-mle-rho-1`, `--wendy-alpha`,
 `--disable-normality-stop`, `--thresholds`, `--half-widths`, `--strides`, and
 `--test-degrees`. The chosen settings are included in generated reports and
 their reproduction commands. Reports are written to `--output` (default:
-`results.md`), replacing that file.
+`results.md`), replacing that file unless `--append` is supplied.
 
 MLE has separate solver controls, `--mle-max-iter=1000` and `--mle-tol=1e-6`;
 `--max-iter` and `--tol` control the other estimators. Optional

@@ -21,6 +21,34 @@ def arguments(*options):
 
 
 class ExperimentTests(unittest.TestCase):
+    def test_3d_dispatch_and_appended_report(self):
+        args = arguments("--instance", "anisotropic_porous_medium_3d", "--nz", "18",
+                         "--methods", "wsindy-ols", "--noise-ratios", "0",
+                         "--strides", "2", "2", "2", "1", "--append")
+        with patch.object(experiments, "wsindy", return_value=np.zeros(275)) as estimator:
+            with contextlib.redirect_stdout(io.StringIO()):
+                results = experiments.run_experiments(args)
+        self.assertEqual(estimator.call_args.args[0].shape, (16, 16, 18, 12))
+        self.assertEqual(estimator.call_args.kwargs["strides"], [2, 2, 2, 1])
+        self.assertAlmostEqual(results[0]["wsindy-ols"]["squared_error"], 1.6556)
+        with tempfile.TemporaryDirectory() as directory:
+            args.output = Path(directory) / "results.md"
+            args.output.write_text("Previous 2D measurements.\n")
+            experiments.write_report(args, results)
+            report = args.output.read_text()
+        self.assertTrue(report.startswith("Previous 2D measurements.\n"))
+        for text in ("**n = 55,296**", "**K = 480**", "**S = 55**", "**J = 5**",
+                     "all 275 coefficients", "[-1,1]^4", "r_z", "--nz 18", "1.655600e+00"):
+            self.assertIn(text, report)
+
+    def test_dimension_specific_defaults_and_weak_axis_counts(self):
+        with patch("sys.argv", ["experiments.py", "--instance", "anisotropic_porous_medium_3d"]):
+            args = experiments.parse_arguments()
+        self.assertEqual((args.nx, args.ny, args.nz, args.nt), (32, 32, 32, 16))
+        for options in (("--nz", "32"), ("--instance", "anisotropic_porous_medium_3d", "--strides", "4", "4", "1")):
+            with self.subTest(options=options), contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+                arguments(*options)
+
     def test_noiseless_mle_is_skipped_and_positive_noise_is_fitted(self):
         args = arguments("--methods", "wendy-mle-lasso")
         with patch.object(experiments, "wendy_mle", return_value=np.zeros(100)) as estimator:

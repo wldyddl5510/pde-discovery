@@ -5,10 +5,36 @@ import unittest
 import numpy as np
 
 from methods import build_wsindy_system, polynomial_library_terms, wsindy
-from simulation_generation import generate_anisotropic_porous_medium
+from simulation_generation import generate_anisotropic_porous_medium, generate_anisotropic_porous_medium_3d
 
 
 class WsindyTests(unittest.TestCase):
+    def test_3d_porous_medium_residual_under_grid_refinement(self):
+        errors = []
+        for refinement in (1, 2):
+            size = 31 * refinement + 1
+            nt = 15 * refinement + 1
+            data = generate_anisotropic_porous_medium_3d(nx=size, ny=size, nz=size, nt=nt)
+            # Same physical tests and centers as the 32^3 x 16 benchmark.
+            # Only the integration grid is refined. The smaller diagnostic
+            # library includes every nonzero truth term; this is not a fit.
+            X, target = build_wsindy_system(
+                data.u_true, data.spatial_grid, data.time,
+                max_derivative_order=2, max_polynomial_degree=2,
+                half_widths=tuple(refinement * m for m in (8, 8, 8, 4)),
+                strides=tuple(refinement * s for s in (4, 4, 4, 1)),
+                test_degrees=(16, 16, 16, 28),
+            )
+            truth = np.array([
+                data.true_coefficients.get(term, 0.0)
+                for term in polynomial_library_terms(3, 2, 2)
+            ])
+            self.assertEqual(X.shape, (512, 18))
+            errors.append(np.linalg.norm(X @ truth - target) / np.linalg.norm(target))
+        # The front is nonsmooth: check second-order convergence rather than
+        # treating either finite observation grid as an exact integral.
+        self.assertLess(errors[1], errors[0] / 4)
+
     def test_all_weak_columns_against_continuous_integrals(self):
         # For exp(a*x+b*y+c*t), every strong derivative is known exactly.
         # Independently integrate phi times that derivative using Gauss

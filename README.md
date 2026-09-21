@@ -15,9 +15,12 @@ python -m pip install -r requirements.txt
 OPENBLAS_NUM_THREADS=1 python experiments.py --max-iter 200000 --output results.md
 ```
 
+For 3D porous medium, add `--instance anisotropic_porous_medium_3d --strides 4 4 4 1`.
+Add `--append` to preserve earlier results. The default five methods exclude WENDy and WENDy-MLE.
+
 Use `python experiments.py --help` for method and experiment options.
 WENDy-MLE requires a positive `noise_std`; see [method details](METHODS.md#wendy-mle).
-The exact command for the recorded comparison is in [results.md](results.md#reproduce).
+The recorded comparisons and reproduction commands are in [results.md](results.md).
 
 Run tests:
 
