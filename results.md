@@ -1,6 +1,8 @@
 # PDE-discovery sanity check
 
-The new [3D comparison](#3d-anisotropic-porous-medium-pde-discovery-sanity-check)
+The latest [3D test-count comparison](#3d-test-function-count-k512-versus-k4096)
+compares K=512 and K=4096 with the same data and test-function support.
+The original [3D comparison](#3d-anisotropic-porous-medium-pde-discovery-sanity-check)
 runs only SINDy (OLS/LASSO) and WSINDy (OLS/LASSO/MSTLS), at noise ratios 0 and 1.
 The earlier 2D measurements below are preserved; they were not rerun for the 3D addition.
 
@@ -368,4 +370,135 @@ python experiments.py --instance anisotropic_porous_medium_3d \
   --max-iter 200000 --tol 1e-08 --output results.md \
   --append \
   --strides 4 4 4 1
+```
+
+---
+
+# 3D test-function count: K=512 versus K=4096
+
+This comparison increases the number of test-function centers from
+`4 * 4 * 4 * 8 = 512` to `8 * 8 * 8 * 8 = 4096`. The function shape and
+physical support are fixed. All five SINDy/WSINDy methods were run at K=4096;
+WENDy and WENDy-MLE remain excluded. The K=512 rows retain the earlier measurements.
+
+## Controlled settings
+
+- Same 3D PDE, exact reference solution, and six nonzero true coefficients as in
+  the preceding experiment; `||beta_true||_2^2 = 1.6556`.
+- Same observation grid `(32,32,32,16)` on `[-5,5]^3 x [0.5,2.5]`:
+  **n = 524,288**, at noise ratios 0 and 1, using the same noise realization
+  with seed 0. At noise ratio 1, `noise_std = 0.0091765492`.
+- Same library: maximum total spatial derivative order 5, **S = 55**, **J = 5**,
+  and **275 coefficients**. All candidate mixed derivatives remain included.
+- Same reference test function and construction as above:
+  `phi_ref(r_x,r_y,r_z,r_t) = b_16(r_x)b_16(r_y)b_16(r_z)b_28(r_t)`,
+  with `b_p(r)=(1-r^2)^p` for `|r|<1` and zero otherwise.
+  Support half-widths in cells are `(8,8,8,4)`; physical half-widths are
+  `(2.580645,2.580645,2.580645,0.533333)`. Peak amplitude is one; there is no
+  volume or L2 normalization. Quadrature and the observation grid are unchanged.
+- **K = 512:** strides `(4,4,4,1)`; spatial center indices `8,12,16,20` on each
+  axis, with temporal center indices `4,5,6,7,8,9,10,11`.
+- **K = 4096:** strides `(2,2,2,1)`; spatial center indices `8,10,12,14,16,18,20,22`
+  on each axis, with the same eight temporal centers. Take the Cartesian product,
+  with time varying fastest. The original 512 tests are a subset of these 4096.
+- All three WSINDy variants use the same tests. Their design matrix grows from
+  `512 x 275` to `4096 x 275`. SINDy has no test functions: its design matrix
+  remains `246,064 x 275`, so K does not apply to its fits.
+- Same LASSO penalties: SINDy `rho_1=1e-4`, WSINDy `rho_1=1e-6`, applied to
+  `||y-X beta||_2^2 / number_of_rows + rho_1 ||beta||_1`.
+  Same `max_iter=200000`, `tol=1e-8`; MSTLS uses `np.logspace(-4,0,50)`.
+- Error is `||beta_hat-beta_true||_2^2` over all 275 coefficients, in original units.
+  Runtime is the median of three complete estimator calls after one warm-up;
+  it includes system construction and regression, excluding data generation and diagnostics.
+  Python 3.13.5, NumPy 2.1.3, SciPy 1.15.3; `OPENBLAS_NUM_THREADS=1`, with
+  `OMP_NUM_THREADS` and `VECLIB_MAXIMUM_THREADS` unset, on the same machine as above.
+
+## Noise ratio 0: Squared coefficient error
+
+| Experiment instance / weak-test count | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 3D anisotropic porous medium, K=512 | 4.411126e+04 | 6.113013e+12 | 1.657661e+00 | 1.660327e+00 | 2.634171e+00 |
+| 3D anisotropic porous medium, K=4096 | 4.411126e+04 | 4.868710e+07 | 1.657661e+00 | 1.665959e+00 | 6.125071e-03 |
+
+## Noise ratio 1: Squared coefficient error
+
+| Experiment instance / weak-test count | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 3D anisotropic porous medium, K=512 | 1.095782e+06 | 2.342743e+10 | 1.656034e+00 | 1.660518e+00 | 1.982678e-01 |
+| 3D anisotropic porous medium, K=4096 | 1.095782e+06 | 8.186907e+08 | 1.656034e+00 | 1.668051e+00 | 8.238487e-02 |
+
+## Noise ratio 0: Runtime (seconds)
+
+| Experiment instance / weak-test count | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 3D anisotropic porous medium, K=512 | 3.639137 | 0.157155 | 1.711842 | 0.234791 | 0.493703 |
+| 3D anisotropic porous medium, K=4096 | 3.062872 | 0.453482 | 1.641205 | 0.413146 | 3.409501 |
+
+## Noise ratio 1: Runtime (seconds)
+
+| Experiment instance / weak-test count | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 3D anisotropic porous medium, K=512 | 3.418742 | 0.176089 | 1.915369 | 0.226677 | 0.840082 |
+| 3D anisotropic porous medium, K=4096 | 3.231388 | 0.434958 | 1.680583 | 0.413443 | 2.497880 |
+
+## Findings and checks
+
+All ten K=4096 fits completed their warm-up and three timed calls without warnings.
+
+- **WSINDy (MSTLS) improves at both noise levels.** Without noise, error falls
+  from `2.634171` to `0.006125071`, and it selects exactly the six true terms,
+  with no extra terms. At noise ratio 1, error falls from `0.1982678` to
+  `0.08238487`, but it selects only the three diagonal diffusion terms and
+  misses all three mixed derivatives. Correct equation support is recovered
+  only in the noiseless run; the fitted coefficients still have numerical error.
+- For MSTLS, runtime increases from `0.493703` to `3.409501` seconds without noise,
+  and from `0.840082` to `2.497880` seconds at noise ratio 1.
+- **Full-library WSINDy (OLS) remains inaccurate**, despite much smaller errors
+  than at K=512. WSINDy (LASSO) does not improve with the unchanged penalty;
+  both of its coefficient errors remain above the zero-vector reference `1.6556`.
+- **SINDy errors are exactly unchanged**, as expected because its inputs and
+  regression settings are unchanged. Its runtime differences are variation
+  between measurements, not an effect of K.
+- Both K=4096 weak matrices have rank 275. Their condition numbers after
+  unit-L2 column scaling are approximately `7.049e4` (noise 0) and `1.348e4`
+  (noise 1), versus `1.629e7` and `3.492e4` at K=512.
+- The noiseless relative residual at the true coefficients is `0.0953510`,
+  versus `0.0969100` at K=512. Increasing K does not refine the quadrature.
+  The original 512 rows of both X and y were verified to be exactly unchanged
+  inside the expanded system, at both noise levels; their integration errors
+  therefore remain unchanged. The slight difference in aggregate relative
+  residual uses a different collection of equations.
+- Coefficient errors were independently recomputed from the retained estimates.
+  WSINDy (LASSO) KKT violations are `9.489e-9` and `7.688e-9`, below the solver
+  tolerance `1e-8`. The SINDy coefficient errors match the K=512 measurements.
+- This adds weak equations derived from the same observations, with strongly
+  overlapping supports; it does not add independent data or increase n.
+  These results support denser test centers for this particular MSTLS experiment,
+  but are still one fixed grid and one noise seed. Quadrature refinement and
+  multiple noise realizations remain separate checks.
+
+The K=4096 MSTLS estimates, with all unlisted coefficients zero, are:
+
+```text
+noise 0:
+u_t = 0.256802 d_xx(u^2) - 0.162487 d_xy(u^2) + 0.081610 d_xz(u^2)
+      + 0.671891 d_yy(u^2) - 0.144097 d_yz(u^2) + 0.961652 d_zz(u^2)
+
+noise 1:
+u_t = 0.243343 d_xx(u^2) + 0.640626 d_yy(u^2) + 0.992957 d_zz(u^2)
+```
+
+## Reproduce K=4096
+
+This command reruns the five methods and appends their K=4096 report. The K=512
+measurements used for comparison are preserved above, with their own command.
+
+```sh
+OPENBLAS_NUM_THREADS=1 python experiments.py --instance anisotropic_porous_medium_3d \
+  --nx 32 --ny 32 --nz 32 --nt 16 --seed 0 --repeats 3 \
+  --noise-ratios 0 1 \
+  --methods sindy-ols wsindy-ols sindy-lasso wsindy-lasso wsindy-mstls \
+  --half-widths 8 8 8 4 --test-degrees 16 16 16 28 --strides 2 2 2 1 \
+  --sindy-rho-1 1e-4 --wsindy-rho-1 1e-6 --max-iter 200000 --tol 1e-8 \
+  --output results.md --append
 ```
