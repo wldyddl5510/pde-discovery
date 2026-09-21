@@ -1,9 +1,10 @@
 # PDE-discovery sanity check
 
-The latest [LASSO comparison](#3d-lasso-comparison-1e-4-versus-1e-7) compares common penalties 1e-4 and 1e-7 at K=4096.
-The earlier [0.001 comparison](#3d-lasso-comparison-common-penalty-0001) is preserved below.
-The [3D test-count comparison](#3d-test-function-count-k512-versus-k4096)
-compares K=512 and K=4096 with the same data and test-function support.
+The [main 3D comparison](#3d-test-function-count-k512-versus-k4096) includes
+K=512 and K=4096 on the same data and test-function support. Its K=4096 LASSO
+entries retain the lowest coefficient error among the completed penalty trials,
+selected separately for each method and noise ratio using the known true coefficients.
+The selected penalties and their corresponding runtimes are recorded with the tables.
 The original [3D comparison](#3d-anisotropic-porous-medium-pde-discovery-sanity-check)
 runs only SINDy (OLS/LASSO) and WSINDy (OLS/LASSO/MSTLS), at noise ratios 0 and 1.
 The earlier 2D measurements below are preserved; they were not rerun for the 3D addition.
@@ -382,8 +383,11 @@ This comparison increases the number of test-function centers from
 `4 * 4 * 4 * 8 = 512` to `8 * 8 * 8 * 8 = 4096`. The function shape and
 physical support are fixed. All five SINDy/WSINDy methods were run at K=4096;
 WENDy and WENDy-MLE remain excluded. The K=512 rows retain the earlier measurements.
+The K=4096 LASSO entries now contain the best completed penalty trial for each
+method and noise ratio. Thus, their comparison with K=512 also changes the penalty;
+only the OLS and MSTLS comparisons isolate the change in K.
 
-## Controlled settings
+## Experiment settings and LASSO selection
 
 - Same 3D PDE, exact reference solution, and six nonzero true coefficients as in
   the preceding experiment; `||beta_true||_2^2 = 1.6556`.
@@ -406,12 +410,24 @@ WENDy and WENDy-MLE remain excluded. The K=512 rows retain the earlier measureme
 - All three WSINDy variants use the same tests. Their design matrix grows from
   `512 x 275` to `4096 x 275`. SINDy has no test functions: its design matrix
   remains `246,064 x 275`, so K does not apply to its fits.
-- Same LASSO penalties: SINDy `rho_1=1e-4`, WSINDy `rho_1=1e-6`, applied to
-  `||y-X beta||_2^2 / number_of_rows + rho_1 ||beta||_1`.
-  Same `max_iter=200000`, `tol=1e-8`; MSTLS uses `np.logspace(-4,0,50)`.
-- Error is `||beta_hat-beta_true||_2^2` over all 275 coefficients, in original units.
-  Runtime is the median of three complete estimator calls after one warm-up;
+- LASSO objective: `||y-X beta||_2^2 / number_of_rows + rho_1 ||beta||_1`,
+  in original coefficient units. All LASSO fits use `max_iter=200000`.
+  Equal penalties do not imply equal effective regularization across methods.
+- **Selected K=4096 penalties, noise 0:** SINDy `rho_1=1e-7`, `tol=1e-8`;
+  WSINDy `rho_1=1e-9`, `tol=1e-12`.
+- **Selected K=4096 penalties, noise 1:** SINDy `rho_1=1e-3`, `tol=1e-8`;
+  WSINDy `rho_1=1e-4`, `tol=1e-8`.
+- Selection minimizes `||beta_hat-beta_true||_2^2` over all 275 coefficients
+  among the completed trials, separately for each method and noise ratio.
+  Exact ties use the smaller penalty. This is selection using known ground truth
+  on this one dataset per noise level, not a validated tuning rule for unseen data.
+- K=512 retains SINDy `rho_1=1e-4` and WSINDy `rho_1=1e-6`, both with `tol=1e-8`;
+  the penalty trials were performed for the K=4096 setting only.
+  OLS uses `rho_1=0`; MSTLS uses `np.logspace(-4,0,50)`.
+- Runtime is the median of three complete estimator calls after one warm-up;
   it includes system construction and regression, excluding data generation and diagnostics.
+  Each selected LASSO runtime comes from the same trial as its coefficient error;
+  it excludes the cost of searching over penalties. Existing measurements were reused.
   Python 3.13.5, NumPy 2.1.3, SciPy 1.15.3; `OPENBLAS_NUM_THREADS=1`, with
   `OMP_NUM_THREADS` and `VECLIB_MAXIMUM_THREADS` unset, on the same machine as above.
 
@@ -420,47 +436,54 @@ WENDy and WENDy-MLE remain excluded. The K=512 rows retain the earlier measureme
 | Experiment instance / weak-test count | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | 3D anisotropic porous medium, K=512 | 4.411126e+04 | 6.113013e+12 | 1.657661e+00 | 1.660327e+00 | 2.634171e+00 |
-| 3D anisotropic porous medium, K=4096 | 4.411126e+04 | 4.868710e+07 | 1.657661e+00 | 1.665959e+00 | 6.125071e-03 |
+| 3D anisotropic porous medium, K=4096 (selected LASSO) | 4.411126e+04 | 4.868710e+07 | 1.588735e-01 | 1.594418e-01 | 6.125071e-03 |
 
 ## Noise ratio 1: Squared coefficient error
 
 | Experiment instance / weak-test count | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | 3D anisotropic porous medium, K=512 | 1.095782e+06 | 2.342743e+10 | 1.656034e+00 | 1.660518e+00 | 1.982678e-01 |
-| 3D anisotropic porous medium, K=4096 | 1.095782e+06 | 8.186907e+08 | 1.656034e+00 | 1.668051e+00 | 8.238487e-02 |
+| 3D anisotropic porous medium, K=4096 (selected LASSO) | 1.095782e+06 | 8.186907e+08 | 1.655600e+00 | 1.655600e+00 | 8.238487e-02 |
 
 ## Noise ratio 0: Runtime (seconds)
 
 | Experiment instance / weak-test count | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | 3D anisotropic porous medium, K=512 | 3.639137 | 0.157155 | 1.711842 | 0.234791 | 0.493703 |
-| 3D anisotropic porous medium, K=4096 | 3.062872 | 0.453482 | 1.641205 | 0.413146 | 3.409501 |
+| 3D anisotropic porous medium, K=4096 (selected LASSO) | 3.062872 | 0.453482 | 2.070837 | 1.158624 | 3.409501 |
 
 ## Noise ratio 1: Runtime (seconds)
 
 | Experiment instance / weak-test count | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | 3D anisotropic porous medium, K=512 | 3.418742 | 0.176089 | 1.915369 | 0.226677 | 0.840082 |
-| 3D anisotropic porous medium, K=4096 | 3.231388 | 0.434958 | 1.680583 | 0.413443 | 2.497880 |
+| 3D anisotropic porous medium, K=4096 (selected LASSO) | 3.231388 | 0.434958 | 1.980746 | 0.433031 | 2.497880 |
 
 ## Findings and checks
 
-All ten K=4096 fits completed their warm-up and three timed calls without warnings.
+All retained K=4096 fits completed their warm-up and three timed calls without warnings.
 
-- **WSINDy (MSTLS) improves at both noise levels.** Without noise, error falls
-  from `2.634171` to `0.006125071`, and it selects exactly the six true terms,
-  with no extra terms. At noise ratio 1, error falls from `0.1982678` to
-  `0.08238487`, but it selects only the three diagonal diffusion terms and
-  misses all three mixed derivatives. Correct equation support is recovered
-  only in the noiseless run; the fitted coefficients still have numerical error.
+- **WSINDy (MSTLS) has the smallest coefficient error at both noise levels.**
+  Without noise, increasing K reduces its error from `2.634171` to `0.006125071`,
+  and it selects exactly the six true terms, with no extra terms. At noise ratio 1,
+  error falls from `0.1982678` to `0.08238487`, but it selects only the three
+  diagonal diffusion terms and misses all three mixed derivatives. Correct
+  equation support is recovered only in the noiseless run; the fitted coefficients
+  still have numerical error.
 - For MSTLS, runtime increases from `0.493703` to `3.409501` seconds without noise,
   and from `0.840082` to `2.497880` seconds at noise ratio 1.
+- **Selected LASSO fits without noise:** SINDy error is `0.1588735`, with three
+  true terms and 45 spurious terms; WSINDy error is `0.1594418`, with three true
+  terms and 74 spurious terms. Both miss all three mixed derivatives.
+- **Selected LASSO fits at noise ratio 1 are near the zero-vector reference.**
+  WSINDy returns exactly zero; SINDy has nine small spurious coefficients with
+  `||beta_hat||_2 = 3.464428e-5`. Neither retains any of the six true terms.
+  Both errors round to `1.655600`, so the selected errors do not indicate
+  successful equation recovery.
 - **Full-library WSINDy (OLS) remains inaccurate**, despite much smaller errors
-  than at K=512. WSINDy (LASSO) does not improve with the unchanged penalty;
-  both of its coefficient errors remain above the zero-vector reference `1.6556`.
-- **SINDy errors are exactly unchanged**, as expected because its inputs and
-  regression settings are unchanged. Its runtime differences are variation
-  between measurements, not an effect of K.
+  than at K=512. SINDy (OLS) errors are unchanged because its inputs and regression
+  settings are unchanged; its runtime differences are measurement variation.
+  The SINDy (LASSO) differences arise from penalty selection, not K.
 - Both K=4096 weak matrices have rank 275. Their condition numbers after
   unit-L2 column scaling are approximately `7.049e4` (noise 0) and `1.348e4`
   (noise 1), versus `1.629e7` and `3.492e4` at K=512.
@@ -471,8 +494,8 @@ All ten K=4096 fits completed their warm-up and three timed calls without warnin
   therefore remain unchanged. The slight difference in aggregate relative
   residual uses a different collection of equations.
 - Coefficient errors were independently recomputed from the retained estimates.
-  WSINDy (LASSO) KKT violations are `9.489e-9` and `7.688e-9`, below the solver
-  tolerance `1e-8`. The SINDy coefficient errors match the K=512 measurements.
+  The selected noiseless WSINDy (LASSO) fit has KKT violation `9.975e-13`, below
+  its tolerance `1e-12`; the selected noisy fit is a zero-vector optimum.
 - This adds weak equations derived from the same observations, with strongly
   overlapping supports; it does not add independent data or increase n.
   These results support denser test centers for this particular MSTLS experiment,
@@ -492,216 +515,26 @@ u_t = 0.243343 d_xx(u^2) + 0.640626 d_yy(u^2) + 0.992957 d_zz(u^2)
 
 ## Reproduce K=4096
 
-This command reruns the five methods and appends their K=4096 report. The K=512
-measurements used for comparison are preserved above, with their own command.
+These commands reproduce the retained settings and write separate reports to `/tmp`.
+The LASSO commands use the selected penalties and solver tolerances above.
+The K=512 measurements retain their reproduction command in the preceding section.
 
 ```sh
-OPENBLAS_NUM_THREADS=1 python experiments.py --instance anisotropic_porous_medium_3d \
-  --nx 32 --ny 32 --nz 32 --nt 16 --seed 0 --repeats 3 \
-  --noise-ratios 0 1 \
-  --methods sindy-ols wsindy-ols sindy-lasso wsindy-lasso wsindy-mstls \
-  --half-widths 8 8 8 4 --test-degrees 16 16 16 28 --strides 2 2 2 1 \
-  --sindy-rho-1 1e-4 --wsindy-rho-1 1e-6 --max-iter 200000 --tol 1e-8 \
-  --output results.md --append
-```
-
----
-
-# 3D LASSO comparison: common penalty 0.001
-
-At K=4096, setting both LASSO penalties to 0.001 slightly reduces the squared
-coefficient errors, but all six true terms are missed by the new fits. WSINDy returns
-exactly the zero vector at both noise levels; SINDy returns nearly zero vectors
-with only spurious terms. This is not successful PDE recovery.
-
-## Controlled settings
-
-- Same 3D data and library as the preceding K=4096 experiment: grid
-  `(32,32,32,16)`, **n=524,288**, **K=4096**, **S=55**, **J=5**, maximum total
-  spatial derivative order 5, and 275 candidate coefficients. K applies only to WSINDy.
-- Same reference test function `b_16(r_x)b_16(r_y)b_16(r_z)b_28(r_t)` with
-  `b_p(r)=(1-r^2)^p` on `|r|<1`, zero otherwise; half-widths `(8,8,8,4)` cells,
-  strides `(2,2,2,1)`, and physical half-widths
-  `(2.580645,2.580645,2.580645,0.533333)`. Quadrature and test normalization are unchanged.
-- Same noise ratios 0 and 1 and seed 0. The exact solution, observations, and
-  true coefficients are unchanged; `||beta_true||_2^2=1.6556`.
-- Previous penalties: SINDy `rho_1=0.0001`, WSINDy `rho_1=0.000001`.
-  New penalties: both `rho_1=0.001`, a 10-fold and 1000-fold increase respectively.
-  The objective remains `||y-X beta||_2^2 / number_of_rows + rho_1 ||beta||_1`,
-  with coefficients in original units; `max_iter=200000`, `tol=1e-8`.
-- Only the two LASSO methods were rerun. OLS and MSTLS do not use this penalty;
-  their recorded results are unchanged. WENDy and WENDy-MLE remain excluded.
-- Runtime is the median of three complete estimator calls after one warm-up,
-  including system construction and fitting. Data generation and diagnostics
-  are excluded. Same Python/NumPy/SciPy versions and machine as above,
-  `OPENBLAS_NUM_THREADS=1`; other recorded BLAS thread settings are unchanged.
-
-## Noise ratio 0: Squared coefficient error
-
-| Experiment instance / penalties | SINDy (LASSO) | WSINDy (LASSO) |
-| --- | ---: | ---: |
-| 3D, K=4096; previous penalties | 1.657660741e+00 | 1.665958527e+00 |
-| 3D, K=4096; both penalties 0.001 | 1.655600805e+00 | 1.655600000e+00 |
-
-## Noise ratio 1: Squared coefficient error
-
-| Experiment instance / penalties | SINDy (LASSO) | WSINDy (LASSO) |
-| --- | ---: | ---: |
-| 3D, K=4096; previous penalties | 1.656034406e+00 | 1.668050793e+00 |
-| 3D, K=4096; both penalties 0.001 | 1.655600001e+00 | 1.655600000e+00 |
-
-## Noise ratio 0: Runtime (seconds)
-
-| Experiment instance / penalties | SINDy (LASSO) | WSINDy (LASSO) |
-| --- | ---: | ---: |
-| 3D, K=4096; previous penalties | 1.641205 | 0.413146 |
-| 3D, K=4096; both penalties 0.001 | 1.669014 | 0.443094 |
-
-## Noise ratio 1: Runtime (seconds)
-
-| Experiment instance / penalties | SINDy (LASSO) | WSINDy (LASSO) |
-| --- | ---: | ---: |
-| 3D, K=4096; previous penalties | 1.680583 | 0.413443 |
-| 3D, K=4096; both penalties 0.001 | 1.980746 | 0.438237 |
-
-## Interpretation and validation
-
-All four new fits completed the warm-up and three timed calls without warnings.
-Coefficient errors were independently checked against the retained estimates.
-
-- WSINDy returns `beta_hat=0` for both noise ratios, so its squared coefficient
-  error is exactly the zero-vector reference `1.6556` (up to floating-point roundoff).
-- SINDy keeps one spurious term without noise and nine spurious terms with noise;
-  neither fit keeps any of the six true terms. Their coefficient L2 norms are
-  `8.97159e-4` and `3.46443e-5`, respectively. The noiseless estimate is just
-  `u_t = -0.000897159 d_xxxx(u)`.
-- Since every new fit has zero coefficients at all true nonzero coordinates,
-  `||beta_hat-beta_true||_2^2 = 1.6556 + ||beta_hat||_2^2`.
-  These estimates approach the zero-vector reference error; none recovers
-  a true diffusion coefficient.
-- For this LASSO objective, the zero vector is optimal when
-  `rho_1 >= 2*max(abs(X.T @ y))/number_of_rows`.
-  The WSINDy cutoffs are `5.02330e-5` (noise 0) and `4.91197e-5` (noise 1), both
-  well below 0.001. Thus its zero estimates agree with the optimization problem.
-  The SINDy cutoffs are `0.00335091` and `0.00650897`, so 0.001 is below its
-  all-zero threshold; small spurious coefficients can remain.
-- Direct KKT checks pass: maximum violations are `8.67e-19` and `9.39e-9`
-  for SINDy, and zero for WSINDy, all below the tolerance `1e-8`.
-- Equal numerical penalties do not imply equal effective regularization:
-  SINDy and WSINDy use differently scaled residuals and design columns.
-  This particular common value does not provide useful PDE recovery.
-  As before, this comparison uses a single fixed grid and one noise realization per level.
-
-## Reproduce common penalty 0.001
-
-```sh
-OPENBLAS_NUM_THREADS=1 python experiments.py --instance anisotropic_porous_medium_3d \
-  --nx 32 --ny 32 --nz 32 --nt 16 --seed 0 --repeats 3 \
-  --noise-ratios 0 1 --methods sindy-lasso wsindy-lasso \
-  --half-widths 8 8 8 4 --test-degrees 16 16 16 28 --strides 2 2 2 1 \
-  --sindy-rho-1 0.001 --wsindy-rho-1 0.001 --max-iter 200000 --tol 1e-8 \
-  --output results.md --append
-```
-
----
-
-# 3D LASSO comparison: 1e-4 versus 1e-7
-
-The last automatically appended report was removed to restore the document to
-its state before that run. This single comparison replaces it; all earlier
-experiment results are preserved. Both penalty levels below were freshly run
-in the same environment, with the same observations.
-
-## Fixed settings for this comparison
-
-- Instance: 3D anisotropic porous medium, same exact reference solution and PDE
-  as above. Grid `(32,32,32,16)` on `[-5,5]^3 x [0.5,2.5]`; **n=524,288**.
-- **K=4096** weak tests (`8*8*8*8` centers); **S=55**, **J=5**, maximum total
-  spatial derivative order 5, and 275 coefficients. K applies only to WSINDy.
-- Same test functions: `phi_ref=b_16(r_x)b_16(r_y)b_16(r_z)b_28(r_t)`, where
-  `b_p(r)=(1-r^2)^p` for `|r|<1` and zero otherwise. Half-widths `(8,8,8,4)`
-  grid cells, strides `(2,2,2,1)`, peak one, and no volume or L2 normalization.
-  Physical half-widths remain `(2.580645,2.580645,2.580645,0.533333)`.
-- Noise ratios 0 and 1; seed 0. Each penalty uses identical observations.
-- Each table row fixes **both SINDy and WSINDy to the stated rho_1**:
-  either `1e-4` or `1e-7`. The earlier WSINDy `1e-6` results are not used as
-  the `1e-4` baseline. OLS, MSTLS, and WENDy variants are outside this comparison.
-- Objective: `||y-X beta||_2^2 / number_of_rows + rho_1 ||beta||_1`;
-  `max_iter=200000`, `tol=1e-8`, coefficients in original units.
-- Error: `||beta_hat-beta_true||_2^2` over all 275 coefficients. The zero-vector
-  reference is `||beta_true||_2^2=1.6556`.
-- Runtime: median of three full estimator calls after one warm-up. It includes
-  matrix construction and regression, and excludes generation and diagnostics.
-- Environment: Python 3.13.5, NumPy 2.1.3, SciPy 1.15.3;
-  `macOS-15.7.3-arm64-arm-64bit-Mach-O`; `OPENBLAS_NUM_THREADS=1`,
-  `OMP_NUM_THREADS=unset`, `VECLIB_MAXIMUM_THREADS=unset`.
-
-## LASSO penalty comparison: noise 0, squared coefficient error
-
-| Experiment instance / common rho_1 | SINDy (LASSO) | WSINDy (LASSO) |
-| --- | ---: | ---: |
-| 3D, K=4096; rho_1=1e-4 | 1.657660741e+00 | 1.655600000e+00 |
-| 3D, K=4096; rho_1=1e-7 | 1.588734922e-01 | 1.693000860e+00 |
-
-## LASSO penalty comparison: noise 1, squared coefficient error
-
-| Experiment instance / common rho_1 | SINDy (LASSO) | WSINDy (LASSO) |
-| --- | ---: | ---: |
-| 3D, K=4096; rho_1=1e-4 | 1.656034406e+00 | 1.655600000e+00 |
-| 3D, K=4096; rho_1=1e-7 | 4.814557941e+00 | 1.690093066e+00 |
-
-## LASSO penalty comparison: noise 0, runtime (seconds)
-
-| Experiment instance / common rho_1 | SINDy (LASSO) | WSINDy (LASSO) |
-| --- | ---: | ---: |
-| 3D, K=4096; rho_1=1e-4 | 1.891538 | 0.411991 |
-| 3D, K=4096; rho_1=1e-7 | 2.070837 | 0.547098 |
-
-## LASSO penalty comparison: noise 1, runtime (seconds)
-
-| Experiment instance / common rho_1 | SINDy (LASSO) | WSINDy (LASSO) |
-| --- | ---: | ---: |
-| 3D, K=4096; rho_1=1e-4 | 2.101710 | 0.433031 |
-| 3D, K=4096; rho_1=1e-7 | 2.472172 | 0.437465 |
-
-## Findings for the penalty comparison
-
-All eight fits completed their warm-up and three timed calls without warnings.
-
-- **SINDy without noise improves** when rho_1 decreases from `1e-4` to `1e-7`:
-  error falls from `1.657661` to `0.1588735`. However, the smaller penalty selects
-  48 terms: three true diagonal diffusion terms and 45 spurious terms. All three
-  true mixed derivatives are still missing, so the equation support is incorrect.
-- **SINDy at noise ratio 1 worsens:** error rises from `1.656034` to `4.814558`.
-  The smaller penalty selects all six true terms plus 151 spurious terms
-  (157 nonzero coefficients in total).
-- **WSINDy worsens at both noise levels:** the `1e-4` fits are exactly zero,
-  giving reference error `1.6556`; the `1e-7` errors are `1.693001` and `1.690093`.
-  The smaller penalty selects 27 and 40 spurious terms, respectively, and none
-  of the six true terms. A smaller penalty does not fix this recovery problem.
-- Retained coefficient vectors were checked for shape, finiteness, coefficient
-  error, and support. Direct KKT violations are at most `9.972e-9`, within the
-  configured `1e-8` tolerance. This absolute tolerance is 10% of the smaller
-  penalty; the comparison holds it fixed and does not test sensitivity to tighter
-  stopping criteria. These are results at the stated solver tolerance.
-- Both methods use penalties on original coefficients, but their residual and
-  column scales differ. Equal rho_1 does not imply equal effective regularization.
-  This remains a fixed-grid, single-seed comparison.
-
-## Reproduce the two penalties separately
-
-Write each run to a separate file to keep this comparison report intact.
-The loop below reproduces both penalty settings; it does not append duplicate
-experiment sections to `results.md`.
-
-```sh
-for pde_rho in 1e-4 1e-7; do
-  OPENBLAS_NUM_THREADS=1 python experiments.py \
-    --instance anisotropic_porous_medium_3d \
+run_3d() {
+  OPENBLAS_NUM_THREADS=1 python experiments.py --instance anisotropic_porous_medium_3d \
     --nx 32 --ny 32 --nz 32 --nt 16 --seed 0 --repeats 3 \
-    --noise-ratios 0 1 --methods sindy-lasso wsindy-lasso \
     --half-widths 8 8 8 4 --test-degrees 16 16 16 28 --strides 2 2 2 1 \
-    --sindy-rho-1 "$pde_rho" --wsindy-rho-1 "$pde_rho" \
-    --max-iter 200000 --tol 1e-8 --output "/tmp/pde-lasso-${pde_rho}.md"
-done
+    --max-iter 200000 "$@"
+}
+
+run_3d --methods sindy-ols wsindy-ols wsindy-mstls --noise-ratios 0 1 \
+  --tol 1e-8 --output /tmp/pde-3d-k4096-ols-mstls.md
+run_3d --methods sindy-lasso --noise-ratios 0 --sindy-rho-1 1e-7 \
+  --tol 1e-8 --output /tmp/pde-3d-sindy-lasso-noise0.md
+run_3d --methods wsindy-lasso --noise-ratios 0 --wsindy-rho-1 1e-9 \
+  --tol 1e-12 --timeout-seconds 120 --output /tmp/pde-3d-wsindy-lasso-noise0.md
+run_3d --methods sindy-lasso --noise-ratios 1 --sindy-rho-1 1e-3 \
+  --tol 1e-8 --output /tmp/pde-3d-sindy-lasso-noise1.md
+run_3d --methods wsindy-lasso --noise-ratios 1 --wsindy-rho-1 1e-4 \
+  --tol 1e-8 --output /tmp/pde-3d-wsindy-lasso-noise1.md
 ```
