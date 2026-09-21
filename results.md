@@ -1,6 +1,7 @@
 # PDE-discovery sanity check
 
-The latest [3D test-count comparison](#3d-test-function-count-k512-versus-k4096)
+The latest [LASSO comparison](#3d-lasso-comparison-common-penalty-0001) tests a common penalty of 0.001 at K=4096.
+The [3D test-count comparison](#3d-test-function-count-k512-versus-k4096)
 compares K=512 and K=4096 with the same data and test-function support.
 The original [3D comparison](#3d-anisotropic-porous-medium-pde-discovery-sanity-check)
 runs only SINDy (OLS/LASSO) and WSINDy (OLS/LASSO/MSTLS), at noise ratios 0 and 1.
@@ -501,4 +502,258 @@ OPENBLAS_NUM_THREADS=1 python experiments.py --instance anisotropic_porous_mediu
   --half-widths 8 8 8 4 --test-degrees 16 16 16 28 --strides 2 2 2 1 \
   --sindy-rho-1 1e-4 --wsindy-rho-1 1e-6 --max-iter 200000 --tol 1e-8 \
   --output results.md --append
+```
+
+---
+
+# 3D LASSO comparison: common penalty 0.001
+
+At K=4096, setting both LASSO penalties to 0.001 slightly reduces the squared
+coefficient errors, but all six true terms are missed by the new fits. WSINDy returns
+exactly the zero vector at both noise levels; SINDy returns nearly zero vectors
+with only spurious terms. This is not successful PDE recovery.
+
+## Controlled settings
+
+- Same 3D data and library as the preceding K=4096 experiment: grid
+  `(32,32,32,16)`, **n=524,288**, **K=4096**, **S=55**, **J=5**, maximum total
+  spatial derivative order 5, and 275 candidate coefficients. K applies only to WSINDy.
+- Same reference test function `b_16(r_x)b_16(r_y)b_16(r_z)b_28(r_t)` with
+  `b_p(r)=(1-r^2)^p` on `|r|<1`, zero otherwise; half-widths `(8,8,8,4)` cells,
+  strides `(2,2,2,1)`, and physical half-widths
+  `(2.580645,2.580645,2.580645,0.533333)`. Quadrature and test normalization are unchanged.
+- Same noise ratios 0 and 1 and seed 0. The exact solution, observations, and
+  true coefficients are unchanged; `||beta_true||_2^2=1.6556`.
+- Previous penalties: SINDy `rho_1=0.0001`, WSINDy `rho_1=0.000001`.
+  New penalties: both `rho_1=0.001`, a 10-fold and 1000-fold increase respectively.
+  The objective remains `||y-X beta||_2^2 / number_of_rows + rho_1 ||beta||_1`,
+  with coefficients in original units; `max_iter=200000`, `tol=1e-8`.
+- Only the two LASSO methods were rerun. OLS and MSTLS do not use this penalty;
+  their recorded results are unchanged. WENDy and WENDy-MLE remain excluded.
+- Runtime is the median of three complete estimator calls after one warm-up,
+  including system construction and fitting. Data generation and diagnostics
+  are excluded. Same Python/NumPy/SciPy versions and machine as above,
+  `OPENBLAS_NUM_THREADS=1`; other recorded BLAS thread settings are unchanged.
+
+## Noise ratio 0: Squared coefficient error
+
+| Experiment instance / penalties | SINDy (LASSO) | WSINDy (LASSO) |
+| --- | ---: | ---: |
+| 3D, K=4096; previous penalties | 1.657660741e+00 | 1.665958527e+00 |
+| 3D, K=4096; both penalties 0.001 | 1.655600805e+00 | 1.655600000e+00 |
+
+## Noise ratio 1: Squared coefficient error
+
+| Experiment instance / penalties | SINDy (LASSO) | WSINDy (LASSO) |
+| --- | ---: | ---: |
+| 3D, K=4096; previous penalties | 1.656034406e+00 | 1.668050793e+00 |
+| 3D, K=4096; both penalties 0.001 | 1.655600001e+00 | 1.655600000e+00 |
+
+## Noise ratio 0: Runtime (seconds)
+
+| Experiment instance / penalties | SINDy (LASSO) | WSINDy (LASSO) |
+| --- | ---: | ---: |
+| 3D, K=4096; previous penalties | 1.641205 | 0.413146 |
+| 3D, K=4096; both penalties 0.001 | 1.669014 | 0.443094 |
+
+## Noise ratio 1: Runtime (seconds)
+
+| Experiment instance / penalties | SINDy (LASSO) | WSINDy (LASSO) |
+| --- | ---: | ---: |
+| 3D, K=4096; previous penalties | 1.680583 | 0.413443 |
+| 3D, K=4096; both penalties 0.001 | 1.980746 | 0.438237 |
+
+## Interpretation and validation
+
+All four new fits completed the warm-up and three timed calls without warnings.
+Coefficient errors were independently checked against the retained estimates.
+
+- WSINDy returns `beta_hat=0` for both noise ratios, so its squared coefficient
+  error is exactly the zero-vector reference `1.6556` (up to floating-point roundoff).
+- SINDy keeps one spurious term without noise and nine spurious terms with noise;
+  neither fit keeps any of the six true terms. Their coefficient L2 norms are
+  `8.97159e-4` and `3.46443e-5`, respectively. The noiseless estimate is just
+  `u_t = -0.000897159 d_xxxx(u)`.
+- Since every new fit has zero coefficients at all true nonzero coordinates,
+  `||beta_hat-beta_true||_2^2 = 1.6556 + ||beta_hat||_2^2`.
+  These estimates approach the zero-vector reference error; none recovers
+  a true diffusion coefficient.
+- For this LASSO objective, the zero vector is optimal when
+  `rho_1 >= 2*max(abs(X.T @ y))/number_of_rows`.
+  The WSINDy cutoffs are `5.02330e-5` (noise 0) and `4.91197e-5` (noise 1), both
+  well below 0.001. Thus its zero estimates agree with the optimization problem.
+  The SINDy cutoffs are `0.00335091` and `0.00650897`, so 0.001 is below its
+  all-zero threshold; small spurious coefficients can remain.
+- Direct KKT checks pass: maximum violations are `8.67e-19` and `9.39e-9`
+  for SINDy, and zero for WSINDy, all below the tolerance `1e-8`.
+- Equal numerical penalties do not imply equal effective regularization:
+  SINDy and WSINDy use differently scaled residuals and design columns.
+  This particular common value does not provide useful PDE recovery.
+  As before, this comparison uses a single fixed grid and one noise realization per level.
+
+## Reproduce common penalty 0.001
+
+```sh
+OPENBLAS_NUM_THREADS=1 python experiments.py --instance anisotropic_porous_medium_3d \
+  --nx 32 --ny 32 --nz 32 --nt 16 --seed 0 --repeats 3 \
+  --noise-ratios 0 1 --methods sindy-lasso wsindy-lasso \
+  --half-widths 8 8 8 4 --test-degrees 16 16 16 28 --strides 2 2 2 1 \
+  --sindy-rho-1 0.001 --wsindy-rho-1 0.001 --max-iter 200000 --tol 1e-8 \
+  --output results.md --append
+```
+
+---
+
+# 3D anisotropic porous medium: PDE-discovery sanity check
+
+## Experiment settings
+
+- Instance: `anisotropic_porous_medium_3d`; exact 3D anisotropic porous-medium weak solution.
+- PDE: `u_t = 0.3 d_xx(u^2) - 0.2 d_xy(u^2) + 0.1 d_xz(u^2) + 0.7 d_yy(u^2) - 0.16 d_yz(u^2) + d_zz(u^2)`.
+- Grid: `(32, 32, 32, 16)` on `[-5, 5]^3`, with time in `[0.5, 2.5]`; endpoints included.
+- **n = 524,288** observed space-time points: `32 * 32 * 32 * 16`;
+  this counts the full input grid for every method, including spatial/time endpoints.
+- **K = 4,096** test functions / weak equations: `8 * 8 * 8 * 8`
+  centers along `(x, y, z, t)`. All selected weak methods use the same
+  tests at every noise ratio. SINDy uses no test functions, so K does not apply to it.
+- **S = 55** spatial derivative operators, using the draft's indexing:
+  every 3-component multi-index `alpha` with nonnegative entries and `1 <= sum(alpha) <= 5`.
+  The maximum total spatial derivative order is **5**; S counts operators.
+- **J = 5** polynomial powers: `u, u^2, ..., u^5`.
+  J describes powers of u, separately from the test-function exponents below.
+- Library: `D^alpha(u^j)`, giving `S * J = 275` coefficients, in
+  `polynomial_library_terms(3)` order. No zeroth spatial derivative or constant power is included.
+- SINDy retains `26 * 26 * 26 * 14 = 246,064` regression rows
+  after removing 3 points at each spatial end and 1 at each time end.
+  Its design matrix is `246,064 x 275`; weak design matrices are `4,096 x 275`.
+- One Gaussian-noise realization per noise ratio, seed `0`;
+  `noise_std = noise_ratio * RMS(u_true)`. Each method receives the same observations.
+- Error: `sum((beta_hat - beta_true)**2)` over all 275 coefficients, with no
+  relative normalization. Truth is used only for evaluation; its squared norm is 1.6556.
+- LASSO: SINDy `rho_1=1e-07`; WSINDy `rho_1=1e-07`;
+  `max_iter=200000`, `tol=1e-08`. These are fixed example penalties, not tuned values.
+- OLS: `rho_1=0`. WSINDy MSTLS candidates: `np.logspace(-4, 0, 50)`.
+- Runtime: median of 3 timed calls after one untimed warm-up per method
+  and noise level. Each call includes library/weak-system construction and regression;
+  data generation, imports, error calculation, and report writing are excluded.
+- Environment: Python 3.11.16, NumPy 2.4.6, SciPy 1.17.1,
+  macOS-15.7.3-arm64-arm-64bit; `OPENBLAS_NUM_THREADS=1, OMP_NUM_THREADS=unset, VECLIB_MAXIMUM_THREADS=unset`.
+
+## Exact reference solution
+
+```text
+D = [[0.3, -0.1, 0.05], [-0.1, 0.7, -0.08], [0.05, -0.08, 1.0]]
+q = (x,y,z) D^{-1} (x,y,z)^T
+C = (15 / (8*pi * 20^(3/2) * sqrt(det(D))))^(2/5)
+u_true(x,y,z,t) = t^(-3/5) * max(C - q/(20*t^(2/5)), 0)
+```
+
+D is symmetric positive definite. This exact Barenblatt weak solution has unit mass
+on R^3; the default observation domain contains its support throughout the time interval.
+The initial condition is the profile at t=0.5, and the spatial boundary stays zero.
+No numerical time stepping is used. Mixed PDE coefficients are twice the off-diagonal entries of D.
+
+## Test functions
+
+Every weak method starts from the same reference function, a tensor product
+of compact polynomial bumps (the WSINDy family):
+
+```text
+b_p(r) = (1-r^2)^p for |r| < 1, and 0 otherwise.
+phi_ref(r_x,r_y,r_z,r_t) = b_16(r_x) * b_16(r_y) * b_16(r_z) * b_28(r_t).
+```
+
+The reference function is centered at the origin, supported on `[-1,1]^4`,
+and satisfies `phi_ref(0)=1`. Construct each physical test function by
+scaling its coordinates and translating its center:
+
+```text
+Delta_x = 10/(nx-1), Delta_y = 10/(ny-1), Delta_z = 10/(nz-1), Delta_t = 2/(nt-1).
+h_axis = m_axis * grid_spacing_axis.
+c_k = (-5 + i_x*Delta_x, -5 + i_y*Delta_y, -5 + i_z*Delta_z, 0.5 + i_t*Delta_t).
+phi_k(x, y, z, t) = phi_ref((x-c_kx)/h_x, (y-c_ky)/h_y, (z-c_kz)/h_z, (t-c_kt)/h_t).
+```
+
+Take every Cartesian-product combination of the center indices `(i_x,i_y,i_z,i_t)`
+listed below, with time varying fastest. This gives `8 * 8 * 8 * 8 = 4096` functions.
+The reference function and support half-widths are fixed; only the center changes.
+Each translated function is supported on the product of intervals
+`[c_k_axis-h_axis, c_k_axis+h_axis]`, with peak value one.
+There is no volume factor `1/prod(h_axis)` or L2 normalization.
+
+- Bump exponents in `(x, y, z, t)` order: `(16, 16, 16, 28)` (one-dimensional polynomial degrees `(32, 32, 32, 56)`).
+- Support half-widths in grid cells, in `(x, y, z, t)` order: `(8, 8, 8, 4)`;
+  each support spans `(17, 17, 17, 9)` grid points including endpoints.
+  Physical half-widths in the same order are approximately `(2.580645, 2.580645, 2.580645, 0.533333)`.
+- Center strides in grid cells: `(2, 2, 2, 1)`. Zero-based center indices are
+  `x: range(8, 24, 2), y: range(8, 24, 2), z: range(8, 24, 2), t: range(4, 12, 1)` (range stops excluded), giving `(8, 8, 8, 8)` centers and `K=4096`.
+- Default support rule: `m_axis=max(2, axis_size//4)`; default stride: `max(1, m_axis//4)`.
+  These are fixed grid-size rules; the paper's Fourier-based support selection is not used.
+- Default exponent rule: the smallest integer p greater than the derivative order on that axis
+  (`5` in space, `1` in time) with `(1-(1-1/m)^2)^p <= 1e-10`.
+  These polynomial bumps have finite smoothness, sufficient for the derivatives used here.
+- Derivatives act analytically on the test functions. Integrals use tensor-product trapezoidal
+  quadrature with the physical grid spacings; there is no normalization of individual equations.
+  Only supports fully inside the observed grid are used, with no padding or periodic wrapping.
+
+## Noise ratio 0: Squared coefficient error
+
+| Experiment instance | SINDy (LASSO) | WSINDy (LASSO) |
+| --- | ---: | ---: |
+| 3D anisotropic porous medium | 1.588735e-01 | 1.693001e+00 |
+
+## Noise ratio 1: Squared coefficient error
+
+| Experiment instance | SINDy (LASSO) | WSINDy (LASSO) |
+| --- | ---: | ---: |
+| 3D anisotropic porous medium | 4.814558e+00 | 1.690093e+00 |
+
+## Noise ratio 0: Runtime (seconds)
+
+| Experiment instance | SINDy (LASSO) | WSINDy (LASSO) |
+| --- | ---: | ---: |
+| 3D anisotropic porous medium | 1.827183 | 0.335378 |
+
+## Noise ratio 1: Runtime (seconds)
+
+| Experiment instance | SINDy (LASSO) | WSINDy (LASSO) |
+| --- | ---: | ---: |
+| 3D anisotropic porous medium | 2.292811 | 0.361475 |
+
+## Fit status
+
+`*` marks a returned estimate with a warning; see the stop reason below.
+`FAIL` and `TIMEOUT` mark incomplete benchmarks. Their parenthesized
+times measure the failed call, not a median successful-fit runtime.
+`N/A` means the sigma=0 MLE objective is undefined; no fit was attempted.
+
+
+## Interpretation
+
+This is one fixed-grid sanity check with one seed, not a Monte Carlo comparison.
+The zero coefficient vector has squared error 1.6556, so errors above 1.6556 are
+worse than that reference on this coefficient metric. The solution has a
+nonsmooth moving front and the full library is highly correlated; solving the
+regression accurately does not by itself ensure accurate coefficient recovery.
+LASSO penalties act on differently scaled losses, so the chosen
+penalties do not represent equal regularization strength across methods.
+Runtime covers this implementation, including all configured MSTLS candidates.
+Repeated timings reuse the same data; they are not independent noise trials.
+A timeout describes the implementation under the stated compute budget; it
+does not establish nonconvergence or an accuracy ranking for that method.
+
+## Reproduce
+
+```sh
+OPENBLAS_NUM_THREADS=1 \
+python experiments.py --instance anisotropic_porous_medium_3d \
+  --nx 32 --ny 32 --nz 32 --nt 16 --seed 0 --repeats 3 \
+  --noise-ratios 0 1 \
+  --methods sindy-lasso wsindy-lasso \
+  --sindy-rho-1 1e-07 --wsindy-rho-1 1e-07 \
+  --max-iter 200000 --tol 1e-08 --output results.md \
+  --append \
+  --half-widths 8 8 8 4 \
+  --strides 2 2 2 1 \
+  --test-degrees 16 16 16 28
 ```
