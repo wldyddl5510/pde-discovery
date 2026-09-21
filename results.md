@@ -53,14 +53,31 @@ See [METHODS.md](METHODS.md) for estimator definitions.
 
 ## Test functions
 
-Every weak method uses the same translated tensor product of compact polynomial bumps
-(the WSINDy family), with peak amplitude one:
+Every weak method starts from the same reference function, a tensor product
+of compact polynomial bumps (the WSINDy family):
 
 ```text
 b_p(r) = (1-r^2)^p for |r| < 1, and 0 otherwise.
-phi_k(x,y,t) = b_px((x-c_kx)/h_x) * b_py((y-c_ky)/h_y) * b_pt((t-c_kt)/h_t).
-h_axis = m_axis * grid_spacing_axis.
+phi_ref(r_x,r_y,r_t) = b_11(r_x) * b_11(r_y) * b_16(r_t).
 ```
+
+The reference function is centered at `(0,0,0)`, supported on `[-1,1]^3`,
+and satisfies `phi_ref(0,0,0)=1`. Construct each physical test function by
+scaling its coordinates and translating its center:
+
+```text
+Delta_x = 10/(nx-1), Delta_y = 10/(ny-1), Delta_t = 2/(nt-1).
+h_axis = m_axis * grid_spacing_axis.
+c_k = (-5 + i_x*Delta_x, -5 + i_y*Delta_y, 0.5 + i_t*Delta_t).
+phi_k(x,y,t) = phi_ref((x-c_kx)/h_x, (y-c_ky)/h_y, (t-c_kt)/h_t).
+```
+
+Take every Cartesian-product combination of the center indices `(i_x,i_y,i_t)`
+listed below, with time varying fastest. This gives `8 * 8 * 8 = 512` functions.
+The reference function and support half-widths are fixed; only the center changes.
+Each translated function has support `[c_kx-h_x,c_kx+h_x]` times
+`[c_ky-h_y,c_ky+h_y]` times `[c_kt-h_t,c_kt+h_t]`, with peak value one.
+There is no volume factor `1/(h_x*h_y*h_t)` or L2 normalization.
 
 - Bump exponents `(p_x, p_y, p_t) = (11, 11, 16)` (one-dimensional polynomial degrees `(22, 22, 32)`).
 - Support half-widths in grid cells: `(m_x, m_y, m_t) = (16, 16, 8)`;
