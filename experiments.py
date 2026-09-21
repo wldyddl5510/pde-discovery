@@ -4,10 +4,13 @@ import argparse
 import os
 import platform
 import shlex
+import signal
+import warnings
 from pathlib import Path
 from time import perf_counter
 
 import numpy as np
+import scipy
 
 from methods import polynomial_library_terms, sindy, wsindy, wendy, wendy_mle
 from simulation_generation import generate_anisotropic_porous_medium
@@ -20,9 +23,9 @@ METHOD_LABELS = {
     "wsindy-lasso": "WSINDy (LASSO)",
     "wsindy-mstls": "WSINDy (MSTLS)",
     "wendy-lasso": "WENDy (LASSO)",
-    "wendy-mstls": "WENDy (MSTLS)",
+    "wendy-ols": "WENDy (OLS)",
     "wendy-mle-lasso": "WENDy-MLE (LASSO)",
-    "wendy-mle-mstls": "WENDy-MLE (MSTLS)",
+    "wendy-mle": "WENDy-MLE (unpenalized)",
 }
 DEFAULT_METHODS = ["sindy-ols", "wsindy-ols", "sindy-lasso", "wsindy-lasso", "wsindy-mstls"]
 GENERATORS = {"anisotropic_porous_medium": generate_anisotropic_porous_medium}
@@ -45,6 +48,8 @@ def parse_arguments():
     parser.add_argument("--wendy-mle-alpha", type=float, default=0.0)
     parser.add_argument("--mle-noise-std", type=float, default=None,
                         help="Working MLE noise std; default uses the generator's known noise std.")
+    parser.add_argument("--mle-max-iter", type=int, default=1000)
+    parser.add_argument("--mle-tol", type=float, default=1e-6)
     parser.add_argument("--max-reweights", type=int, default=100)
     parser.add_argument("--reweight-tol", type=float, default=1e-6)
     parser.add_argument("--disable-normality-stop", action="store_true")
@@ -55,21 +60,45 @@ def parse_arguments():
     parser.add_argument("--max-iter", type=int, default=10000)
     parser.add_argument("--tol", type=float, default=1e-8)
     parser.add_argument("--repeats", type=int, default=3)
+    parser.add_argument("--timeout-seconds", type=float, default=None,
+                        help="Optional wall-time limit per estimator call (Unix).")
     parser.add_argument("--output", type=Path, default=Path("results.md"))
     args = parser.parse_args()
     if args.repeats < 1:
         parser.error("--repeats must be positive.")
     if args.max_iter < 1 or not np.isfinite(args.tol) or args.tol <= 0:
         parser.error("--max-iter and --tol must be positive, with finite --tol.")
+    if args.mle_max_iter < 1 or not np.isfinite(args.mle_tol) or args.mle_tol <= 0:
+        parser.error("--mle-max-iter and --mle-tol must be positive, with finite --mle-tol.")
+    if args.timeout_seconds is not None:
+        if not np.isfinite(args.timeout_seconds) or args.timeout_seconds <= 0:
+            parser.error("--timeout-seconds must be finite and positive.")
+        if not hasattr(signal, "setitimer"):
+            parser.error("--timeout-seconds requires Unix interval timers.")
     for penalty in (args.sindy_rho_1, args.wsindy_rho_1, args.wendy_rho_1, args.wendy_mle_rho_1):
         if not np.isfinite(penalty) or penalty <= 0:
             parser.error("LASSO penalties must be finite and strictly positive.")
     if any(name.startswith("wendy-mle") for name in args.methods):
         if args.mle_noise_std is not None and (not np.isfinite(args.mle_noise_std) or args.mle_noise_std <= 0):
             parser.error("--mle-noise-std must be finite and positive.")
-        if args.mle_noise_std is None and 0 in args.noise_ratios:
-            parser.error("WENDy-MLE has no sigma=0 likelihood. Use positive noise ratios or explicitly set --mle-noise-std.")
     return args
+
+
+def call_estimator(estimator, inputs, settings, timeout_seconds):
+    """Apply an optional deadline; the caller records failures and warnings."""
+    if timeout_seconds is None:
+        return estimator(*inputs, **settings)
+
+    def time_limit_reached(signum, frame):
+        raise TimeoutError(f"Estimator exceeded the {timeout_seconds:g} s wall-time limit.")
+
+    previous_handler = signal.signal(signal.SIGALRM, time_limit_reached)
+    signal.setitimer(signal.ITIMER_REAL, timeout_seconds)
+    try:
+        return estimator(*inputs, **settings)
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        signal.signal(signal.SIGALRM, previous_handler)
 
 
 def run_experiments(args):
@@ -81,9 +110,9 @@ def run_experiments(args):
         "wsindy-lasso": (wsindy, {"regression": "lasso", "rho_1": args.wsindy_rho_1}),
         "wsindy-mstls": (wsindy, {"regression": "mstls"}),
         "wendy-lasso": (wendy, {"regression": "lasso", "rho_1": args.wendy_rho_1}),
-        "wendy-mstls": (wendy, {"regression": "mstls"}),
+        "wendy-ols": (wendy, {"regression": "lasso", "rho_1": 0.0}),
         "wendy-mle-lasso": (wendy_mle, {"regression": "lasso", "rho_1": args.wendy_mle_rho_1}),
-        "wendy-mle-mstls": (wendy_mle, {"regression": "mstls"}),
+        "wendy-mle": (wendy_mle, {"regression": "lasso", "rho_1": 0.0}),
     }
     results = {}
     for noise_ratio in args.noise_ratios:
@@ -111,15 +140,41 @@ def run_experiments(args):
                     normality_tol=None if args.disable_normality_stop else 1e-4,
                 )
             if estimator is wendy_mle:
-                settings.update(alpha=args.wendy_mle_alpha)
+                settings.update(alpha=args.wendy_mle_alpha, max_iter=args.mle_max_iter, tol=args.mle_tol)
                 settings["noise_std"] = data.noise_std if args.mle_noise_std is None else args.mle_noise_std
+                if settings["noise_std"] == 0:
+                    results[noise_ratio][method_name] = {
+                        "status": "not_applicable", "squared_error": None, "runtime_seconds": None,
+                        "reason": "The sigma=0 Gaussian likelihood is undefined; no working variance was supplied.",
+                    }
+                    print(f"noise={noise_ratio:g} {METHOD_LABELS[method_name]}: N/A (sigma=0)", flush=True)
+                    continue
             inputs = (data.u_observed, data.spatial_grid, data.time)
-            estimator(*inputs, **settings)  # One untimed warm-up for this configuration.
+            print(f"noise={noise_ratio:g} {METHOD_LABELS[method_name]}: starting", flush=True)
             durations = []
-            for _ in range(args.repeats):
-                start = perf_counter()
-                beta = estimator(*inputs, **settings)
-                durations.append(perf_counter() - start)
+            try:
+                with warnings.catch_warnings(record=True) as caught:
+                    warnings.simplefilter("always")
+                    # Call zero is the warm-up; include only later calls in the median.
+                    for call_index in range(args.repeats + 1):
+                        start = perf_counter()
+                        beta = call_estimator(estimator, inputs, settings, args.timeout_seconds)
+                        elapsed = perf_counter() - start
+                        if call_index > 0:
+                            durations.append(elapsed)
+                        print(f"  {'warm-up' if call_index == 0 else f'run {call_index}'}: {elapsed:.3f} s", flush=True)
+            except (RuntimeError, np.linalg.LinAlgError, TimeoutError) as error:
+                elapsed = perf_counter() - start
+                results[noise_ratio][method_name] = {
+                    "status": "timeout" if isinstance(error, TimeoutError) else "failed",
+                    "squared_error": None, "runtime_seconds": None,
+                    "reason": str(error), "failed_attempt_seconds": elapsed,
+                    "failed_call": "warm-up" if call_index == 0 else f"timed run {call_index}",
+                    "durations": durations,
+                    "warnings": list(dict.fromkeys(str(item.message) for item in caught)),
+                }
+                print(f"  {results[noise_ratio][method_name]['status']}: {error} ({elapsed:.3f} s)", flush=True)
+                continue
 
             if beta.shape != beta_true.shape or not np.all(np.isfinite(beta)):
                 raise ValueError(f"{method_name} returned an invalid coefficient vector.")
@@ -127,10 +182,12 @@ def run_experiments(args):
             squared_error = float(np.sum((beta - beta_true)**2))
             runtime = float(np.median(durations))
             results[noise_ratio][method_name] = {
+                "status": "warning" if caught else "ok",
                 "squared_error": squared_error,
                 "runtime_seconds": runtime,
                 "durations": durations,
                 "nonzero_coefficients": int(np.count_nonzero(beta)),
+                "warnings": list(dict.fromkeys(str(item.message) for item in caught)),
             }
             print(
                 f"noise={noise_ratio:g} {METHOD_LABELS[method_name]}: "
@@ -175,27 +232,32 @@ def write_report(args, results):
         "  relative normalization. Truth is used only for evaluation; its squared norm is 1.73.",
         f"- LASSO: SINDy `rho_1={args.sindy_rho_1:g}`; WSINDy `rho_1={args.wsindy_rho_1:g}`;",
         f"  `max_iter={args.max_iter}`, `tol={args.tol:g}`. These are fixed example penalties, not tuned values.",
-        "- OLS: `rho_1=0`. MSTLS candidates: "
+        "- OLS: `rho_1=0`. WSINDy MSTLS candidates: "
         + (f"`{tuple(args.thresholds)}`." if args.thresholds else "`np.logspace(-4, 0, 50)`."),
         f"- Weak methods: half-widths `{widths}`, strides `{strides}`, bump exponents `{degrees}`;",
         "  peak-one test functions and physical quadrature weights, with no row normalization.",
         f"- Runtime: median of {args.repeats} timed calls after one untimed warm-up per method",
         "  and noise level. Each call includes library/weak-system construction and regression;",
         "  data generation, imports, error calculation, and report writing are excluded.",
-        f"- Environment: Python {platform.python_version()}, NumPy {np.__version__},",
+        f"- Environment: Python {platform.python_version()}, NumPy {np.__version__}, SciPy {scipy.__version__},",
         f"  {platform.platform()}; `{thread_settings}`.",
         "",
     ]
+    if args.timeout_seconds is not None:
+        lines.extend([f"- Wall-time limit: {args.timeout_seconds:g} seconds per estimator call, including warm-up.", ""])
     if any(name.startswith("wendy") for name in args.methods):
         lines.extend([
-            f"- WENDy: `rho_1={args.wendy_rho_1:g}`, `alpha={args.wendy_alpha:g}`,",
+            f"- WENDy: LASSO `rho_1={args.wendy_rho_1:g}`, OLS `rho_1=0`; `alpha={args.wendy_alpha:g}`,",
             f"  `max_reweights={args.max_reweights}`, `reweight_tol={args.reweight_tol:g}`,",
             f"  normality stopping {'disabled' if args.disable_normality_stop else 'enabled (p<1e-4 after 10 reweights)' }.",
-            f"- WENDy-MLE: `rho_1={args.wendy_mle_rho_1:g}`, `alpha={args.wendy_mle_alpha:g}`;",
+            f"- WENDy-MLE: LASSO `rho_1={args.wendy_mle_rho_1:g}`, unpenalized `rho_1=0`; `alpha={args.wendy_mle_alpha:g}`;",
+            f"  `max_iter={args.mle_max_iter}`, `tol={args.mle_tol:g}` (scaled KKT tolerance).",
             "  noise std: " + (f"explicit working value `{args.mle_noise_std:g}`."
                                  if args.mle_noise_std is not None else "known generator noise std for each noise level."),
-            "  MLE-MSTLS thresholds and refits the nonlinear likelihood; its selection geometry",
-            "  is frozen at the dense MLE covariance. It is an extension of linear MSTLS.",
+            "- WENDy (OLS) fits unpenalized least squares on each whitened system (GLS/IRLS).",
+            "  WENDy-MLE (unpenalized) minimizes the full Gaussian weak-residual likelihood,",
+            "  including the log determinant, with no L1 penalty. Neither uses thresholding.",
+            "  Both nonsparse fits start from full-library WSINDy (OLS).",
             "",
         ])
     for metric, title in (
@@ -209,10 +271,43 @@ def write_report(args, results):
                 "| Experiment instance | " + " | ".join(METHOD_LABELS[m] for m in args.methods) + " |",
                 "| --- | " + " | ".join("---:" for _ in args.methods) + " |",
             ])
-            values = [results[noise_ratio][m][metric] for m in args.methods]
-            cells = [f"{value:.6e}" if metric == "squared_error" else f"{value:.6f}" for value in values]
+            cells = []
+            for method in args.methods:
+                result = results[noise_ratio][method]
+                status = result["status"]
+                if status in ("ok", "warning"):
+                    value = result[metric]
+                    cell = f"{value:.6e}" if metric == "squared_error" else f"{value:.6f}"
+                    if status == "warning":
+                        cell += " *"
+                elif status == "not_applicable":
+                    cell = "N/A"
+                else:
+                    cell = "TIMEOUT" if status == "timeout" else "FAIL"
+                    if metric == "runtime_seconds":
+                        cell += f" ({result['failed_attempt_seconds']:.3f} s)"
+                cells.append(cell)
             lines.extend(["| 2D anisotropic porous medium | " + " | ".join(cells) + " |", ""])
 
+    lines.extend([
+        "## Fit status",
+        "",
+        "`*` marks a returned estimate with a warning; see the stop reason below.",
+        "`FAIL` and `TIMEOUT` mark incomplete benchmarks. Their parenthesized",
+        "times measure the failed call, not a median successful-fit runtime.",
+        "`N/A` means the sigma=0 MLE objective is undefined; no fit was attempted.",
+        "",
+    ])
+    for noise_ratio in args.noise_ratios:
+        for method in args.methods:
+            result = results[noise_ratio][method]
+            label = f"Noise ratio {noise_ratio:g}, {METHOD_LABELS[method]}"
+            if "reason" in result:
+                phase = f" ({result['failed_call']})" if "failed_call" in result else ""
+                lines.append(f"- {label}{phase}: {result['reason']}")
+            for warning in result.get("warnings", []):
+                lines.append(f"- {label}: {warning}")
+    lines.append("")
     lines.extend([
         "## Interpretation",
         "",
@@ -221,10 +316,12 @@ def write_report(args, results):
         "worse than that reference on this coefficient metric. The solution has a",
         "nonsmooth moving front and the full library is highly correlated; solving the",
         "regression accurately does not by itself ensure accurate coefficient recovery.",
-        "LASSO penalties act on differently scaled strong and weak losses, so the chosen",
-        "penalties do not represent equal regularization strength across the two methods.",
+        "LASSO penalties act on differently scaled losses, so the chosen",
+        "penalties do not represent equal regularization strength across methods.",
         "Runtime covers this implementation, including all configured MSTLS candidates.",
         "Repeated timings reuse the same data; they are not independent noise trials.",
+        "A timeout describes the implementation under the stated compute budget; it",
+        "does not establish nonconvergence or an accuracy ranking for that method.",
         "",
         "## Reproduce",
         "",
@@ -238,6 +335,8 @@ def write_report(args, results):
         f"  --max-iter {args.max_iter} --tol {args.tol:g} --output {shlex.quote(str(args.output))}",
     ])
     extra_options = []
+    if args.timeout_seconds is not None:
+        extra_options.append(f"--timeout-seconds {args.timeout_seconds:g}")
     for flag, values in (("half-widths", args.half_widths), ("strides", args.strides),
                          ("test-degrees", args.test_degrees), ("thresholds", args.thresholds)):
         if values is not None:
@@ -247,6 +346,7 @@ def write_report(args, results):
             f"--wendy-rho-1 {args.wendy_rho_1:g} --wendy-mle-rho-1 {args.wendy_mle_rho_1:g}",
             f"--wendy-alpha {args.wendy_alpha:g} --wendy-mle-alpha {args.wendy_mle_alpha:g}",
             f"--max-reweights {args.max_reweights} --reweight-tol {args.reweight_tol:g}",
+            f"--mle-max-iter {args.mle_max_iter} --mle-tol {args.mle_tol:g}",
         ])
         if args.mle_noise_std is not None:
             extra_options.append(f"--mle-noise-std {args.mle_noise_std:g}")
