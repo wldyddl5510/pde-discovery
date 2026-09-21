@@ -226,6 +226,149 @@ separate rescaling of the data and coordinates is not implemented, so enabling
 MSTLS alone does not reproduce its complete experimental pipeline. MSTLS is a
 threshold-and-refit heuristic, not a solver for the LASSO objective.
 
+## WENDy and WENDy-MLE
+
+Install the updated dependencies with `python -m pip install -r requirements.txt`.
+SciPy supplies sparse matrices, Cholesky solves, the normality test, and nonlinear
+optimization. Both new estimators return the same coefficient vector as WSINDy
+and accept its library and test-function settings. Their common observation
+Jacobian is
+
+```text
+r(beta) = y - X beta,
+A(beta, U)[k,i] = -d_t(phi_k)(z_i) * Delta_z
+                 - sum_{alpha,j} beta[alpha,j] * (-1)^|alpha|
+                   * d^alpha(phi_k)(z_i) * j * U_i^(j-1) * Delta_z,
+C(beta) = (1-alpha) * A(beta,U) A(beta,U).T + alpha * I.
+```
+
+The scalar `alpha` in the covariance is the relaxation parameter; the multi-index
+in the sum labels a spatial derivative. Off-diagonal covariance entries are
+retained, including correlations between overlapping tests. No clean solution
+or true coefficient is used to construct `A`.
+
+```python
+from methods import wendy, wendy_mle
+
+inputs = (data.u_observed, data.spatial_grid, data.time)
+
+beta_wendy_lasso = wendy(*inputs, regression="lasso", rho_1=1e-4)
+beta_wendy_mstls = wendy(*inputs, regression="mstls")
+
+# A positive observation noise std is required for the MLE objective.
+# Here the synthetic experiment supplies its known noise scale.
+beta_mle_lasso = wendy_mle(
+    *inputs, noise_std=data.noise_std, regression="lasso", rho_1=1e-3,
+)
+beta_mle_mstls = wendy_mle(
+    *inputs, noise_std=data.noise_std, regression="mstls",
+)
+```
+
+These penalties illustrate the API and are not tuned for coefficient recovery.
+The loss scales of WSINDy, WENDy, and WENDy-MLE differ.
+
+### WENDy-IRLS
+
+`wendy` implements the draft's covariance-weighted iteration, following
+[Bortz, Messenger and Dukic (2023)](https://arxiv.org/abs/2302.13271).
+At each iteration it freezes `C` at the current coefficients, whitens `X, y`
+with a Cholesky factor, and fits the resulting linear system:
+
+- `regression="lasso"` minimizes `r.T C^-1 r / K + rho_1 * ||beta||_1`.
+  `rho_1=0` gives ordinary GLS on that iteration.
+- `regression="mstls"` applies the existing MSTLS bounds, refits, and threshold
+  selection to that iteration's whitened system. The covariance is then updated.
+
+These are sparsity extensions of the draft's nonsparse IRLS, not an assertion
+that sparse IRLS globally minimizes a single beta-dependent objective.
+The initialization is the corresponding WSINDy fit. `initial_beta` can supply
+another starting point in the original coefficient units.
+
+Defaults are `alpha=1e-10`, `max_reweights=100`, and `reweight_tol=1e-6`.
+The relative fixed-point change uses `max(||beta_old||, 1e-12)` as its denominator.
+As in equation (18) of the paper, a Shapiro-Wilk check is also enabled after
+10 reweights, with `normality_tol=1e-4`. Stopping on that check emits a warning
+that fixed-point convergence was not reached. `normality_tol=None` disables
+this rule. Exhausting the iteration budget raises `RuntimeError`.
+`max_iter` and `tol` control each inner regression. With `alpha=1`, WENDy
+reduces to the corresponding WSINDy fit.
+
+### WENDy-MLE
+
+`wendy_mle` uses the draft's first-order Gaussian weak-residual likelihood,
+as developed in [Rummel et al. (2025)](https://arxiv.org/abs/2502.08881):
+
+```text
+[logdet(C(beta)) + r(beta).T C(beta)^-1 r(beta) / noise_std^2] / (2*K)
+    + rho_1 * ||beta||_1.
+```
+
+Terms constant in `beta` are omitted. Dividing by `K` specifies the penalty
+convention; it leaves unpenalized MLE unchanged. The default `alpha=0` matches
+the draft; a positive value explicitly regularizes the covariance. This is an
+approximate likelihood of weak residuals, not the exact observation likelihood.
+
+`noise_std` is required and must be strictly positive. At zero observation
+variance the Gaussian objective above is undefined; the implementation raises
+an error instead of silently introducing a noise floor. A positive working
+variance for a noise-free experiment must be supplied explicitly and reported
+as a modeling choice.
+
+For `regression="lasso"`, the nonlinear objective uses positive/negative parts
+of the coefficients and L-BFGS-B to enforce the L1 penalty. With `rho_1=0`, it
+uses BFGS without sparsity. The gradient differentiates both covariance terms,
+including `logdet(C)`; it does not freeze covariance during optimization.
+The default `max_iter=1000` limits iterations per nonlinear fit. With
+`tol=1e-6`, the returned coefficients must satisfy the scaled KKT test:
+multiply each violation in original units by `||y||/||X_j||` and bound its
+maximum by `tol` (zero norms use the floors documented in the code).
+These controls also apply to LASSO initialization. For `alpha=1`, the
+likelihood reduces exactly to a scaled OLS/LASSO problem, which is solved by
+the existing linear solver and its original-coordinate tolerance.
+
+`regression="mstls"` is an explicitly defined **extension** of MSTLS to this
+nonlinear objective:
+
+1. Obtain a dense MLE and freeze its whitening for threshold bounds and the
+   prediction-distance-plus-support-size selection score.
+2. For each candidate threshold, remove terms failing those bounds and
+   re-optimize the full beta-dependent likelihood on the remaining support.
+   Repeat until the support stops changing.
+3. Select the smallest threshold minimizing the common selection score.
+
+Each refit updates covariance inside the likelihood; it is not a GLS refit.
+The default candidate grid is the same 50 thresholds used by WSINDy;
+`thresholds=(0.05,)` specifies one. `rho_1` must be zero in MSTLS mode.
+This extension is not claimed as an algorithm proposed in the WENDy-MLE paper.
+
+MLE is nonconvex: stationarity does not guarantee a global optimum, and a failed
+stationarity check raises `RuntimeError`. `initial_beta` allows another starting
+point. The full 100-term porous-medium library can be difficult for both IRLS
+and MLE; success on smaller identifiable systems is not a recovery guarantee
+for that library. In particular, sparse IRLS can fail to reach a fixed point.
+
+Covariance methods cost more than WSINDy. The implementation stores local
+support indices and sparse `A`, and evaluates the likelihood gradient in blocks,
+avoiding a dense `(100, K, N)` derivative tensor. Covariance itself is a full
+`K x K` matrix. Use `strides` to control the number of test functions; sufficient
+independent rows are still needed for the unpenalized initialization.
+
+### Experiment runner
+
+`experiments.py --methods` also accepts `wendy-lasso`, `wendy-mstls`,
+`wendy-mle-lasso`, and `wendy-mle-mstls`. Use `--noise-ratios 1` when comparing
+MLE at the generator's known noise level. Alternatively, `--mle-noise-std`
+sets an explicit positive working value. The runner records that choice.
+The five existing methods remain the default selection.
+
+Additional controls are `--wendy-rho-1`, `--wendy-mle-rho-1`, `--wendy-alpha`,
+`--wendy-mle-alpha`, `--max-reweights`, `--reweight-tol`,
+`--disable-normality-stop`, `--thresholds`, `--half-widths`, `--strides`, and
+`--test-degrees`. The chosen settings are included in generated reports and
+their reproduction commands. The existing `results.md` records the earlier
+five-method experiment; adding estimators does not provide new benchmark values.
+
 ## Checks
 
 ```sh
@@ -238,3 +381,7 @@ weak-residual convergence across the porous-medium moving front, and the
 OLS/LASSO optimality conditions on clean and noisy porous-medium observations.
 MSTLS checks cover both threshold bounds, successive support reductions,
 refitting, the threshold-selection loss and tie rule, and both public estimators.
+WENDy checks cover the full 100-column observation Jacobian, off-diagonal
+covariance, independent likelihood-gradient finite differences, GLS and MLE KKT
+conditions, both sparsity options on a noisy 2D diffusion equation, reduction
+to WSINDy at identity covariance, and explicit stopping/failure behavior.

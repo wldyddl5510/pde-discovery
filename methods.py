@@ -4,15 +4,19 @@ Arrays have spatial axes first and time last, as in simulation_generation.py.
 SINDy differentiates the observations; WSINDy differentiates test functions.
 Both offer least squares with an optional LASSO penalty, or the WSINDy
 paper's modified sequential-thresholding least squares (MSTLS).
+WENDy iteratively weights weak residuals by their covariance; WENDy-MLE
+optimizes their parameter-dependent Gaussian likelihood.
 """
 
 from __future__ import annotations
 
 from itertools import combinations_with_replacement
 from math import factorial
+import warnings
 
 import numpy as np
 from numpy.polynomial import Polynomial
+from scipy import linalg, optimize, sparse, stats
 
 
 def polynomial_library_terms(
@@ -205,6 +209,18 @@ def _least_squares(X, y) -> np.ndarray:
     return scaled_beta / column_norms
 
 
+def _threshold_grid(thresholds):
+    if thresholds is None:
+        thresholds = np.logspace(-4, 0, 50)
+    thresholds = np.asarray(thresholds, dtype=float)
+    if (
+        thresholds.ndim != 1 or thresholds.size == 0
+        or not np.all(np.isfinite(thresholds)) or np.any(thresholds <= 0)
+    ):
+        raise ValueError("thresholds must be a nonempty 1D sequence of finite positive values.")
+    return np.unique(thresholds)
+
+
 def _mstls(X, y, thresholds, max_iter: int) -> np.ndarray:
     """Messenger & Bortz (2021), equations (4.4)-(4.7), in original units.
 
@@ -222,15 +238,7 @@ def _mstls(X, y, thresholds, max_iter: int) -> np.ndarray:
     """
     if not isinstance(max_iter, (int, np.integer)) or max_iter < 1:
         raise ValueError("max_iter must be a positive integer.")
-    if thresholds is None:
-        thresholds = np.logspace(-4, 0, 50)
-    thresholds = np.asarray(thresholds, dtype=float)
-    if (
-        thresholds.ndim != 1 or thresholds.size == 0
-        or not np.all(np.isfinite(thresholds)) or np.any(thresholds <= 0)
-    ):
-        raise ValueError("thresholds must be a nonempty 1D sequence of finite positive values.")
-    thresholds = np.unique(thresholds)  # Ascending order also resolves loss ties.
+    thresholds = _threshold_grid(thresholds)  # Ascending order also resolves loss ties.
 
     if not np.any(y):
         return np.zeros(X.shape[1])
@@ -383,7 +391,7 @@ def _weak_integrals(values, weights, strides):
     return values.ravel()
 
 
-def build_wsindy_system(
+def _prepare_weak_tests(
     u: np.ndarray,
     spatial_grid: tuple[np.ndarray, ...],
     time: np.ndarray,
@@ -393,32 +401,8 @@ def build_wsindy_system(
     half_widths: tuple[int, ...] | None = None,
     strides: tuple[int, ...] | None = None,
     test_degrees: tuple[int, ...] | None = None,
-) -> tuple[np.ndarray, np.ndarray]:
-    """Build the weak system X, y from the draft's Section 2, equation (4).
-
-    y[k] = -integral(d_t(phi_k) * u)
-    X[k, (alpha, j)] = (-1)^|alpha| * integral(d^alpha(phi_k) * u**j)
-
-    Integrals use tensor-product trapezoidal quadrature on the given uniform
-    grid. Only test functions are differentiated. Columns have exactly the
-    same order as build_sindy_system() and polynomial_library_terms().
-
-    Each phi_k is a translate of a product of compact polynomial bumps
-    (1-r_d^2)^p_d, |r_d|<1, with peak one. Parameters have one entry per
-    spatial axis followed by time:
-      half_widths: support radii in grid cells (2*m+1 points), each m>=2.
-        Default max(2, axis_size//4); every support must fit in the data.
-      strides: center spacings in grid cells; default max(1, m//4).
-      test_degrees: exponents p_d greater than the largest derivative on
-        that axis (max_derivative_order in space, 1 in time). By default,
-        use the smallest such integer with (1-(1-1/m)^2)^p_d <= 1e-10.
-
-    This is the bump family and degree rule in Messenger & Bortz (2021),
-    equations (4.2)-(4.3). Support defaults are fixed grid-size heuristics,
-    not their Fourier-based support selection. Direct separable sums keep
-    the implementation simple. Narrow, poorly resolved bumps can give large
-    quadrature error; support selection is an experiment parameter.
-    """
+):
+    """Validate weak-form inputs and construct the shared test-function weights."""
     u = np.asarray(u, dtype=float)
     spatial_dim = len(spatial_grid)
     terms = polynomial_library_terms(
@@ -467,6 +451,50 @@ def build_wsindy_system(
     weights = []
     for m, step, p, order in zip(half_widths, steps, test_degrees, max_orders):
         weights.append(_test_function_weights(m, step, p, order))
+    return u, terms, weights, strides
+
+
+def build_wsindy_system(
+    u: np.ndarray,
+    spatial_grid: tuple[np.ndarray, ...],
+    time: np.ndarray,
+    *,
+    max_derivative_order: int = 5,
+    max_polynomial_degree: int = 5,
+    half_widths: tuple[int, ...] | None = None,
+    strides: tuple[int, ...] | None = None,
+    test_degrees: tuple[int, ...] | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Build the weak system X, y from the draft's Section 2, equation (4).
+
+    y[k] = -integral(d_t(phi_k) * u)
+    X[k, (alpha, j)] = (-1)^|alpha| * integral(d^alpha(phi_k) * u**j)
+
+    Integrals use tensor-product trapezoidal quadrature on the given uniform
+    grid. Only test functions are differentiated. Columns have exactly the
+    same order as build_sindy_system() and polynomial_library_terms().
+
+    Each phi_k is a translate of a product of compact polynomial bumps
+    (1-r_d^2)^p_d, |r_d|<1, with peak one. Parameters have one entry per
+    spatial axis followed by time:
+      half_widths: support radii in grid cells (2*m+1 points), each m>=2.
+        Default max(2, axis_size//4); every support must fit in the data.
+      strides: center spacings in grid cells; default max(1, m//4).
+      test_degrees: exponents p_d greater than the largest derivative on
+        that axis (max_derivative_order in space, 1 in time). By default,
+        use the smallest such integer with (1-(1-1/m)^2)^p_d <= 1e-10.
+
+    This is the bump family and degree rule in Messenger & Bortz (2021),
+    equations (4.2)-(4.3). Support defaults are fixed grid-size heuristics,
+    not their Fourier-based support selection. Narrow, poorly resolved bumps
+    can give large quadrature error; support selection is an experiment parameter.
+    """
+    u, terms, weights, strides = _prepare_weak_tests(
+        u, spatial_grid, time,
+        max_derivative_order=max_derivative_order,
+        max_polynomial_degree=max_polynomial_degree,
+        half_widths=half_widths, strides=strides, test_degrees=test_degrees,
+    )
 
     time_weights = [axis_weights[0] for axis_weights in weights[:-1]] + [weights[-1][1]]
     y = -_weak_integrals(u, time_weights, strides)
@@ -528,3 +556,407 @@ def wsindy(
         test_degrees=test_degrees,
     )
     return _fit_coefficients(X, y, rho_1, max_iter, tol, regression, thresholds)
+
+
+def _tensor_weights(weights):
+    product = weights[0]
+    for axis_weights in weights[1:]:
+        product = np.multiply.outer(product, axis_weights)
+    return product.ravel()
+
+
+class _WeakResidual:
+    """Shared weak residual and its Jacobian with respect to observations.
+
+    Store translated support indices and one kernel per spatial derivative,
+    rather than a dense (coefficient, test, observation) Jacobian tensor.
+    A(beta) is sparse; its full K-by-K covariance retains correlations between
+    overlapping tests. This is costlier than WSINDy as the number of tests grows.
+    """
+
+    def __init__(self, u, spatial_grid, time, **test_settings):
+        self.X, self.y = build_wsindy_system(u, spatial_grid, time, **test_settings)
+        u, terms, weights, strides = _prepare_weak_tests(u, spatial_grid, time, **test_settings)
+        self.u = u.ravel()
+        self.degree = max(power for _, power in terms)
+        derivatives = list(dict.fromkeys(alpha for alpha, _ in terms))
+
+        widths = [len(axis_weights[0]) // 2 for axis_weights in weights]
+        starts = np.meshgrid(
+            *[np.arange(0, size - 2 * m, stride) for size, m, stride in zip(u.shape, widths, strides)],
+            indexing="ij",
+        )
+        offsets = np.meshgrid(*[np.arange(1, 2 * m) for m in widths], indexing="ij")
+        starts = np.ravel_multi_index(tuple(starts), u.shape).ravel()
+        offsets = np.ravel_multi_index(tuple(offsets), u.shape).ravel()
+        self.indices = starts[:, None] + offsets[None, :]
+        self.indptr = np.arange(len(starts) + 1) * len(offsets)
+        self.local_u = self.u[self.indices]
+
+        # Endpoints vanish for every derivative used, so omit them from A.
+        self.time_kernel = -_tensor_weights(
+            [axis_weights[0][1:-1] for axis_weights in weights[:-1]] + [weights[-1][1][1:-1]]
+        )
+        self.spatial_kernels = np.array([
+            (-1)**sum(alpha) * _tensor_weights(
+                [weights[axis][order][1:-1] for axis, order in enumerate(alpha)]
+                + [weights[-1][0][1:-1]]
+            )
+            for alpha in derivatives
+        ])
+
+    def jacobian(self, beta):
+        """A = d(y-X beta)/dU = W_t - sum beta[alpha,j] W_alpha diag(j U^(j-1))."""
+        values = np.broadcast_to(self.time_kernel, self.indices.shape).copy()
+        coefficients = np.asarray(beta).reshape(-1, self.degree)
+        for kernel, powers in zip(self.spatial_kernels, coefficients):
+            if np.any(powers):
+                slope = np.polynomial.polynomial.polyval(
+                    self.u, powers * np.arange(1, self.degree + 1)
+                )
+                values -= kernel[None, :] * slope[self.indices]
+        return sparse.csr_matrix(
+            (values.ravel(), self.indices.ravel(), self.indptr),
+            shape=(len(self.y), len(self.u)),
+        )
+
+    def covariance(self, beta, alpha):
+        """C=(1-alpha) A A.T + alpha I, without a noise-variance factor."""
+        if alpha == 1:
+            return np.eye(len(self.y))
+        A = self.jacobian(beta)
+        covariance = (1.0 - alpha) * (A @ A.T).toarray()
+        covariance.flat[::len(self.y) + 1] += alpha
+        return covariance
+
+    def whiten(self, beta, alpha):
+        factor = linalg.cholesky(self.covariance(beta, alpha), lower=True)
+        X = linalg.solve_triangular(factor, self.X, lower=True)
+        y = linalg.solve_triangular(factor, self.y, lower=True)
+        return X, y
+
+    def likelihood(self, beta, noise_std, alpha):
+        """Mean Gaussian weak-residual negative log likelihood and exact gradient.
+
+        f = [logdet(C) + r.T C^-1 r / noise_std^2] / (2 K), r=y-X beta.
+        Terms independent of beta are omitted. Both the log determinant and
+        the beta-dependence of C in the quadratic term contribute derivatives.
+        """
+        count = len(self.y)
+        variance = noise_std**2
+        residual = self.y - self.X @ beta
+        if alpha == 1:
+            value = residual @ residual / (2.0 * count * variance)
+            gradient = -self.X.T @ residual / (count * variance)
+            return value, gradient
+
+        A = self.jacobian(beta)
+        covariance = (1.0 - alpha) * (A @ A.T).toarray()
+        covariance.flat[::count + 1] += alpha
+        factor = linalg.cholesky(covariance, lower=True)
+        weighted_residual = linalg.cho_solve((factor, True), residual)
+        logdet = 2.0 * np.sum(np.log(np.diag(factor)))
+        value = (logdet + residual @ weighted_residual / variance) / (2.0 * count)
+        gradient = -self.X.T @ weighted_residual / (count * variance)
+
+        # dC = (1-alpha) (dA A.T + A dA.T).
+        inverse = linalg.cho_solve((factor, True), np.eye(count))
+        metric = inverse - np.outer(weighted_residual, weighted_residual) / variance
+        covariance_gradient = np.zeros((len(self.spatial_kernels), self.degree))
+        for start in range(0, count, 32):
+            stop = min(start + 32, count)
+            # Only materialize 32 rows of metric @ A, not the full K-by-N array.
+            block = (A.T @ metric[start:stop].T).T
+            local = block[np.arange(stop - start)[:, None], self.indices[start:stop]].copy()
+            for power in range(1, self.degree + 1):
+                moments = power * np.sum(local, axis=0)
+                covariance_gradient[:, power - 1] -= self.spatial_kernels @ moments
+                local *= self.local_u[start:stop]
+        gradient += (1.0 - alpha) * covariance_gradient.ravel() / count
+        return float(value), gradient
+
+
+def _validate_wendy_controls(rho_1, regression, thresholds, alpha, max_iter, tol):
+    if not np.isfinite(rho_1) or rho_1 < 0:
+        raise ValueError("rho_1 must be finite and nonnegative.")
+    if regression not in ("lasso", "mstls"):
+        raise ValueError("regression must be 'lasso' or 'mstls'.")
+    if regression == "mstls" and rho_1 != 0:
+        raise ValueError("rho_1 must be 0 when regression='mstls'; use thresholds instead.")
+    if regression == "lasso" and thresholds is not None:
+        raise ValueError("thresholds applies only to regression='mstls'.")
+    if regression == "mstls":
+        _threshold_grid(thresholds)
+    if not np.isfinite(alpha) or not 0 <= alpha <= 1:
+        raise ValueError("alpha must be finite and in [0, 1].")
+    if not isinstance(max_iter, (int, np.integer)) or max_iter < 1:
+        raise ValueError("max_iter must be a positive integer.")
+    if not np.isfinite(tol) or tol <= 0:
+        raise ValueError("tol must be finite and positive.")
+
+
+def _initial_coefficients(problem, initial_beta, rho_1, regression, thresholds, max_iter, tol):
+    if initial_beta is None:
+        return _fit_coefficients(problem.X, problem.y, rho_1, max_iter, tol, regression, thresholds)
+    beta = np.asarray(initial_beta, dtype=float)
+    if beta.shape != (problem.X.shape[1],) or not np.all(np.isfinite(beta)):
+        raise ValueError("initial_beta must be a finite vector with one entry per library term.")
+    return beta.copy()
+
+
+def wendy(
+    u: np.ndarray,
+    spatial_grid: tuple[np.ndarray, ...],
+    time: np.ndarray,
+    *,
+    rho_1: float = 0.0,
+    regression: str = "lasso",
+    thresholds: tuple[float, ...] | np.ndarray | None = None,
+    alpha: float = 1e-10,
+    max_reweights: int = 100,
+    reweight_tol: float = 1e-6,
+    normality_tol: float | None = 1e-4,
+    normality_start: int = 10,
+    initial_beta: np.ndarray | None = None,
+    max_derivative_order: int = 5,
+    max_polynomial_degree: int = 5,
+    half_widths: tuple[int, ...] | None = None,
+    strides: tuple[int, ...] | None = None,
+    test_degrees: tuple[int, ...] | None = None,
+    max_iter: int = 10000,
+    tol: float = 1e-8,
+) -> np.ndarray:
+    """WENDy-IRLS with LASSO or MSTLS in each covariance-weighted regression.
+
+    Use the same weak tests/library as WSINDy. At each reweighting step freeze
+    C=(1-alpha) A(beta,U) A(beta,U).T + alpha I and fit the whitened X and y.
+    LASSO minimizes r.T C^-1 r / K + rho_1*||beta||_1; rho_1=0 is GLS.
+    MSTLS applies its bounds and selection loss to the whitened system. These
+    sparsity additions extend the draft's nonsparse WENDy iteration.
+
+    Initial coefficients come from the corresponding WSINDy regression unless
+    initial_beta is supplied. Stop at relative coefficient change <= reweight_tol
+    (denominator max(||beta_old||,1e-12)); hitting max_reweights raises RuntimeError.
+    As in Bortz et al. (2023), Eq. (18), optionally stop when Shapiro-Wilk p-value
+    falls below normality_tol after normality_start reweights, emitting a warning
+    that this is not fixed-point convergence. Set normality_tol=None to disable.
+    max_iter/tol control inner regression. alpha=1 reduces to WSINDy.
+
+    No noise standard deviation or clean solution is used. In particular, the
+    L1 penalty here applies to the stated whitened loss without a sigma factor.
+    The full covariance includes correlations between overlapping tests; choose
+    strides to control its K-by-K size when working with large grids.
+    """
+    _validate_wendy_controls(rho_1, regression, thresholds, alpha, max_iter, tol)
+    if not isinstance(max_reweights, (int, np.integer)) or max_reweights < 1:
+        raise ValueError("max_reweights must be a positive integer.")
+    if not np.isfinite(reweight_tol) or reweight_tol <= 0:
+        raise ValueError("reweight_tol must be finite and positive.")
+    if normality_tol is not None and (not np.isfinite(normality_tol) or not 0 < normality_tol < 1):
+        raise ValueError("normality_tol must be None or in (0, 1).")
+    if not isinstance(normality_start, (int, np.integer)) or normality_start < 1:
+        raise ValueError("normality_start must be a positive integer.")
+    problem = _WeakResidual(
+        u, spatial_grid, time,
+        max_derivative_order=max_derivative_order, max_polynomial_degree=max_polynomial_degree,
+        half_widths=half_widths, strides=strides, test_degrees=test_degrees,
+    )
+    beta = _initial_coefficients(problem, initial_beta, rho_1, regression, thresholds, max_iter, tol)
+    for iteration in range(max_reweights):
+        X, y = problem.whiten(beta, alpha)
+        updated = _fit_coefficients(X, y, rho_1, max_iter, tol, regression, thresholds)
+        relative_change = np.linalg.norm(updated - beta) / max(np.linalg.norm(beta), 1e-12)
+        beta = updated
+        if relative_change <= reweight_tol:
+            return beta
+        if normality_tol is not None and iteration + 1 > normality_start and len(y) >= 3:
+            p_value = stats.shapiro(y - X @ beta).pvalue
+            if p_value < normality_tol:
+                warnings.warn(
+                    f"WENDy stopped on the normality test after {iteration + 1} reweights "
+                    f"(p={p_value:.3g}); the fixed-point tolerance was not met.",
+                    RuntimeWarning, stacklevel=2,
+                )
+                return beta
+    raise RuntimeError(
+        f"WENDy did not converge in {max_reweights} reweights; "
+        "check alpha, initialization, sparsity settings, or the iteration budget."
+    )
+
+
+def _fit_weak_likelihood(problem, initial_beta, active, noise_std, alpha, rho_1, max_iter, tol):
+    """Optimize the actual beta-dependent likelihood on a specified support.
+
+    L1 uses beta=scale*(positive-negative) with nonnegative optimization
+    variables. This keeps the objective differentiable in the optimization
+    variables while preserving exactly rho_1*||beta||_1 at the optimum.
+    """
+    beta = np.zeros(problem.X.shape[1])
+    if not np.any(active):
+        return beta
+    X = problem.X[:, active]
+    if alpha == 1:
+        # The likelihood is then exactly a scaled least-squares objective.
+        beta[active] = _fit_coefficients(
+            X, problem.y, 2.0 * noise_std**2 * rho_1, max_iter, tol
+        )
+        return beta
+
+    column_norms = np.linalg.norm(X, axis=0)
+    target_norm = max(np.linalg.norm(problem.y), 1e-12)
+    scales = np.divide(target_norm, column_norms, out=np.ones_like(column_norms), where=column_norms > 0)
+    start = initial_beta[active] / scales
+    size = len(start)
+
+    def objective(parameters):
+        if rho_1 > 0:
+            values = parameters[:size] - parameters[size:]
+        else:
+            values = parameters
+        coefficients = np.zeros_like(beta)
+        coefficients[active] = scales * values
+        value, gradient = problem.likelihood(coefficients, noise_std, alpha)
+        gradient = scales * gradient[active]
+        if rho_1 > 0:
+            value += rho_1 * np.sum(scales * (parameters[:size] + parameters[size:]))
+            gradient = np.concatenate([gradient + rho_1 * scales, -gradient + rho_1 * scales])
+        return value, gradient
+
+    if rho_1 > 0:
+        start = np.concatenate([np.maximum(start, 0.0), np.maximum(-start, 0.0)])
+        bounds = [(0.0, None)] * len(start)
+        algorithm = "L-BFGS-B"
+        options = {"maxiter": max_iter, "gtol": tol, "ftol": 0.0, "maxls": 50, "maxcor": 20}
+    else:
+        bounds = None
+        algorithm = "BFGS"
+        options = {"maxiter": max_iter, "gtol": tol}
+    solution = optimize.minimize(
+        objective, start, jac=True, method=algorithm, bounds=bounds, options=options,
+    )
+    parameters = solution.x[:size] - solution.x[size:] if rho_1 > 0 else solution.x
+    beta[active] = scales * parameters
+    value, gradient = problem.likelihood(beta, noise_std, alpha)
+    gradient = gradient[active]
+    violation = np.maximum(np.abs(gradient) - rho_1, 0.0)
+    nonzero = beta[active] != 0
+    violation[nonzero] = np.abs(gradient[nonzero] + rho_1 * np.sign(beta[active][nonzero]))
+    optimality = np.max(scales * violation)
+    if not np.isfinite(value) or not np.all(np.isfinite(beta)) or not np.isfinite(optimality) or optimality > tol:
+        raise RuntimeError(
+            f"WENDy-MLE did not reach its stationarity tolerance "
+            f"(scaled KKT violation {optimality:.3g}, target {tol:g}): {solution.message}"
+        )
+    return beta
+
+
+def _threshold_weak_likelihood(problem, initial_beta, noise_std, alpha, thresholds, max_iter, tol):
+    """MSTLS extension: threshold and refit the nonlinear weak likelihood.
+
+    Freeze the *selection* geometry at the dense MLE covariance: threshold
+    bounds and prediction-distance scores use this common whitened X and y.
+    Every refit still updates covariance inside the likelihood. This is an
+    explicitly defined extension, not the linear-OLS MSTLS algorithm itself.
+    """
+    thresholds = _threshold_grid(thresholds)
+    full_support = np.ones(problem.X.shape[1], dtype=bool)
+    reference = _fit_weak_likelihood(
+        problem, initial_beta, full_support, noise_std, alpha, 0.0, max_iter, tol
+    )
+    X, y = problem.whiten(reference, alpha)
+    reference_norm = np.linalg.norm(X @ reference)
+    if reference_norm == 0:
+        return np.zeros_like(reference)
+    column_norms = np.linalg.norm(X, axis=0)
+    if np.any(column_norms == 0):
+        raise np.linalg.LinAlgError("MSTLS selection requires nonzero library columns.")
+    ratios = np.linalg.norm(y) / column_norms
+    best_loss = np.inf
+    best_beta = None
+    for threshold in thresholds:
+        lower = threshold * np.maximum(1.0, ratios)
+        upper = np.minimum(1.0, ratios) / threshold
+        beta = reference.copy()
+        active = full_support.copy()
+        # A term can only be removed, so at most P support reductions occur.
+        for _ in range(len(beta) + 1):
+            retained = active & (np.abs(beta) >= lower) & (np.abs(beta) <= upper)
+            if np.array_equal(retained, active):
+                break
+            beta = _fit_weak_likelihood(
+                problem, beta, retained, noise_std, alpha, 0.0, max_iter, tol
+            )
+            active = retained
+        loss = np.linalg.norm(X @ (beta - reference)) / reference_norm
+        loss += np.count_nonzero(beta) / len(beta)
+        if loss < best_loss:
+            best_loss = loss
+            best_beta = beta.copy()
+    return best_beta
+
+
+def wendy_mle(
+    u: np.ndarray,
+    spatial_grid: tuple[np.ndarray, ...],
+    time: np.ndarray,
+    *,
+    noise_std: float,
+    rho_1: float = 0.0,
+    regression: str = "lasso",
+    thresholds: tuple[float, ...] | np.ndarray | None = None,
+    alpha: float = 0.0,
+    initial_beta: np.ndarray | None = None,
+    max_derivative_order: int = 5,
+    max_polynomial_degree: int = 5,
+    half_widths: tuple[int, ...] | None = None,
+    strides: tuple[int, ...] | None = None,
+    test_degrees: tuple[int, ...] | None = None,
+    max_iter: int = 1000,
+    tol: float = 1e-6,
+) -> np.ndarray:
+    """Minimize the draft's Gaussian weak-residual likelihood, optionally sparse.
+
+    With r=y-X beta and C=(1-alpha) A(beta,U) A(beta,U).T + alpha I, LASSO minimizes
+      [logdet(C) + r.T C^-1 r / noise_std^2] / (2 K) + rho_1*||beta||_1.
+    Dividing the draft's loss by K leaves unpenalized fits unchanged and fixes
+    the penalty convention. alpha=0 is the draft likelihood; positive alpha
+    explicitly regularizes it. noise_std must be supplied and strictly positive:
+    the sigma=0 Gaussian likelihood is undefined. It is never replaced by an
+    undisclosed variance floor or estimated from a clean solution.
+
+    L1 uses nonnegative positive/negative parameter parts and L-BFGS-B;
+    unpenalized fits use BFGS. Both use analytic derivatives of both likelihood
+    terms, including covariance.
+    rho_1=0 is unpenalized MLE. max_iter bounds nonlinear iterations per fit;
+    tol bounds KKT violations after scaling beta_j by ||y||/||X_j|| (with
+    floors for zero norms). Failure raises RuntimeError. This nonconvex solve
+    finds a stationary point, not a guaranteed global optimum. alpha=1 is
+    solved exactly as a scaled OLS/LASSO problem with its usual KKT tolerance.
+
+    MSTLS is an extension: compute a dense MLE, freeze its whitening for the
+    usual threshold bounds/selection score, then threshold and refit the full
+    nonlinear likelihood on each retained support. thresholds=None uses the
+    same 50 candidates as WSINDy; rho_1 must be zero in this mode. No LASSO or
+    fixed-covariance least-squares solve is substituted for the MLE refits.
+
+    Initial coefficients come from the corresponding WSINDy regression, or
+    from initial_beta; max_iter/tol also control any LASSO initialization.
+    The weak tests and returned coefficient order match
+    WSINDy. This is an approximate residual likelihood, not the exact
+    observation-data likelihood discussed separately in the draft.
+    """
+    _validate_wendy_controls(rho_1, regression, thresholds, alpha, max_iter, tol)
+    variance = float(noise_std) * float(noise_std)
+    if not np.isfinite(noise_std) or noise_std <= 0 or not np.isfinite(variance) or variance <= 0:
+        raise ValueError("noise_std must have a finite, strictly positive variance; sigma=0 has no Gaussian MLE.")
+    problem = _WeakResidual(
+        u, spatial_grid, time,
+        max_derivative_order=max_derivative_order, max_polynomial_degree=max_polynomial_degree,
+        half_widths=half_widths, strides=strides, test_degrees=test_degrees,
+    )
+    beta = _initial_coefficients(problem, initial_beta, rho_1, regression, thresholds, max_iter, tol)
+    if regression == "mstls":
+        return _threshold_weak_likelihood(problem, beta, noise_std, alpha, thresholds, max_iter, tol)
+    return _fit_weak_likelihood(
+        problem, beta, np.ones(len(beta), dtype=bool), noise_std, alpha, rho_1, max_iter, tol
+    )
