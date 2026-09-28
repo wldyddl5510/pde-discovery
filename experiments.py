@@ -25,7 +25,9 @@ from simulation_generation import (
     generate_anisotropic_porous_medium_3d,
     generate_anisotropic_porous_medium_3d_samples,
     generate_nonlinear_viscous_burgers,
+    generate_linear_advection_diffusion,
     sample_nonlinear_viscous_burgers,
+    sample_linear_advection_diffusion,
 )
 from utils import (
     MovingAverageEstimator, estimate_grid_noise_std,
@@ -51,6 +53,8 @@ METHOD_LABELS = {
     "paper-filtered-wsindy": "Paper filtered WSINDy (MSTLS)",
     "sampled-plug-in-wsindy": "Sampled plug-in WSINDy (MSTLS)",
     "sampled-debiased-wsindy": "Sampled debiased WSINDy (MSTLS)",
+    "sampled-debiased-wsindy-ols": "Sampled debiased WSINDy (OLS)",
+    "sampled-debiased-wsindy-mstls": "Sampled debiased WSINDy (MSTLS)",
 }
 SAMPLED_METHODS = ("sampled-wsindy-ols", "sampled-wsindy-lasso", "sampled-wsindy-mstls")
 DEFAULT_METHODS = ["sindy-ols", "wsindy-ols", "sindy-lasso", "wsindy-lasso", "wsindy-mstls"]
@@ -58,11 +62,24 @@ GENERATORS = {
     "anisotropic_porous_medium": generate_anisotropic_porous_medium,
     "anisotropic_porous_medium_3d": generate_anisotropic_porous_medium_3d,
     "nonlinear_viscous_burgers": generate_nonlinear_viscous_burgers,
+    "linear_advection_diffusion": generate_linear_advection_diffusion,
 }
 BURGERS_METHODS = [
+    "sampled-wsindy-mstls", "sampled-plug-in-wsindy", "sampled-debiased-wsindy",
+]
+BURGERS_ALLOWED_METHODS = [
     "sindy-ols", "sindy-mstls", "wsindy-ols", "wsindy-mstls",
     "paper-filtered-wsindy", "sampled-wsindy-mstls",
     "sampled-plug-in-wsindy", "sampled-debiased-wsindy",
+]
+LINEAR_METHODS = [
+    "sampled-wsindy-ols", "sampled-wsindy-mstls",
+    "sampled-debiased-wsindy-ols", "sampled-debiased-wsindy-mstls",
+]
+LINEAR_ALLOWED_METHODS = [
+    "sindy-ols", "sindy-mstls", "wsindy-ols", "wsindy-mstls",
+    "sampled-wsindy-ols", "sampled-wsindy-mstls",
+    "sampled-debiased-wsindy-ols", "sampled-debiased-wsindy-mstls",
 ]
 
 
@@ -116,6 +133,31 @@ def parse_arguments():
     parser.add_argument("--append", action="store_true",
                         help="Append this experiment's report, preserving previous results.")
     args = parser.parse_args()
+    if args.instance == "linear_advection_diffusion":
+        if args.nz is not None:
+            parser.error("The linear instance has two spatial dimensions; omit --nz.")
+        args.nx = 64 if args.nx is None else args.nx
+        args.ny = 64 if args.ny is None else args.ny
+        args.nt = 32 if args.nt is None else args.nt
+        args.n_observations = (args.nx * args.ny * args.nt
+                               if args.n_observations is None else args.n_observations)
+        if args.methods == DEFAULT_METHODS:
+            args.methods = LINEAR_METHODS.copy()
+        if any(method not in LINEAR_ALLOWED_METHODS for method in args.methods):
+            parser.error(f"The linear instance supports: {', '.join(LINEAR_ALLOWED_METHODS)}.")
+        if min(args.nx, args.ny, args.nt) < 16 or args.n_observations < 2:
+            parser.error("The linear instance needs nx, ny, nt >= 16 and n-observations >= 2.")
+        for flag in ("half_widths", "strides", "test_degrees", "pilot_bandwidths"):
+            values = getattr(args, flag)
+            if values is not None and len(values) != 3:
+                parser.error(f"--{flag.replace('_', '-')} needs x, y, t values.")
+        if args.pilot_bandwidths is not None and any(
+            not np.isfinite(width) or width <= 0 for width in args.pilot_bandwidths
+        ):
+            parser.error("--pilot-bandwidths must be finite and positive.")
+        if any(not np.isfinite(level) or level < 0 for level in args.noise_ratios):
+            parser.error("--noise-ratios must be finite and nonnegative.")
+        return args
     if args.instance == "nonlinear_viscous_burgers":
         if args.ny is not None or args.nz is not None:
             parser.error("The Burgers instance has one spatial dimension; omit --ny and --nz.")
@@ -130,7 +172,7 @@ def parse_arguments():
             parser.error("The Burgers comparison fixes the paper bump and physical test supports.")
         if args.methods == DEFAULT_METHODS:
             args.methods = BURGERS_METHODS.copy()
-        if any(method not in BURGERS_METHODS for method in args.methods):
+        if any(method not in BURGERS_ALLOWED_METHODS for method in args.methods):
             parser.error("The Burgers instance supports only its eight comparison methods.")
         if args.replicates < 1 or args.repeats < 1:
             parser.error("--replicates and --repeats must be positive.")
@@ -215,6 +257,239 @@ def call_estimator(estimator, inputs, settings, timeout_seconds):
     finally:
         signal.setitimer(signal.ITIMER_REAL, 0)
         signal.signal(signal.SIGALRM, previous_handler)
+
+
+def _linear_test_settings(data, args):
+    """Use identical compact tests for the grid and iid linear comparisons."""
+    sizes = data.u_true.shape
+    widths = tuple(args.half_widths) if args.half_widths else (8, 8, 5)
+    strides = tuple(args.strides) if args.strides else (6, 6, 3)
+    degrees = tuple(args.test_degrees) if args.test_degrees else (8, 8, 4)
+    axes = (*data.spatial_grid, data.time)
+    center_axes = [
+        axis[width:size-width:stride]
+        for axis, size, width, stride in zip(axes, sizes, widths, strides)
+    ]
+    centers = np.column_stack([
+        coordinate.ravel() for coordinate in np.meshgrid(*center_axes, indexing="ij")
+    ])
+    physical_widths = tuple(width * (axis[1] - axis[0])
+                            for width, axis in zip(widths, axes))
+    grid_tests = dict(half_widths=widths, strides=strides, test_degrees=degrees)
+    sampled_tests = dict(
+        domain_bounds=((0.0, 2.0 * np.pi), (0.0, 2.0 * np.pi), (0.0, 0.5)),
+        test_centers=centers, test_half_widths=physical_widths,
+        test_degrees=degrees,
+    )
+    return grid_tests, sampled_tests
+
+
+def run_linear_experiments(args):
+    """Compare J=1 grid fits and paired iid raw/debiased weak fits."""
+    library = dict(max_derivative_order=5, max_polynomial_degree=1)
+    bandwidths = tuple(args.pilot_bandwidths) if args.pilot_bandwidths else (0.2, 0.2, 0.05)
+    results = []
+    metadata = {}
+    for noise_ratio in args.noise_ratios:
+        data = generate_linear_advection_diffusion(
+            nx=args.nx, ny=args.ny, nt=args.nt,
+            noise_ratio=noise_ratio, seed=args.seed,
+        )
+        samples = sample_linear_advection_diffusion(
+            n_observations=args.n_observations, noise_ratio=noise_ratio,
+            noise_reference_shape=(args.nx, args.ny, args.nt), seed=args.seed + 10000,
+        )
+        grid_tests, sampled_tests = _linear_test_settings(data, args)
+        terms = polynomial_library_terms(2, **library)
+        beta_true = np.array([data.true_coefficients.get(term, 0.0) for term in terms])
+        if not set(data.true_coefficients).issubset(terms):
+            raise ValueError("The J=1 library omits a true PDE term.")
+        metadata[noise_ratio] = dict(
+            K=len(sampled_tests["test_centers"]), noise_std=data.noise_std,
+            grid_tests=grid_tests, sampled_tests=sampled_tests,
+            bandwidths=bandwidths,
+        )
+        if noise_ratio == args.noise_ratios[0] and any(
+            not method.startswith("sampled-") for method in args.methods
+        ):
+            clean_X, clean_y = build_wsindy_system(
+                data.u_true, data.spatial_grid, data.time, **library, **grid_tests
+            )
+            metadata[noise_ratio]["clean_rank"] = int(np.linalg.matrix_rank(clean_X))
+            metadata[noise_ratio]["clean_condition"] = float(np.linalg.cond(clean_X))
+            metadata[noise_ratio]["clean_residual"] = float(
+                np.linalg.norm(clean_y - clean_X @ beta_true) / np.linalg.norm(clean_y)
+            )
+        paired_systems = {}
+        for method in args.methods:
+            start = perf_counter()
+            if method.startswith("sindy-"):
+                X, y = call_estimator(
+                    build_sindy_system,
+                    (data.u_observed, data.spatial_grid, data.time), library,
+                    args.timeout_seconds,
+                )
+            elif method.startswith("wsindy-"):
+                X, y = call_estimator(
+                    build_wsindy_system,
+                    (data.u_observed, data.spatial_grid, data.time),
+                    {**library, **grid_tests}, args.timeout_seconds,
+                )
+            elif method.startswith("sampled-debiased-"):
+                X, y = call_estimator(
+                    build_debiased_wsindy_system,
+                    (samples.training_points, samples.training_values,
+                     samples.evaluation_points, samples.evaluation_values,
+                     MovingAverageEstimator(bandwidths)),
+                    {**library, **sampled_tests}, args.timeout_seconds,
+                )
+                paired_systems["debiased"] = (X, y)
+            else:
+                X, y = call_estimator(
+                    build_sampled_wsindy_system,
+                    (samples.evaluation_points, samples.evaluation_values),
+                    {**library, **sampled_tests}, args.timeout_seconds,
+                )
+                paired_systems["raw"] = (X, y)
+            regression = "mstls" if method.endswith("mstls") else "lasso"
+            beta = call_estimator(
+                fit_sampled_wsindy_system, (X, y),
+                {"regression": regression,
+                 "thresholds": args.thresholds if regression == "mstls" else None,
+                 "max_iter": args.max_iter, "tol": args.tol},
+                args.timeout_seconds,
+            )
+            result = dict(
+                noise=noise_ratio, method=method,
+                squared_error=float(np.sum((beta - beta_true)**2)),
+                runtime=float(perf_counter() - start),
+                truth_residual=float(np.linalg.norm(y - X @ beta_true) / np.linalg.norm(y)),
+                nonzero=int(np.count_nonzero(beta)),
+                support_recovered=bool(np.array_equal(beta != 0, beta_true != 0)),
+            )
+            results.append(result)
+            print(
+                f"noise={noise_ratio:g} {METHOD_LABELS[method]}: "
+                f"error={result['squared_error']:.6g}, "
+                f"truth residual={result['truth_residual']:.4g}, "
+                f"runtime={result['runtime']:.3f}s", flush=True,
+            )
+        if len(paired_systems) == 2:
+            raw_X, raw_y = paired_systems["raw"]
+            debiased_X, debiased_y = paired_systems["debiased"]
+            np.testing.assert_allclose(raw_X, debiased_X, rtol=1e-12, atol=1e-12)
+            np.testing.assert_allclose(raw_y, debiased_y, rtol=1e-12, atol=1e-12)
+            metadata[noise_ratio]["max_system_difference"] = float(max(
+                np.max(np.abs(raw_X - debiased_X)),
+                np.max(np.abs(raw_y - debiased_y)),
+            ))
+    return results, metadata
+
+
+def write_linear_report(args, results, metadata):
+    """Append one compact J=1 comparison, with grid and iid results separate."""
+    setup = metadata[args.noise_ratios[0]]
+    grid_tests = setup["grid_tests"]
+    sampled_tests = setup["sampled_tests"]
+    K = setup["K"]
+    has_grid_results = any(not item["method"].startswith("sampled-") for item in results)
+    lines = [
+        "## 2D linear advection–diffusion: J=1 control", "",
+        "PDE: `u_t = -0.3 u_x + 0.2 u_y + 0.08 u_xx + 0.04 u_xy + 0.05 u_yy`",
+        "on the periodic square `[0,2π)^2`, observed over `t∈[0,0.5]`.",
+        "The exact solution is a fixed sum of 31 Fourier modes with frequencies",
+        "`kx=0..4, ky=-3..3` (excluding zero and conjugate duplicates). Each has",
+        "amplitude `0.18/(1+0.15*(kx²+ky²))` and a uniform random phase",
+        "from a fixed generator seeded at 42. Each mode is",
+        "translated by velocity `(0.3,-0.2)` and damped by",
+        "`exp(-t*(0.08*kx^2+0.04*kx*ky+0.05*ky^2))`.",
+        f"Iid observations: `n={args.n_observations}`, split into "
+        f"{args.n_observations//2} pilot and {args.n_observations-args.n_observations//2} evaluation observations.",
+        f"The `{args.nx}×{args.ny}×{args.nt}` grid is "
+        + ("also used by grid methods." if has_grid_results else "used only to define the noise RMS."),
+        "Library: maximum total spatial derivative order `S=5`, with all 20 "
+        "nonzero 2D derivative multi-indices of orders 1–5; `J=1` (`u` only). "
+        "There are 20 candidate coefficients and 5 true nonzero coefficients.",
+        f"Weak tests: `K={K}`, with reference-lattice half-widths `{grid_tests['half_widths']}`, "
+        f"center strides `{grid_tests['strides']}`, and bump exponents `{grid_tests['test_degrees']}` "
+        "in `(x,y,t)` order. Each test is a translated product of "
+        "`b_p(r)=(1-r²)^p` for `|r|<1`, zero outside.",
+        f"Physical support half-widths: `{tuple(round(float(w), 6) for w in sampled_tests['test_half_widths'])}`; "
+        f"pilot box bandwidths: `{setup['bandwidths']}`.",
+        *([f"Clean grid weak design: rank `{setup['clean_rank']}/20`, "
+           f"condition number `{setup['clean_condition']:.4g}`, "
+           f"relative residual at true coefficients `{setup['clean_residual']:.4g}`."]
+          if has_grid_results else []),
+        f"Noise standard deviation is ratio × RMS of the exact solution on the reference grid; "
+        + (f"grid noise seed `{args.seed}`, " if has_grid_results else "")
+        + f"iid sampling/noise seed `{args.seed + 10000}`. MSTLS searches "
+        + (f"`{args.thresholds}`." if args.thresholds else "`logspace(-4,0,50)` thresholds."),
+        "Runtime is one complete system-construction-and-fit call, excluding data generation; "
+        "timings are illustrative. Squared error uses all 20 coefficients.",
+        "Raw and debiased iid WSINDy use exactly the same evaluation points and tests; "
+        "the debiased call also fits the independent pilot.", "",
+    ]
+    for title, sampled in (("Grid methods", False), ("Independent-point methods", True)):
+        group = [r for r in results if r["method"].startswith("sampled-") == sampled]
+        if not group:
+            continue
+        lines.extend([
+            f"### {title}", "",
+            "| Noise ratio | Method | Squared error | True-system residual | Nonzero | Exact support | Runtime (s) |",
+            "| ---: | --- | ---: | ---: | ---: | --- | ---: |",
+        ])
+        for result in group:
+            support = "—" if result["method"].endswith("ols") else (
+                "yes" if result["support_recovered"] else "no"
+            )
+            lines.append(
+                f"| {result['noise']:g} | {METHOD_LABELS[result['method']]} | "
+                f"{result['squared_error']:.6g} | {result['truth_residual']:.4g} | "
+                f"{result['nonzero']} | {support} | "
+                f"{result['runtime']:.3f} |"
+            )
+        lines.append("")
+    checked = [
+        (noise, info["max_system_difference"])
+        for noise, info in metadata.items() if "max_system_difference" in info
+    ]
+    if checked:
+        lines.append(
+            "Paired iid raw/debiased weak systems agree to numerical precision: "
+            + ", ".join(f"noise {noise:g}: max entry difference {delta:.2e}"
+                        for noise, delta in checked) + "."
+        )
+        lines.append(
+            "For `J=1`, the corrected power is exactly "
+            "`u_hat - (u_hat-U) = U`; this is a negative control for the correction, "
+            "not evidence of a debiasing gain."
+        )
+    lines.extend([
+        "The iid true-system residual is large even without observation noise,",
+        "so its coefficient errors are dominated by Monte Carlo integration in",
+        "this small-data design. A lower error at a noisier level is one random realization, not a",
+        "noise-robustness claim. The zero coefficient vector has squared error `0.1405`.",
+    ])
+    command = [
+        "python", "experiments.py", "--instance", "linear_advection_diffusion",
+        "--nx", str(args.nx), "--ny", str(args.ny), "--nt", str(args.nt),
+        "--n-observations", str(args.n_observations), "--seed", str(args.seed),
+        "--noise-ratios", *(str(noise) for noise in args.noise_ratios),
+        "--methods", *args.methods,
+    ]
+    for flag in ("half_widths", "strides", "test_degrees", "pilot_bandwidths", "thresholds"):
+        values = getattr(args, flag)
+        if values is not None:
+            command.extend(["--" + flag.replace("_", "-"), *(str(value) for value in values)])
+    if args.append:
+        command.append("--append")
+    lines.extend(["", "Reproduce with:", "", "```sh",
+                  "OPENBLAS_NUM_THREADS=1 " + shlex.join(command), "```", ""])
+    report = "\n".join(lines)
+    with args.output.open("a" if args.append else "w", encoding="utf-8") as stream:
+        if args.append and args.output.stat().st_size:
+            stream.write("\n\n")
+        stream.write(report)
 
 
 def _burgers_settings(data):
@@ -364,16 +639,17 @@ def run_burgers_experiments(args):
 
 
 def write_burgers_report(args, results, metadata):
-    """Keep grid and iid estimates separate while reporting the same metrics."""
+    """Report iid benchmark results, retaining optional grid diagnostics separately."""
+    has_grid = any(not method.startswith("sampled-") for method in args.methods)
     lines = [
-        "## Nonlinear viscous Burgers: paper-filter comparison", "",
+        "## Nonlinear viscous Burgers: Monte Carlo comparison", "",
         "PDE: `u_t = 0.01 u_xx - 0.5 d_x(u^2) - u^3 + 2u^2 + 1`.",
         "This is an adapted instance: periodic `x in [-1,1)`, `t in [0,1.5]`, and",
         "`u(x,0)=0.5+0.7 sin(pi*x)+0.25 sin(2*pi*x+0.3)`. The",
         "[Messenger–Bortz paper](https://arxiv.org/pdf/2211.16000) does not",
         "specify these initial/boundary data. A centered-difference, sparse-BDF",
-        "solution is the numerical truth; the grid and iid observations share it.", "",
-        f"- Grid: `{args.nx} x {args.nt}` (`n={metadata[0]['grid_n']}`); iid observations: "
+        "solution is the numerical truth sampled by the iid observations.", "",
+        f"- Numerical truth grid: `{args.nx} x {args.nt}`; iid observations: "
         f"`n={args.n_observations}`, split equally into independent pilot and evaluation samples.",
         f"- `K={metadata[0]['K']}` tests, support half-widths `(0.25,0.1875)` in `(x,t)`, "
         "support volume ratio `1/16`; translated paper bump "
@@ -391,16 +667,14 @@ def write_burgers_report(args, results, metadata):
         "mean relative system residual at the true coefficients, and median "
         "complete fit runtime (seconds). Data generation and width selection "
         "are excluded from runtime. OLS has no sparse support score.", "",
-        "| sigma/sigma_c | estimated sigma | filter width | iid pilot bandwidths (x,t) | pilot MSE |",
-        "| ---: | ---: | ---: | --- | ---: |",
+        "| sigma/sigma_c | iid pilot bandwidths (x,t) | pilot MSE |",
+        "| ---: | --- | ---: |",
     ]
     for multiplier in args.noise_multipliers:
         entries = [item for item in metadata if item["multiplier"] == multiplier]
-        widths = sorted({item["filter_width"] for item in entries})
         bandwidths = entries[0]["bandwidths"]
         lines.append(
-            f"| {multiplier:g} | {np.mean([item['sigma_est'] for item in entries]):.4g} | "
-            f"{','.join(map(str, widths))} | ({bandwidths[0]:.5g}, {bandwidths[1]:.5g}) | "
+            f"| {multiplier:g} | ({bandwidths[0]:.5g}, {bandwidths[1]:.5g}) | "
             f"{np.mean([item['pilot_mse'] for item in entries]):.4g} |"
         )
     for title, methods in (
@@ -430,14 +704,16 @@ def write_burgers_report(args, results, metadata):
                     f"{np.mean(errors):.6g} | {support} | {np.mean(residuals):.4g} | "
                     f"{np.median([item['runtime'] for item in successes]):.3f} |"
                 )
-    lines.extend(["", "Grid and iid errors are separate comparisons because their observation "
-                  "locations and quadrature differ. The paper reports 200 noise realizations; "
+    lines.extend(["", *(("Grid and iid errors are separate comparisons because their observation "
+                         "locations and quadrature differ.",) if has_grid else ()),
+                  "The paper reports 200 noise realizations; "
                   "these runs are a smaller numerical check, not a reproduction of its figure.",
                   "", "Reproduce with:", "",
                   "```sh",
                   "OPENBLAS_NUM_THREADS=1 python experiments.py --instance nonlinear_viscous_burgers "
                   f"--noise-multipliers {' '.join(f'{level:g}' for level in args.noise_multipliers)} "
                   f"--replicates {args.replicates} --n-observations {args.n_observations} "
+                  f"--methods {' '.join(args.methods)} "
                   "--append",
                   "```", ""])
     report = "\n".join(lines)
@@ -1133,7 +1409,10 @@ def write_report(args, results):
 
 if __name__ == "__main__":
     arguments = parse_arguments()
-    if arguments.instance == "nonlinear_viscous_burgers":
+    if arguments.instance == "linear_advection_diffusion":
+        measurements, settings = run_linear_experiments(arguments)
+        write_linear_report(arguments, measurements, settings)
+    elif arguments.instance == "nonlinear_viscous_burgers":
         measurements, settings = run_burgers_experiments(arguments)
         write_burgers_report(arguments, measurements, settings)
     elif arguments.methods == ["debiased-wsindy"]:

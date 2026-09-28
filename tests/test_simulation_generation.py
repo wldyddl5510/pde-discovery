@@ -9,6 +9,9 @@ from simulation_generation import (
     anisotropic_porous_medium_solution_3d,
     generate_anisotropic_porous_medium,
     generate_anisotropic_porous_medium_3d,
+    generate_linear_advection_diffusion,
+    linear_advection_diffusion_solution,
+    sample_linear_advection_diffusion,
 )
 
 
@@ -27,6 +30,45 @@ def bump_derivatives(coordinate, radius):
     second = -8.0 / radius**2 * base**3
     second += 48.0 * coordinate**2 / radius**4 * base**2
     return value, first, second
+
+
+class LinearAdvectionDiffusionTests(unittest.TestCase):
+    def test_exact_solution_satisfies_the_linear_pde(self):
+        u = linear_advection_diffusion_solution
+        x = np.array([0.3, 1.2, 3.1, 5.5])
+        y = np.array([0.9, 2.4, 4.0, 5.7])
+        t = np.array([0.03, 0.12, 0.3, 0.46])
+        h = 1e-3
+        center = u(x, y, t)
+        ux = (u(x + h, y, t) - u(x - h, y, t)) / (2 * h)
+        uy = (u(x, y + h, t) - u(x, y - h, t)) / (2 * h)
+        uxx = (u(x + h, y, t) - 2 * center + u(x - h, y, t)) / h**2
+        uyy = (u(x, y + h, t) - 2 * center + u(x, y - h, t)) / h**2
+        uxy = (u(x + h, y + h, t) - u(x + h, y - h, t)
+               - u(x - h, y + h, t) + u(x - h, y - h, t)) / (4 * h**2)
+        ut = (u(x, y, t + h) - u(x, y, t - h)) / (2 * h)
+        np.testing.assert_allclose(
+            ut, -0.3 * ux + 0.2 * uy + 0.08 * uxx + 0.04 * uxy + 0.05 * uyy,
+            rtol=0, atol=2e-6,
+        )
+        np.testing.assert_allclose(u(x + 2*np.pi, y, t), center, rtol=0, atol=1e-14)
+
+    def test_grid_and_iid_samples_share_truth_and_noise_scale(self):
+        grid = generate_linear_advection_diffusion(nx=16, ny=18, nt=10,
+                                                   noise_ratio=0.2, seed=7)
+        samples = sample_linear_advection_diffusion(
+            n_observations=101, noise_ratio=0.2, seed=7,
+            noise_reference_shape=(16, 18, 10),
+        )
+        self.assertEqual(grid.u_true.shape, (16, 18, 10))
+        self.assertEqual(samples.training_points.shape, (50, 3))
+        self.assertEqual(samples.evaluation_points.shape, (51, 3))
+        self.assertAlmostEqual(grid.noise_std, samples.noise_std)
+        self.assertEqual(grid.true_coefficients, samples.true_coefficients)
+        np.testing.assert_allclose(
+            samples.evaluation_true,
+            linear_advection_diffusion_solution(*samples.evaluation_points.T),
+        )
 
 
 class PorousMediumTests(unittest.TestCase):

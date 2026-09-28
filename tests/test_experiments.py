@@ -21,6 +21,14 @@ def arguments(*options):
 
 
 class ExperimentTests(unittest.TestCase):
+    def test_monte_carlo_instances_default_to_sampled_methods(self):
+        for instance in ("linear_advection_diffusion", "nonlinear_viscous_burgers"):
+            with self.subTest(instance=instance):
+                with patch("sys.argv", ["experiments.py", "--instance", instance]):
+                    args = experiments.parse_arguments()
+                self.assertTrue(args.methods)
+                self.assertTrue(all(method.startswith("sampled-") for method in args.methods))
+
     def test_3d_dispatch_and_appended_report(self):
         args = arguments("--instance", "anisotropic_porous_medium_3d", "--nz", "18",
                          "--methods", "wsindy-ols", "--noise-ratios", "0",

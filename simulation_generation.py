@@ -49,6 +49,99 @@ class PointSampleData:
 BURGERS_CRITICAL_NOISE_STD = np.sqrt(0.01 / 3.0)
 
 
+LINEAR_ADVECTION = (0.3, -0.2)
+LINEAR_DIFFUSION = ((0.08, 0.02), (0.02, 0.05))
+
+
+def linear_advection_diffusion_solution(x, y, t):
+    """Exact periodic solution of the 2D anisotropic advection-diffusion PDE.
+
+    Each Fourier mode is translated by the constant velocity and decays at
+    rate k.T @ D @ k. Fixed phases make the clean solution independent of the
+    noise seed; both positive and negative y-frequencies identify mixed terms.
+    """
+    x, y, t = np.broadcast_arrays(x, y, t)
+    values = np.zeros_like(x, dtype=float)
+    rng = np.random.default_rng(42)
+    for kx in range(5):
+        for ky in range(-3, 4):
+            if kx == 0 and ky <= 0:
+                continue  # Avoid a constant mode and duplicate conjugate modes.
+            phase = rng.uniform(0.0, 2.0 * np.pi)
+            amplitude = 0.18 / (1.0 + 0.15 * (kx**2 + ky**2))
+            decay = (LINEAR_DIFFUSION[0][0] * kx**2
+                     + 2.0 * LINEAR_DIFFUSION[0][1] * kx * ky
+                     + LINEAR_DIFFUSION[1][1] * ky**2)
+            angle = kx * (x - LINEAR_ADVECTION[0] * t)
+            angle += ky * (y - LINEAR_ADVECTION[1] * t) + phase
+            values += amplitude * np.exp(-decay * t) * np.cos(angle)
+    return values
+
+
+def linear_advection_diffusion_coefficients():
+    """Coefficients in u_t = -v.grad(u) + div(D grad(u))."""
+    return {
+        ((1, 0), 1): -LINEAR_ADVECTION[0],
+        ((0, 1), 1): -LINEAR_ADVECTION[1],
+        ((2, 0), 1): LINEAR_DIFFUSION[0][0],
+        ((1, 1), 1): 2.0 * LINEAR_DIFFUSION[0][1],
+        ((0, 2), 1): LINEAR_DIFFUSION[1][1],
+    }
+
+
+def generate_linear_advection_diffusion(
+    *, nx=64, ny=64, nt=32, noise_ratio=0.0, seed=0,
+) -> SimulationData:
+    """Evaluate the exact linear PDE solution on a periodic 2D grid."""
+    if any(not isinstance(size, (int, np.integer)) or size < 2 for size in (nx, ny, nt)):
+        raise ValueError("nx, ny, and nt must be integers of at least two.")
+    x = np.linspace(0.0, 2.0 * np.pi, nx, endpoint=False)
+    y = np.linspace(0.0, 2.0 * np.pi, ny, endpoint=False)
+    time = np.linspace(0.0, 0.5, nt)
+    clean = linear_advection_diffusion_solution(
+        x[:, None, None], y[None, :, None], time[None, None, :]
+    )
+    observed, noise_std = add_gaussian_noise(clean, noise_ratio, seed)
+    return SimulationData(
+        name="linear_advection_diffusion", spatial_grid=(x, y), time=time,
+        u_true=clean, u_observed=observed, noise_std=noise_std,
+        true_coefficients=linear_advection_diffusion_coefficients(),
+    )
+
+
+def sample_linear_advection_diffusion(
+    *, n_observations=131072, noise_ratio=0.0, seed=0,
+    noise_reference_shape=(64, 64, 32),
+) -> PointSampleData:
+    """Independent pilot/evaluation samples of the same exact linear solution."""
+    if not isinstance(n_observations, (int, np.integer)) or n_observations < 2:
+        raise ValueError("n_observations must be an integer of at least two.")
+    if len(noise_reference_shape) != 3 or any(
+        not isinstance(size, (int, np.integer)) or size < 2 for size in noise_reference_shape
+    ):
+        raise ValueError("noise_reference_shape must contain three sizes of at least two.")
+    reference = generate_linear_advection_diffusion(
+        nx=noise_reference_shape[0], ny=noise_reference_shape[1],
+        nt=noise_reference_shape[2], noise_ratio=0.0,
+    )
+    if not np.isfinite(noise_ratio) or noise_ratio < 0:
+        raise ValueError("noise_ratio must be finite and nonnegative.")
+    noise_std = float(noise_ratio * np.sqrt(np.mean(reference.u_true**2)))
+    bounds = np.array(((0.0, 2.0 * np.pi), (0.0, 2.0 * np.pi), (0.0, 0.5)))
+    rng = np.random.default_rng(seed)
+    points = rng.uniform(bounds[:, 0], bounds[:, 1], size=(n_observations, 3))
+    clean = linear_advection_diffusion_solution(points[:, 0], points[:, 1], points[:, 2])
+    observed = clean + rng.normal(0.0, noise_std, size=n_observations)
+    split = n_observations // 2
+    return PointSampleData(
+        name="linear_advection_diffusion",
+        training_points=points[:split], training_values=observed[:split],
+        evaluation_points=points[split:], evaluation_values=observed[split:],
+        evaluation_true=clean[split:], noise_std=noise_std,
+        true_coefficients=linear_advection_diffusion_coefficients(),
+    )
+
+
 def burgers_true_coefficients() -> dict[tuple[tuple[int, ...], int], float]:
     """Coefficients of the nonlinear viscous Burgers equation in the paper."""
     return {

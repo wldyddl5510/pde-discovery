@@ -94,6 +94,17 @@ class DebiasedWSINDyTests(unittest.TestCase):
             expected_square.append(-weight * np.sum(dx * bt * self.evaluation_values**2))
         np.testing.assert_allclose(x[:, 1], expected_square, rtol=0, atol=1e-12)
 
+    def test_j_one_system_is_independent_of_the_pilot(self):
+        settings = {**self.settings(), "max_polynomial_degree": 1}
+        raw_x, raw_y = build_sampled_wsindy_system(
+            self.points, self.evaluation_values, **settings
+        )
+        corrected_x, corrected_y = build_debiased_wsindy_system(
+            *self.data(), self.estimator(), **settings
+        )
+        np.testing.assert_allclose(corrected_x, raw_x, rtol=0, atol=1e-12)
+        np.testing.assert_array_equal(corrected_y, raw_y)
+
     def test_sampled_wsindy_mstls_refits_its_raw_system(self):
         x, y = build_sampled_wsindy_system(
             self.points, self.evaluation_values, **self.settings()
