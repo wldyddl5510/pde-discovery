@@ -47,7 +47,8 @@ For three spatial dimensions, use the separate
 generator. It returns arrays in `(x, y, z, t)` order on `[-5,5]^3` and `[0.5,2.5]`.
 `anisotropic_porous_medium_solution_3d(x, y, z, t)` evaluates its exact mass-one
 Barenblatt weak solution at arbitrary broadcastable coordinates. The diffusion
-matrix, exact formula, and measured results are recorded in [results.md](results.md).
+matrix and exact formula are in [simulation_generation.py](simulation_generation.py);
+measured results are in [results.md](results.md).
 The same estimators accept this data directly; their full 3D library has 55
 spatial derivative operators and 5 polynomial powers, hence 275 coefficients.
 Weak-method `half_widths`, `strides`, and `test_degrees` each need four entries,
@@ -88,9 +89,25 @@ access `u_true` or `true_coefficients`.
 
 `polynomial_library_terms` records the coefficient order. Derivatives are sorted
 by total order, starting with `(1, 0), (0, 1), (2, 0), (1, 1), (0, 2), ...`.
-For each derivative, polynomial powers run from 1 to 5. The same optional
-`max_derivative_order` and `max_polynomial_degree` arguments are accepted by
-the library helper and `sindy`.
+For each derivative, polynomial powers run from 1 to 5 by default. All methods
+also accept `min_derivative_order`, `max_derivative_order`,
+`min_polynomial_degree`, and `max_polynomial_degree`. For example, the 1D
+Burgers candidate library uses minimums 0 and maximums 6:
+
+```python
+from methods import build_wsindy_system
+
+library = dict(min_derivative_order=0, max_derivative_order=6,
+               min_polynomial_degree=0, max_polynomial_degree=6)
+terms = polynomial_library_terms(1, **library)
+X, y = build_wsindy_system(u_observed, (x,), t, **library)
+```
+
+This gives 43 nonzero columns, including `u^0`, reaction terms `u` through
+`u^6`, and spatial derivatives through order 6. The six positive derivatives
+of `u^0` are omitted because they vanish identically. The command-line
+experiments still use the original porous-medium library unless their instance
+settings are extended separately.
 
 SINDy uses centered finite differences that are second-order accurate for
 smooth functions. It differentiates each power of the observations directly.
@@ -164,6 +181,10 @@ followed by time:
   order on its axis. By default, use the smallest such integer satisfying
   `(1-(1-1/m)^2)^p <= 1e-10`, the paper's equation (4.3).
 
+For the adapted Burgers comparison, `test_function="paper"` instead uses the
+`exp(9/(r^2-1))` bump from [Messenger and Bortz (2022), Section 5.1](https://arxiv.org/pdf/2211.16000),
+with analytic derivatives through order six. Omit `test_degrees` in this mode.
+
 Support defaults use a fixed grid-size rule; the paper's automatic Fourier-based
 support selection is not implemented. The regression can use the draft's weak
 least squares with optional LASSO, or the paper's MSTLS algorithm below.
@@ -179,6 +200,57 @@ strength. The example penalties above are usage examples, not tuned values.
 Weak integration also leaves the bias in nonlinear powers of noisy observations
 uncorrected. A small regression residual need not imply accurate coefficients
 in the full, highly correlated polynomial library.
+
+## Debiased WSINDy
+
+`generate_anisotropic_porous_medium_3d_samples` draws independent uniform
+space-time observations and returns separate training and evaluation samples.
+Its noise scale uses the exact solution's RMS on a fixed reference grid, so
+neither random split influences the other's noise distribution.
+Fit `MovingAverageEstimator` from `utils.py` on the training sample only. On
+the evaluation sample, `build_debiased_wsindy_system` uses Monte Carlo weights
+`domain_volume / evaluation_sample_size` and replaces each power of the pilot
+prediction `v` by its first-order correction
+
+```text
+q_j(v, U) = v^j - j v^(j-1) (v-U).
+Y_db[k] = -integral(d_t(phi_k) U),
+X_db[k,(alpha,j)] = (-1)^|alpha| integral(d^alpha(phi_k) q_j(v,U)).
+```
+
+`debiased_wsindy` minimizes `||Y_db-X_db beta||_2^2/2 + lambda_||beta||_1`.
+`lambda_=0` uses ordinary least squares on the corrected system.
+Its coordinate-descent solver checks KKT error on the equivalent
+`rho_1=2*lambda_/K` mean-squared-loss scale; very small `lambda_` needs a
+correspondingly tighter `tol`.
+Set `regression="mstls", lambda_=0` to run the same threshold-and-refit
+selection rule described below on `(X_db, Y_db)`. Its default 50 candidate
+thresholds are `np.logspace(-4, 0, 50)`; `thresholds` can override them.
+MSTLS is a separate selection rule, not a minimizer of the L1 objective.
+The evaluation observations are independent of the data used to fit `v`, so
+the Monte Carlo correction has the conditional unbiasedness required by
+Section 5 of the draft. The test bumps and coefficient ordering match WSINDy;
+their centers and physical support widths are passed explicitly for random
+coordinates. Run `experiments.py --instance anisotropic_porous_medium_3d
+--methods debiased-wsindy`; [results.md](results.md) summarizes the retained
+settings and measurements.
+
+This unbiasedness applies to each corrected weak equation conditional on the
+training data, not to its squared residual. Squaring adds a variance term that
+can depend on `beta`; Section 5's stated objective does not subtract it.
+The first-order correction also leaves second-order pilot error. For example,
+at power two the corrected integrand differs from the true `u_*^2` by
+`-(v-u_*)^2` even before Monte Carlo error.
+
+For a matched random-design baseline, `build_sampled_wsindy_system` uses the
+same evaluation points, test functions, and Monte Carlo weights, but integrates
+the raw powers `U^j`. `sampled_wsindy` fits this system by OLS, LASSO, or MSTLS.
+The `sampled-wsindy-*` CLI methods use only the evaluation half of the generated
+points; debiased WSINDy additionally uses the independent training half to fit
+its pilot. Their LASSO penalties use the same `lambda` scale on half the squared
+weak residual norm. Set ordinary WSINDy's penalty with `--sampled-lambda`;
+`--n-observations`, `--half-widths`, `--strides`, and `--test-degrees` specify
+the matched point-sample experiment.
 
 ## Sequential thresholding (MSTLS)
 

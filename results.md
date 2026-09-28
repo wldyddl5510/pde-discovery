@@ -1,540 +1,210 @@
-# PDE-discovery sanity check
+# PDE coefficient experiments
 
-The [main 3D comparison](#3d-test-function-count-k512-versus-k4096) includes
-K=512 and K=4096 on the same data and test-function support. Its K=4096 LASSO
-entries retain the lowest coefficient error among the completed penalty trials,
-selected separately for each method and noise ratio using the known true coefficients.
-The selected penalties and their corresponding runtimes are recorded with the tables.
-The original [3D comparison](#3d-anisotropic-porous-medium-pde-discovery-sanity-check)
-runs only SINDy (OLS/LASSO) and WSINDy (OLS/LASSO/MSTLS), at noise ratios 0 and 1.
-The earlier 2D measurements below are preserved; they were not rerun for the 3D addition.
+Experiments 1–3 use the exact mass-one anisotropic porous-medium solution in
+[simulation_generation.py](simulation_generation.py), seed `0`, and noise ratios
+`0` and `1`. Gaussian noise has standard deviation equal to the ratio times the
+RMS of the clean solution on the stated reference grid. The coefficient library
+contains every nonzero spatial derivative multi-index of total order at most
+`5`, applied to each of `u, ..., u^5`. Reported error is
+`||beta_hat - beta_true||_2^2` over the full library. Runtime is the median of
+three timed repetitions after one warm-up; it includes system construction
+and fitting, but excludes data generation and penalty searches. BLAS used one
+thread. These are single-seed sanity checks, not averages over independent data.
 
-WENDy (OLS) and WENDy-MLE (unpenalized) replace their MSTLS variants and were
-rerun on the same data and settings. The other seven columns retain their
-previous measurements. WENDy and WENDy-MLE use no thresholding in this comparison.
-See [METHODS.md](METHODS.md) for estimator definitions.
+In Experiments 1–3, weak methods use translated tensor-product tests made from
+`b_p(r) = (1-r^2)^p` for `|r|<1` and zero otherwise. Each factor is evaluated at
+`(coordinate - center)/h`, where `h` is the stated support half-width. Tests
+have peak value one; grid-based weak integrals use trapezoidal quadrature.
+SINDy uses pointwise derivatives and has no test-function count `K`.
+MSTLS searches `np.logspace(-4, 0, 50)` thresholds. A LASSO penalty shown below
+is the only retained result for that method and noise level. Where several
+penalties were tried, the retained one has the lowest *observed coefficient
+error against known truth*; this is oracle selection for this seed, not a
+practical tuning rule.
 
-## Experiment settings
+## Experiment 1: 2D grid
 
-- Instance: `anisotropic_porous_medium`; exact 2D anisotropic porous-medium weak solution.
-- PDE: `u_t = 0.3 d_xx(u^2) - 0.8 d_xy(u^2) + d_yy(u^2)`.
-- Grid: `(64, 64, 32)` on `[-5, 5]^2`, with time in `[0.5, 2.5]`; endpoints included.
-- **n = 131,072** observed space-time points: `64 * 64 * 32`;
-  this counts the full input grid for every method, including spatial/time endpoints.
-- **K = 512** test functions / weak equations: `8 * 8 * 8`
-  centers along `(x, y, t)`. All WSINDy, WENDy, and WENDy-MLE variants use the same
-  tests at every noise ratio. SINDy uses no test functions, so K does not apply to it.
-- **S = 20** spatial derivative operators, using the draft's indexing:
-  every multi-index `alpha=(a,b)` with `a,b >= 0` and `1 <= a+b <= 5`.
-  The maximum total spatial derivative order is **5**; S counts operators.
-- **J = 5** polynomial powers: `u, u^2, ..., u^5`.
-  J describes powers of u, separately from the test-function exponents below.
-- Library: `D^alpha(u^j)`, giving `S * J = 100` coefficients, in
-  `polynomial_library_terms(2)` order. No zeroth spatial derivative or constant power is included.
-- SINDy retains `58 * 58 * 30 = 100,920` regression rows
-  after removing 3 points at each spatial end and 1 at each time end.
-  Its design matrix is `100,920 x 100`; weak design matrices are `512 x 100`.
-- One Gaussian-noise realization per noise ratio, seed `0`;
-  `noise_std = noise_ratio * RMS(u_true)`. Each method receives the same observations.
-- Error: `sum((beta_hat - beta_true)**2)` over all 100 coefficients, with no
-  relative normalization. Truth is used only for evaluation; its squared norm is 1.73.
-- LASSO: SINDy `rho_1=0.0001`; WSINDy `rho_1=1e-06`;
-  `max_iter=200000`, `tol=1e-08`. These are fixed example penalties, not tuned values.
-- OLS: `rho_1=0`. WSINDy MSTLS candidates: `np.logspace(-4, 0, 50)`.
-- Runtime: median of 3 timed calls after one untimed warm-up per method
-  and noise level. Each call includes library/weak-system construction and regression;
-  data generation, imports, error calculation, and report writing are excluded.
-- Environment: Python 3.13.5, NumPy 2.1.3, SciPy 1.15.3,
-  macOS-15.7.3-arm64-arm-64bit-Mach-O; `OPENBLAS_NUM_THREADS=1, OMP_NUM_THREADS=1, VECLIB_MAXIMUM_THREADS=1`.
+PDE: `u_t = 0.3 d_xx(u^2) - 0.8 d_xy(u^2) + d_yy(u^2)`.
+The `64 x 64 x 32` grid covers `[-5,5]^2 x [0.5,2.5]`, so `n=131,072`.
+There are `S=20` derivatives, `J=5` powers, and `100` coefficients.
+Weak methods use `K=512 = 8 x 8 x 8` tests with exponents `(11,11,16)`,
+support half-widths `(16,16,8)` grid cells, and center strides `(4,4,2)`.
+The LASSO penalties here were each measured at one setting only; no 2D
+penalty sweep was recorded. The zero-vector error is `1.73`.
 
-- Wall-time limit: 600 seconds per estimator call, including warm-up.
+| Noise | Method | LASSO penalty `rho_1` | Squared error | Runtime (s) |
+| ---: | --- | ---: | ---: | ---: |
+| 0 | SINDy (OLS) | — | 9.878746e+01 | 0.270994 |
+| 0 | SINDy (LASSO) | 1e-4 | 1.256032 | 0.134706 |
+| 0 | WSINDy (OLS) | — | 1.131562e+05 | 0.048332 |
+| 0 | WSINDy (LASSO) | 1e-6 | 1.627932 | 0.121193 |
+| 0 | WSINDy (MSTLS) | — | 1.663836e-05 | 0.124151 |
+| 0 | WENDy (OLS) * | — | 9.686758e+03 | 13.496299 |
+| 0 | WENDy (LASSO) | 1e-4 | 1.004261 | 20.026773 |
+| 1 | SINDy (OLS) | — | 3.262772e+03 | 0.342833 |
+| 1 | SINDy (LASSO) | 1e-4 | 1.873925 | 3.499125 |
+| 1 | WSINDy (OLS) | — | 1.700983e+07 | 0.087451 |
+| 1 | WSINDy (LASSO) | 1e-6 | 1.013724 | 0.206751 |
+| 1 | WSINDy (MSTLS) | — | 2.328519e-03 | 0.114476 |
+| 1 | WENDy (OLS) | — | 8.963744e+05 | 37.997836 |
+| 1 | WENDy (LASSO) | 1e-4 | 0.131299 | 27.104080 |
 
-- WENDy: LASSO `rho_1=0.0001`, OLS `rho_1=0`; `alpha=1e-10`,
-  `max_reweights=100`, `reweight_tol=1e-06`,
-  normality stopping enabled (p<1e-4 after 10 reweights).
-- WENDy-MLE: LASSO `rho_1=0.001`, unpenalized `rho_1=0`; `alpha=0`;
-  `max_iter=1000`, `tol=1e-06` (scaled KKT tolerance).
-  noise std: known generator noise std for each noise level.
-- WENDy (OLS) fits unpenalized least squares on each whitened system (GLS/IRLS).
-  WENDy-MLE (unpenalized) minimizes the full Gaussian weak-residual likelihood,
-  including the log determinant, with no L1 penalty. Neither uses thresholding.
-  Both nonsparse fits start from full-library WSINDy (OLS).
+`*` WENDy (OLS) returned an estimate at noise `0`, but stopped on its
+normality test before reaching the fixed-point tolerance. WENDy-MLE has no
+completed result: its zero-noise likelihood was undefined and both noise-1
+variants exceeded the 600-second limit.
 
-## Test functions
+## Experiment 2: 3D grid, 4096 weak tests
 
-Every weak method starts from the same reference function, a tensor product
-of compact polynomial bumps (the WSINDy family):
+PDE: `u_t = 0.3 d_xx(u^2) - 0.2 d_xy(u^2) + 0.1 d_xz(u^2) + 0.7 d_yy(u^2) - 0.16 d_yz(u^2) + d_zz(u^2)`.
+The `32 x 32 x 32 x 16` grid covers `[-5,5]^3 x [0.5,2.5]`, so `n=524,288`.
+There are `S=55` derivatives, `J=5` powers, and `275` coefficients.
+Weak methods use `K=4096 = 8^4` tests with exponents `(16,16,16,28)`,
+support half-widths `(8,8,8,4)` grid cells, and center strides `(2,2,2,1)`.
+The LASSO penalty in each row is the lowest-error result among its completed
+trials for that method and noise level. The zero-vector error is `1.6556`.
 
-```text
-b_p(r) = (1-r^2)^p for |r| < 1, and 0 otherwise.
-phi_ref(r_x,r_y,r_t) = b_11(r_x) * b_11(r_y) * b_16(r_t).
-```
+| Noise | Method | LASSO penalty `rho_1` | Squared error | Runtime (s) |
+| ---: | --- | ---: | ---: | ---: |
+| 0 | SINDy (OLS) | — | 4.411126e+04 | 3.062872 |
+| 0 | SINDy (LASSO) | 1e-7 | 0.1588735 | 2.070837 |
+| 0 | WSINDy (OLS) | — | 4.868710e+07 | 0.453482 |
+| 0 | WSINDy (LASSO) | 1e-9 | 0.1594418 | 1.158624 |
+| 0 | WSINDy (MSTLS) | — | 0.006125071 | 3.409501 |
+| 1 | SINDy (OLS) | — | 1.095782e+06 | 3.231388 |
+| 1 | SINDy (LASSO) | 1e-3 | 1.655600 | 1.980746 |
+| 1 | WSINDy (OLS) | — | 8.186907e+08 | 0.434958 |
+| 1 | WSINDy (LASSO) | 1e-4 | 1.655600 | 0.433031 |
+| 1 | WSINDy (MSTLS) | — | 0.08238487 | 2.497880 |
 
-The reference function is centered at `(0,0,0)`, supported on `[-1,1]^3`,
-and satisfies `phi_ref(0,0,0)=1`. Construct each physical test function by
-scaling its coordinates and translating its center:
+WSINDy (MSTLS) selected all six true terms at noise `0`; at noise `1`, it
+selected the three diagonal diffusion terms and missed the three mixed terms.
 
-```text
-Delta_x = 10/(nx-1), Delta_y = 10/(ny-1), Delta_t = 2/(nt-1).
-h_axis = m_axis * grid_spacing_axis.
-c_k = (-5 + i_x*Delta_x, -5 + i_y*Delta_y, 0.5 + i_t*Delta_t).
-phi_k(x,y,t) = phi_ref((x-c_kx)/h_x, (y-c_ky)/h_y, (t-c_kt)/h_t).
-```
+## Experiment 3: 3D iid points, ordinary versus debiased WSINDy
 
-Take every Cartesian-product combination of the center indices `(i_x,i_y,i_t)`
-listed below, with time varying fastest. This gives `8 * 8 * 8 = 512` functions.
-The reference function and support half-widths are fixed; only the center changes.
-Each translated function has support `[c_kx-h_x,c_kx+h_x]` times
-`[c_ky-h_y,c_ky+h_y]` times `[c_kt-h_t,c_kt+h_t]`, with peak value one.
-There is no volume factor `1/(h_x*h_y*h_t)` or L2 normalization.
+This uses the same 3D PDE, domain, `S=55`, `J=5`, and `K=4096` physical test
+functions as Experiment 2, but draws `n=524,288` iid uniform space-time points.
+Both methods form weak equations on the **same final 262,144 evaluation points**
+using Monte Carlo weights. Ordinary WSINDy integrates the raw powers `U^j`.
+Debiased WSINDy instead uses corrected powers from a box-kernel moving-average
+pilot fitted on the independent first 262,144 points, with physical bandwidths
+`(0.8,0.8,0.8,0.35)`. Thus the evaluation data and test functions are matched,
+but debiased WSINDy additionally uses the training half. Noise scale uses the
+clean solution's RMS on the `32 x 32 x 32 x 16` reference grid. Experiment 2
+remains a different grid/quadrature design and is not directly comparable.
+The current SINDy and WENDy implementations require a grid, so they are not
+included in this paired iid-sample comparison.
 
-- Bump exponents `(p_x, p_y, p_t) = (11, 11, 16)` (one-dimensional polynomial degrees `(22, 22, 32)`).
-- Support half-widths in grid cells: `(m_x, m_y, m_t) = (16, 16, 8)`;
-  each support spans `(33, 33, 17)` grid points including endpoints.
-  Physical half-widths `(h_x, h_y, h_t)` are approximately `(2.539683, 2.539683, 0.516129)`.
-- Center strides in grid cells: `(4, 4, 2)`. Zero-based center indices are
-  `x: range(16, 48, 4), y: range(16, 48, 4), t: range(8, 24, 2)` (range stops excluded), giving `(8, 8, 8)` centers and `K=512`.
-- Default support rule: `m_axis=max(2, axis_size//4)`; default stride: `max(1, m_axis//4)`.
-  These are fixed grid-size rules; the paper's Fourier-based support selection is not used.
-- Default exponent rule: the smallest integer p greater than the derivative order on that axis
-  (`5` in space, `1` in time) with `(1-(1-1/m)^2)^p <= 1e-10`.
-  These polynomial bumps have finite smoothness, sufficient for the derivatives used here.
-- Derivatives act analytically on the test functions. Integrals use tensor-product trapezoidal
-  quadrature with the physical grid spacings; there is no normalization of individual equations.
-  Only supports fully inside the observed grid are used, with no padding or periodic wrapping.
+The LASSO penalty is `lambda` in `||Y-X beta||_2^2/2 + lambda||beta||_1`
+for each method's weak system. Among 25 tested log-spaced penalties from
+`1e-4` to `0.2`, `lambda=0.2` gave the lowest coefficient error for both
+methods and noise levels, using known truth on this seed. The zero-vector
+error is `1.6556`. Runtime is the median of three fits after one warm-up;
+ordinary WSINDy counts shared weak-system construction plus each regression,
+while debiased WSINDy times complete calls including pilot fitting. Data
+generation and penalty search are excluded.
 
-## Noise ratio 0: Squared coefficient error
+| Noise | Method | LASSO penalty `lambda` | Squared error | Runtime (s) |
+| ---: | --- | ---: | ---: | ---: |
+| 0 | WSINDy, Monte Carlo (OLS) | — | 1.898895e+12 | 45.732935 |
+| 0 | WSINDy, Monte Carlo (LASSO) | 0.2 | 1.655600 | 45.698647 |
+| 0 | WSINDy, Monte Carlo (MSTLS) | — | 1.664912 | 47.217092 |
+| 0 | Debiased WSINDy (OLS) | — | 8.871171e+11 | 54.615432 |
+| 0 | Debiased WSINDy (LASSO) | 0.2 | 1.655600 | 53.463993 |
+| 0 | Debiased WSINDy (MSTLS) | — | 71.946856 | 57.602692 |
+| 1 | WSINDy, Monte Carlo (OLS) | — | 3.798131e+10 | 47.373257 |
+| 1 | WSINDy, Monte Carlo (LASSO) | 0.2 | 1.655600 | 47.337400 |
+| 1 | WSINDy, Monte Carlo (MSTLS) | — | 1.165900 | 49.389236 |
+| 1 | Debiased WSINDy (OLS) | — | 1.079440e+12 | 56.455327 |
+| 1 | Debiased WSINDy (LASSO) | 0.2 | 1.655600 | 56.432819 |
+| 1 | Debiased WSINDy (MSTLS) | — | 62.563155 | 58.195397 |
 
-| Experiment instance | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) | WENDy (LASSO) | WENDy (OLS) | WENDy-MLE (LASSO) | WENDy-MLE (unpenalized) |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 2D anisotropic porous medium | 9.878746e+01 | 1.131562e+05 | 1.256032e+00 | 1.627932e+00 | 1.663836e-05 | 1.004261e+00 | 9.686758e+03 * | N/A | N/A |
+All four LASSO fits are exactly zero. Ordinary WSINDy (MSTLS) selected one
+spurious term at noise `0` and one true term at noise `1`; debiased WSINDy
+(MSTLS) selected `1/6` and `2/6`
+true terms plus `10` and `3` false positives. The correction did not improve
+MSTLS coefficient selection on this seed. Monte Carlo integration remains noisy
+even without observation noise, so these runs do not establish PDE recovery.
 
-## Noise ratio 1: Squared coefficient error
+## Nonlinear viscous Burgers: paper-filter comparison
 
-| Experiment instance | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) | WENDy (LASSO) | WENDy (OLS) | WENDy-MLE (LASSO) | WENDy-MLE (unpenalized) |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 2D anisotropic porous medium | 3.262772e+03 | 1.700983e+07 | 1.873925e+00 | 1.013724e+00 | 2.328519e-03 | 1.312987e-01 | 8.963744e+05 | TIMEOUT | TIMEOUT |
+PDE: `u_t = 0.01 u_xx - 0.5 d_x(u^2) - u^3 + 2u^2 + 1`.
+This is an adapted instance: periodic `x in [-1,1)`, `t in [0,1.5]`, and
+`u(x,0)=0.5+0.7 sin(pi*x)+0.25 sin(2*pi*x+0.3)`. The [Messenger–Bortz paper](https://arxiv.org/pdf/2211.16000) does not
+specify these initial/boundary data. A centered-difference, sparse-BDF
+solution is the numerical truth; the grid and iid observations share it.
 
-## Noise ratio 0: Runtime (seconds)
+- Grid: `256 x 257` (`n=65792`); iid observations: `n=524288`, split equally into independent pilot and evaluation samples.
+- `K=600` tests, support half-widths `(0.25,0.1875)` in `(x,t)`, support volume ratio `1/16`; translated paper bump `exp(9/(r^2-1))` on `|r|<1`.
+- Library: spatial orders `0..6`, powers `u^0..u^6`; 43 nonzero columns after omitting positive derivatives of the constant. All sparse fits use MSTLS with `logspace(-4,0,100)` thresholds.
+- Paper filter: sixth-difference estimate of `sigma`, then the paper's equation (5.6) per-axis box width (periodic space, reflected time). For iid pilots, the grid width is mapped to physical units with a floor giving 64 expected training neighbors in an interior box. This is an adaptation to iid data.
+- `sigma_c=sqrt(0.01/3)=0.057735`. Each level has 3 independent seeds starting at `0`. Entries are mean squared coefficient error, support recovery count, mean relative system residual at the true coefficients, and median complete fit runtime (seconds). Data generation and width selection are excluded from runtime. OLS has no sparse support score.
 
-| Experiment instance | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) | WENDy (LASSO) | WENDy (OLS) | WENDy-MLE (LASSO) | WENDy-MLE (unpenalized) |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 2D anisotropic porous medium | 0.270994 | 0.048332 | 0.134706 | 0.121193 | 0.124151 | 20.026773 | 13.496299 * | N/A | N/A |
+| sigma/sigma_c | estimated sigma | filter width | iid pilot bandwidths (x,t) | pilot MSE |
+| ---: | ---: | ---: | --- | ---: |
+| 0 | 3.355e-05 | 1 | (0.015625, 0.011719) | 4.363e-05 |
+| 1 | 0.05776 | 5 | (0.015625, 0.011719) | 9.838e-05 |
+| 2 | 0.1155 | 9 | (0.03125, 0.023438) | 0.000326 |
 
-## Noise ratio 1: Runtime (seconds)
+### Grid methods
 
-| Experiment instance | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) | WENDy (LASSO) | WENDy (OLS) | WENDy-MLE (LASSO) | WENDy-MLE (unpenalized) |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 2D anisotropic porous medium | 0.342833 | 0.087451 | 3.499125 | 0.206751 | 0.114476 | 27.104080 | 37.997836 | TIMEOUT (600.041 s) | TIMEOUT (600.017 s) |
+| sigma/sigma_c | Method | Squared error | Support | True-system residual | Runtime (s) |
+| ---: | --- | ---: | ---: | ---: | ---: |
+| 0 | SINDy (OLS) | 0.00013701 | — | 0.01799 | 0.053 |
+| 0 | SINDy (MSTLS) | 0.000911769 | 3/3 | 0.01799 | 0.532 |
+| 0 | WSINDy (OLS) | 2.59235e-11 | — | 0.00102 | 0.020 |
+| 0 | WSINDy (MSTLS) | 4.49928e-06 | 3/3 | 0.00102 | 0.062 |
+| 0 | Paper filtered WSINDy (MSTLS) | 4.49928e-06 | 3/3 | 0.00102 | 0.022 |
+| 1 | SINDy (OLS) | 26.8137 | — | 3.335 | 0.053 |
+| 1 | SINDy (MSTLS) | 50.1382 | 0/3 | 3.335 | 1.403 |
+| 1 | WSINDy (OLS) | 30.2943 | — | 0.0249 | 0.019 |
+| 1 | WSINDy (MSTLS) | 0.789354 | 0/3 | 0.0249 | 0.051 |
+| 1 | Paper filtered WSINDy (MSTLS) | 0.0719707 | 0/3 | 0.02707 | 0.049 |
+| 2 | SINDy (OLS) | 30.244 | — | 3.61 | 0.052 |
+| 2 | SINDy (MSTLS) | 30.9714 | 0/3 | 3.61 | 1.446 |
+| 2 | WSINDy (OLS) | 177.693 | — | 0.05133 | 0.019 |
+| 2 | WSINDy (MSTLS) | 2.53096 | 0/3 | 0.05133 | 0.043 |
+| 2 | Paper filtered WSINDy (MSTLS) | 7.33972 | 0/3 | 0.05643 | 0.047 |
 
-## Fit status
+### Independent-point Monte Carlo methods
 
-`*` marks a returned estimate with a warning; see the stop reason below.
-`FAIL` and `TIMEOUT` mark incomplete benchmarks. Their parenthesized
-times measure the failed call, not a median successful-fit runtime.
-`N/A` means the sigma=0 MLE objective is undefined; no fit was attempted.
+| sigma/sigma_c | Method | Squared error | Support | True-system residual | Runtime (s) |
+| ---: | --- | ---: | ---: | ---: | ---: |
+| 0 | Sampled WSINDy (MSTLS) | 17.0592 | 0/3 | 0.262 | 2.292 |
+| 0 | Sampled plug-in WSINDy (MSTLS) | 16.7601 | 0/3 | 0.263 | 4.136 |
+| 0 | Sampled debiased WSINDy (MSTLS) | 17.0596 | 0/3 | 0.262 | 4.153 |
+| 1 | Sampled WSINDy (MSTLS) | 21.72 | 0/3 | 0.262 | 2.380 |
+| 1 | Sampled plug-in WSINDy (MSTLS) | 21.2095 | 0/3 | 0.2639 | 4.252 |
+| 1 | Sampled debiased WSINDy (MSTLS) | 16.8183 | 0/3 | 0.2619 | 4.255 |
+| 2 | Sampled WSINDy (MSTLS) | 14.4543 | 0/3 | 0.2631 | 2.405 |
+| 2 | Sampled plug-in WSINDy (MSTLS) | 14.2042 | 0/3 | 0.2693 | 7.235 |
+| 2 | Sampled debiased WSINDy (MSTLS) | 9.75798 | 0/3 | 0.2622 | 7.306 |
 
-- Noise ratio 0, WENDy (OLS): WENDy stopped on the normality test after 11 reweights (p=2.24e-17); the fixed-point tolerance was not met.
-- Noise ratio 0, WENDy-MLE (LASSO): The sigma=0 Gaussian likelihood is undefined; no working variance was supplied.
-- Noise ratio 0, WENDy-MLE (unpenalized): The sigma=0 Gaussian likelihood is undefined; no working variance was supplied.
-- Noise ratio 1, WENDy-MLE (LASSO) (warm-up): Estimator exceeded the 600 s wall-time limit.
-- Noise ratio 1, WENDy-MLE (unpenalized) (warm-up): Estimator exceeded the 600 s wall-time limit.
+Grid and iid errors are separate comparisons because their observation locations and quadrature differ. The paper reports 200 noise realizations; these runs are a smaller numerical check, not a reproduction of its figure.
 
-## Interpretation
+The noisy grid runs did not recover the exact five-term support in any of the
+three seeds: MSTLS dropped the small `0.01 u_xx` coefficient. At
+`sigma/sigma_c=1`, raw grid squared errors were `0.0484, 2.2640, 0.0557` and
+filtered errors were `0.0662, 0.0751, 0.0746`. At `sigma/sigma_c=2`, the
+filtered errors were `0.0898, 0.1093, 21.8201`; the mean in the table is
+driven by the third seed. Thus filtering was not consistently better on this
+adapted, lower-resolution trajectory.
 
-This is one fixed-grid sanity check with one seed, not a Monte Carlo comparison.
-The zero coefficient vector has squared error 1.73, so errors above 1.73 are
-worse than that reference on this coefficient metric. The solution has a
-nonsmooth moving front and the full library is highly correlated; solving the
-regression accurately does not by itself ensure accurate coefficient recovery.
-LASSO penalties act on differently scaled losses, so the chosen
-penalties do not represent equal regularization strength across methods.
-Runtime covers this implementation, including all configured MSTLS candidates.
-Repeated timings reuse the same data; they are not independent noise trials.
-A timeout describes the implementation under the stated compute budget; it
-does not establish nonconvergence or an accuracy ranking for that method.
+For a separate noise-free iid diagnostic with seed `0`, increasing the total
+independent-point count gave:
 
-## Validation
+| Total iid `n` | Evaluation points | `||Y-X beta_true|| / ||Y||` |
+| ---: | ---: | ---: |
+| 131,072 | 65,536 | 0.4885 |
+| 524,288 | 262,144 | 0.2894 |
+| 2,097,152 | 1,048,576 | 0.1435 |
 
-All 51 tests passed. The new nonsparse CLI options were also checked at identity
-covariance: both matched WSINDy (OLS) and retained all 100 coefficients.
+The shrinking residual supports Monte Carlo integration error as a major limit
+for the iid comparison. The pilot cannot remove error in the shared weak-form
+target `Y`; the grid and iid tables should not be ranked against each other.
 
-```sh
-OPENBLAS_NUM_THREADS=1 python -m unittest discover -s tests -v
-```
-
-## Reproduce
-
-```sh
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
-python experiments.py --instance anisotropic_porous_medium \
-  --nx 64 --ny 64 --nt 32 --seed 0 --repeats 3 \
-  --noise-ratios 0 1 \
-  --methods sindy-ols wsindy-ols sindy-lasso wsindy-lasso wsindy-mstls wendy-lasso wendy-ols wendy-mle-lasso wendy-mle \
-  --sindy-rho-1 0.0001 --wsindy-rho-1 1e-06 \
-  --max-iter 200000 --tol 1e-08 --output results.md \
-  --timeout-seconds 600 \
-  --wendy-rho-1 0.0001 --wendy-mle-rho-1 0.001 \
-  --wendy-alpha 1e-10 --wendy-mle-alpha 0 \
-  --max-reweights 100 --reweight-tol 1e-06 \
-  --mle-max-iter 1000 --mle-tol 1e-06
-```
-
----
-
-# 3D anisotropic porous medium: PDE-discovery sanity check
-
-Only the five SINDy/WSINDy methods were run for this instance. WENDy and
-WENDy-MLE are excluded. All ten fits completed, but this coarse-grid experiment
-does **not** establish reliable recovery of the true PDE; see the diagnostics below.
-
-## Experiment settings
-
-- Instance: `anisotropic_porous_medium_3d`; exact 3D anisotropic porous-medium weak solution.
-- PDE: `u_t = 0.3 d_xx(u^2) - 0.2 d_xy(u^2) + 0.1 d_xz(u^2) + 0.7 d_yy(u^2) - 0.16 d_yz(u^2) + d_zz(u^2)`.
-- Grid: `(32, 32, 32, 16)` on `[-5, 5]^3`, with time in `[0.5, 2.5]`; endpoints included.
-- **n = 524,288** observed space-time points: `32 * 32 * 32 * 16`;
-  this counts the full input grid for every method, including spatial/time endpoints.
-- **K = 512** test functions / weak equations: `4 * 4 * 4 * 8`
-  centers along `(x, y, z, t)`. All selected weak methods use the same
-  tests at every noise ratio. SINDy uses no test functions, so K does not apply to it.
-- **S = 55** spatial derivative operators, using the draft's indexing:
-  every 3-component multi-index `alpha` with nonnegative entries and `1 <= sum(alpha) <= 5`.
-  The maximum total spatial derivative order is **5**; S counts operators.
-- **J = 5** polynomial powers: `u, u^2, ..., u^5`.
-  J describes powers of u, separately from the test-function exponents below.
-- Library: `D^alpha(u^j)`, giving `S * J = 275` coefficients, in
-  `polynomial_library_terms(3)` order. No zeroth spatial derivative or constant power is included.
-- SINDy retains `26 * 26 * 26 * 14 = 246,064` regression rows
-  after removing 3 points at each spatial end and 1 at each time end.
-  Its design matrix is `246,064 x 275`; weak design matrices are `512 x 275`.
-- One Gaussian-noise realization per noise ratio, seed `0`;
-  `noise_std = noise_ratio * RMS(u_true)`. Each method receives the same observations.
-- Error: `sum((beta_hat - beta_true)**2)` over all 275 coefficients, with no
-  relative normalization. Truth is used only for evaluation; its squared norm is 1.6556.
-- LASSO: SINDy `rho_1=0.0001`; WSINDy `rho_1=1e-06`;
-  `max_iter=200000`, `tol=1e-08`. These are fixed example penalties, not tuned values.
-- OLS: `rho_1=0`. WSINDy MSTLS candidates: `np.logspace(-4, 0, 50)`.
-- Runtime: median of 3 timed calls after one untimed warm-up per method
-  and noise level. Each call includes library/weak-system construction and regression;
-  data generation, imports, error calculation, and report writing are excluded.
-- Environment: Python 3.13.5, NumPy 2.1.3, SciPy 1.15.3,
-  macOS-15.7.3-arm64-arm-64bit-Mach-O; `OPENBLAS_NUM_THREADS=1, OMP_NUM_THREADS=unset, VECLIB_MAXIMUM_THREADS=unset`.
-
-## Exact reference solution
-
-```text
-D = [[0.3, -0.1, 0.05], [-0.1, 0.7, -0.08], [0.05, -0.08, 1.0]]
-q = (x,y,z) D^{-1} (x,y,z)^T
-C = (15 / (8*pi * 20^(3/2) * sqrt(det(D))))^(2/5)
-u_true(x,y,z,t) = t^(-3/5) * max(C - q/(20*t^(2/5)), 0)
-```
-
-D is symmetric positive definite. This exact Barenblatt weak solution has unit mass
-on R^3; the default observation domain contains its support throughout the time interval.
-The initial condition is the profile at t=0.5, and the spatial boundary stays zero.
-No numerical time stepping is used. Mixed PDE coefficients are twice the off-diagonal entries of D.
-
-## Test functions
-
-Every weak method starts from the same reference function, a tensor product
-of compact polynomial bumps (the WSINDy family):
-
-```text
-b_p(r) = (1-r^2)^p for |r| < 1, and 0 otherwise.
-phi_ref(r_x,r_y,r_z,r_t) = b_16(r_x) * b_16(r_y) * b_16(r_z) * b_28(r_t).
-```
-
-The reference function is centered at the origin, supported on `[-1,1]^4`,
-and satisfies `phi_ref(0)=1`. Construct each physical test function by
-scaling its coordinates and translating its center:
-
-```text
-Delta_x = 10/(nx-1), Delta_y = 10/(ny-1), Delta_z = 10/(nz-1), Delta_t = 2/(nt-1).
-h_axis = m_axis * grid_spacing_axis.
-c_k = (-5 + i_x*Delta_x, -5 + i_y*Delta_y, -5 + i_z*Delta_z, 0.5 + i_t*Delta_t).
-phi_k(x, y, z, t) = phi_ref((x-c_kx)/h_x, (y-c_ky)/h_y, (z-c_kz)/h_z, (t-c_kt)/h_t).
-```
-
-Take every Cartesian-product combination of the center indices `(i_x,i_y,i_z,i_t)`
-listed below, with time varying fastest. This gives `4 * 4 * 4 * 8 = 512` functions.
-The reference function and support half-widths are fixed; only the center changes.
-Each translated function is supported on the product of intervals
-`[c_k_axis-h_axis, c_k_axis+h_axis]`, with peak value one.
-There is no volume factor `1/prod(h_axis)` or L2 normalization.
-
-- Bump exponents in `(x, y, z, t)` order: `(16, 16, 16, 28)` (one-dimensional polynomial degrees `(32, 32, 32, 56)`).
-- Support half-widths in grid cells, in `(x, y, z, t)` order: `(8, 8, 8, 4)`;
-  each support spans `(17, 17, 17, 9)` grid points including endpoints.
-  Physical half-widths in the same order are approximately `(2.580645, 2.580645, 2.580645, 0.533333)`.
-- Center strides in grid cells: `(4, 4, 4, 1)`. Zero-based center indices are
-  `x: range(8, 24, 4), y: range(8, 24, 4), z: range(8, 24, 4), t: range(4, 12, 1)` (range stops excluded), giving `(4, 4, 4, 8)` centers and `K=512`.
-- Default support rule: `m_axis=max(2, axis_size//4)`; default stride: `max(1, m_axis//4)`.
-  These are fixed grid-size rules; the paper's Fourier-based support selection is not used.
-- Default exponent rule: the smallest integer p greater than the derivative order on that axis
-  (`5` in space, `1` in time) with `(1-(1-1/m)^2)^p <= 1e-10`.
-  These polynomial bumps have finite smoothness, sufficient for the derivatives used here.
-- Derivatives act analytically on the test functions. Integrals use tensor-product trapezoidal
-  quadrature with the physical grid spacings; there is no normalization of individual equations.
-  Only supports fully inside the observed grid are used, with no padding or periodic wrapping.
-
-## Noise ratio 0: Squared coefficient error
-
-| Experiment instance | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 3D anisotropic porous medium | 4.411126e+04 | 6.113013e+12 | 1.657661e+00 | 1.660327e+00 | 2.634171e+00 |
-
-## Noise ratio 1: Squared coefficient error
-
-| Experiment instance | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 3D anisotropic porous medium | 1.095782e+06 | 2.342743e+10 | 1.656034e+00 | 1.660518e+00 | 1.982678e-01 |
-
-## Noise ratio 0: Runtime (seconds)
-
-| Experiment instance | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 3D anisotropic porous medium | 3.639137 | 0.157155 | 1.711842 | 0.234791 | 0.493703 |
-
-## Noise ratio 1: Runtime (seconds)
-
-| Experiment instance | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 3D anisotropic porous medium | 3.418742 | 0.176089 | 1.915369 | 0.226677 | 0.840082 |
-
-## Fit status
-
-All five methods completed the warm-up and three timed calls at both noise
-ratios, with no solver warnings. Successful termination does not imply accurate
-PDE recovery. The true PDE has six nonzero coefficients. WSINDy (MSTLS) retained
-20 terms at noise ratio 0 and three terms at noise ratio 1; neither support is correct.
-
-## Interpretation
-
-This is one fixed-grid sanity check with one seed, not a Monte Carlo comparison.
-The zero coefficient vector has squared error 1.6556, so errors above 1.6556 are
-worse than that reference on this coefficient metric. The solution has a
-nonsmooth moving front and the full library is highly correlated; solving the
-regression accurately does not by itself ensure accurate coefficient recovery.
-LASSO penalties act on differently scaled losses, so the chosen
-penalties do not represent equal regularization strength across methods.
-Runtime covers this implementation, including all configured MSTLS candidates.
-Repeated timings reuse the same data; they are not independent noise trials.
-
-## Numerical diagnostics and validation
-
-- The noiseless weak matrix has rank 275, but its condition number after unit-L2
-  column scaling is approximately `1.629e7`. At noise ratio 1 it is `3.492e4`.
-  Full numerical rank alone does not guarantee stable coefficient recovery.
-- On the benchmark grid, `||X beta_true - y||_2 / ||y||_2 = 0.0969100`
-  even without observation noise. Keeping the physical test functions, their
-  centers, and their exponents fixed while refining the observation grid from
-  `32^3 x 16` to `63^3 x 31` reduces this residual to `0.0127447`.
-  The refined check doubles each support half-width and stride in grid cells.
-  It evaluates the known PDE residual only; no coefficient fitting or performance
-  timing was done on that grid. The diagnostic library contains the 18 terms
-  through derivative order 2 and polynomial power 2, including all nonzero truth
-  terms. All reported coefficient fits above use the full 275-term library.
-- Trapezoidal mass on the benchmark grid ranges from `0.996161` to `1.003744`
-  across the 16 times, against exact mass 1. At noise ratio 1, the observation
-  noise standard deviation is `0.0091765492`.
-- OLS coefficient errors are very large. Both LASSO variants are slightly worse
-  than the zero-vector reference error `1.6556` at both noise levels with these
-  fixed penalties. No penalty was selected using the true coefficients.
-- WSINDy (MSTLS) has error `2.63417` without noise and `0.198268` with noise.
-  The noisy fitted PDE is approximately
-  `u_t = 0.620923 d_yy(u^2) + 1.017376 d_zz(u^2) - 0.161594 d_xxx(u^2)`.
-  It omits four true terms and includes a spurious third derivative. Thus the
-  smaller noisy coefficient error is not correct equation discovery or evidence
-  that adding noise helps. Grid resolution, ill conditioning, and threshold
-  selection need to be separated before comparing method accuracy.
-- These 3D results use a different diffusion matrix, grid, coefficient dimension,
-  and test support from the 2D instance. Their raw errors and runtimes do not
-  isolate the effect of increasing spatial dimension.
-
-All 58 tests pass, including 3D mass normalization, mixed-derivative PDE checks,
-a weak integral across the moving front, quadrature refinement with fixed tests,
-and 3D CLI/report handling. Numerical correctness of these components is
-separate from successful statistical recovery on this deliberately small grid.
+Reproduce the main comparison with:
 
 ```sh
-OPENBLAS_NUM_THREADS=1 python -m unittest discover -s tests -v
-```
-
-## Reproduce
-
-```sh
-OPENBLAS_NUM_THREADS=1 \
-python experiments.py --instance anisotropic_porous_medium_3d \
-  --nx 32 --ny 32 --nz 32 --nt 16 --seed 0 --repeats 3 \
-  --noise-ratios 0 1 \
-  --methods sindy-ols wsindy-ols sindy-lasso wsindy-lasso wsindy-mstls \
-  --sindy-rho-1 0.0001 --wsindy-rho-1 1e-06 \
-  --max-iter 200000 --tol 1e-08 --output results.md \
-  --append \
-  --strides 4 4 4 1
-```
-
----
-
-# 3D test-function count: K=512 versus K=4096
-
-This comparison increases the number of test-function centers from
-`4 * 4 * 4 * 8 = 512` to `8 * 8 * 8 * 8 = 4096`. The function shape and
-physical support are fixed. All five SINDy/WSINDy methods were run at K=4096;
-WENDy and WENDy-MLE remain excluded. The K=512 rows retain the earlier measurements.
-The K=4096 LASSO entries now contain the best completed penalty trial for each
-method and noise ratio. Thus, their comparison with K=512 also changes the penalty;
-only the OLS and MSTLS comparisons isolate the change in K.
-
-## Experiment settings and LASSO selection
-
-- Same 3D PDE, exact reference solution, and six nonzero true coefficients as in
-  the preceding experiment; `||beta_true||_2^2 = 1.6556`.
-- Same observation grid `(32,32,32,16)` on `[-5,5]^3 x [0.5,2.5]`:
-  **n = 524,288**, at noise ratios 0 and 1, using the same noise realization
-  with seed 0. At noise ratio 1, `noise_std = 0.0091765492`.
-- Same library: maximum total spatial derivative order 5, **S = 55**, **J = 5**,
-  and **275 coefficients**. All candidate mixed derivatives remain included.
-- Same reference test function and construction as above:
-  `phi_ref(r_x,r_y,r_z,r_t) = b_16(r_x)b_16(r_y)b_16(r_z)b_28(r_t)`,
-  with `b_p(r)=(1-r^2)^p` for `|r|<1` and zero otherwise.
-  Support half-widths in cells are `(8,8,8,4)`; physical half-widths are
-  `(2.580645,2.580645,2.580645,0.533333)`. Peak amplitude is one; there is no
-  volume or L2 normalization. Quadrature and the observation grid are unchanged.
-- **K = 512:** strides `(4,4,4,1)`; spatial center indices `8,12,16,20` on each
-  axis, with temporal center indices `4,5,6,7,8,9,10,11`.
-- **K = 4096:** strides `(2,2,2,1)`; spatial center indices `8,10,12,14,16,18,20,22`
-  on each axis, with the same eight temporal centers. Take the Cartesian product,
-  with time varying fastest. The original 512 tests are a subset of these 4096.
-- All three WSINDy variants use the same tests. Their design matrix grows from
-  `512 x 275` to `4096 x 275`. SINDy has no test functions: its design matrix
-  remains `246,064 x 275`, so K does not apply to its fits.
-- LASSO objective: `||y-X beta||_2^2 / number_of_rows + rho_1 ||beta||_1`,
-  in original coefficient units. All LASSO fits use `max_iter=200000`.
-  Equal penalties do not imply equal effective regularization across methods.
-- **Selected K=4096 penalties, noise 0:** SINDy `rho_1=1e-7`, `tol=1e-8`;
-  WSINDy `rho_1=1e-9`, `tol=1e-12`.
-- **Selected K=4096 penalties, noise 1:** SINDy `rho_1=1e-3`, `tol=1e-8`;
-  WSINDy `rho_1=1e-4`, `tol=1e-8`.
-- Selection minimizes `||beta_hat-beta_true||_2^2` over all 275 coefficients
-  among the completed trials, separately for each method and noise ratio.
-  Exact ties use the smaller penalty. This is selection using known ground truth
-  on this one dataset per noise level, not a validated tuning rule for unseen data.
-- K=512 retains SINDy `rho_1=1e-4` and WSINDy `rho_1=1e-6`, both with `tol=1e-8`;
-  the penalty trials were performed for the K=4096 setting only.
-  OLS uses `rho_1=0`; MSTLS uses `np.logspace(-4,0,50)`.
-- Runtime is the median of three complete estimator calls after one warm-up;
-  it includes system construction and regression, excluding data generation and diagnostics.
-  Each selected LASSO runtime comes from the same trial as its coefficient error;
-  it excludes the cost of searching over penalties. Existing measurements were reused.
-  Python 3.13.5, NumPy 2.1.3, SciPy 1.15.3; `OPENBLAS_NUM_THREADS=1`, with
-  `OMP_NUM_THREADS` and `VECLIB_MAXIMUM_THREADS` unset, on the same machine as above.
-
-## Noise ratio 0: Squared coefficient error
-
-| Experiment instance / weak-test count | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 3D anisotropic porous medium, K=512 | 4.411126e+04 | 6.113013e+12 | 1.657661e+00 | 1.660327e+00 | 2.634171e+00 |
-| 3D anisotropic porous medium, K=4096 (selected LASSO) | 4.411126e+04 | 4.868710e+07 | 1.588735e-01 | 1.594418e-01 | 6.125071e-03 |
-
-## Noise ratio 1: Squared coefficient error
-
-| Experiment instance / weak-test count | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 3D anisotropic porous medium, K=512 | 1.095782e+06 | 2.342743e+10 | 1.656034e+00 | 1.660518e+00 | 1.982678e-01 |
-| 3D anisotropic porous medium, K=4096 (selected LASSO) | 1.095782e+06 | 8.186907e+08 | 1.655600e+00 | 1.655600e+00 | 8.238487e-02 |
-
-## Noise ratio 0: Runtime (seconds)
-
-| Experiment instance / weak-test count | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 3D anisotropic porous medium, K=512 | 3.639137 | 0.157155 | 1.711842 | 0.234791 | 0.493703 |
-| 3D anisotropic porous medium, K=4096 (selected LASSO) | 3.062872 | 0.453482 | 2.070837 | 1.158624 | 3.409501 |
-
-## Noise ratio 1: Runtime (seconds)
-
-| Experiment instance / weak-test count | SINDy (OLS) | WSINDy (OLS) | SINDy (LASSO) | WSINDy (LASSO) | WSINDy (MSTLS) |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 3D anisotropic porous medium, K=512 | 3.418742 | 0.176089 | 1.915369 | 0.226677 | 0.840082 |
-| 3D anisotropic porous medium, K=4096 (selected LASSO) | 3.231388 | 0.434958 | 1.980746 | 0.433031 | 2.497880 |
-
-## Findings and checks
-
-All retained K=4096 fits completed their warm-up and three timed calls without warnings.
-
-- **WSINDy (MSTLS) has the smallest coefficient error at both noise levels.**
-  Without noise, increasing K reduces its error from `2.634171` to `0.006125071`,
-  and it selects exactly the six true terms, with no extra terms. At noise ratio 1,
-  error falls from `0.1982678` to `0.08238487`, but it selects only the three
-  diagonal diffusion terms and misses all three mixed derivatives. Correct
-  equation support is recovered only in the noiseless run; the fitted coefficients
-  still have numerical error.
-- For MSTLS, runtime increases from `0.493703` to `3.409501` seconds without noise,
-  and from `0.840082` to `2.497880` seconds at noise ratio 1.
-- **Selected LASSO fits without noise:** SINDy error is `0.1588735`, with three
-  true terms and 45 spurious terms; WSINDy error is `0.1594418`, with three true
-  terms and 74 spurious terms. Both miss all three mixed derivatives.
-- **Selected LASSO fits at noise ratio 1 are near the zero-vector reference.**
-  WSINDy returns exactly zero; SINDy has nine small spurious coefficients with
-  `||beta_hat||_2 = 3.464428e-5`. Neither retains any of the six true terms.
-  Both errors round to `1.655600`, so the selected errors do not indicate
-  successful equation recovery.
-- **Full-library WSINDy (OLS) remains inaccurate**, despite much smaller errors
-  than at K=512. SINDy (OLS) errors are unchanged because its inputs and regression
-  settings are unchanged; its runtime differences are measurement variation.
-  The SINDy (LASSO) differences arise from penalty selection, not K.
-- Both K=4096 weak matrices have rank 275. Their condition numbers after
-  unit-L2 column scaling are approximately `7.049e4` (noise 0) and `1.348e4`
-  (noise 1), versus `1.629e7` and `3.492e4` at K=512.
-- The noiseless relative residual at the true coefficients is `0.0953510`,
-  versus `0.0969100` at K=512. Increasing K does not refine the quadrature.
-  The original 512 rows of both X and y were verified to be exactly unchanged
-  inside the expanded system, at both noise levels; their integration errors
-  therefore remain unchanged. The slight difference in aggregate relative
-  residual uses a different collection of equations.
-- Coefficient errors were independently recomputed from the retained estimates.
-  The selected noiseless WSINDy (LASSO) fit has KKT violation `9.975e-13`, below
-  its tolerance `1e-12`; the selected noisy fit is a zero-vector optimum.
-- This adds weak equations derived from the same observations, with strongly
-  overlapping supports; it does not add independent data or increase n.
-  These results support denser test centers for this particular MSTLS experiment,
-  but are still one fixed grid and one noise seed. Quadrature refinement and
-  multiple noise realizations remain separate checks.
-
-The K=4096 MSTLS estimates, with all unlisted coefficients zero, are:
-
-```text
-noise 0:
-u_t = 0.256802 d_xx(u^2) - 0.162487 d_xy(u^2) + 0.081610 d_xz(u^2)
-      + 0.671891 d_yy(u^2) - 0.144097 d_yz(u^2) + 0.961652 d_zz(u^2)
-
-noise 1:
-u_t = 0.243343 d_xx(u^2) + 0.640626 d_yy(u^2) + 0.992957 d_zz(u^2)
-```
-
-## Reproduce K=4096
-
-These commands reproduce the retained settings and write separate reports to `/tmp`.
-The LASSO commands use the selected penalties and solver tolerances above.
-The K=512 measurements retain their reproduction command in the preceding section.
-
-```sh
-run_3d() {
-  OPENBLAS_NUM_THREADS=1 python experiments.py --instance anisotropic_porous_medium_3d \
-    --nx 32 --ny 32 --nz 32 --nt 16 --seed 0 --repeats 3 \
-    --half-widths 8 8 8 4 --test-degrees 16 16 16 28 --strides 2 2 2 1 \
-    --max-iter 200000 "$@"
-}
-
-run_3d --methods sindy-ols wsindy-ols wsindy-mstls --noise-ratios 0 1 \
-  --tol 1e-8 --output /tmp/pde-3d-k4096-ols-mstls.md
-run_3d --methods sindy-lasso --noise-ratios 0 --sindy-rho-1 1e-7 \
-  --tol 1e-8 --output /tmp/pde-3d-sindy-lasso-noise0.md
-run_3d --methods wsindy-lasso --noise-ratios 0 --wsindy-rho-1 1e-9 \
-  --tol 1e-12 --timeout-seconds 120 --output /tmp/pde-3d-wsindy-lasso-noise0.md
-run_3d --methods sindy-lasso --noise-ratios 1 --sindy-rho-1 1e-3 \
-  --tol 1e-8 --output /tmp/pde-3d-sindy-lasso-noise1.md
-run_3d --methods wsindy-lasso --noise-ratios 1 --wsindy-rho-1 1e-4 \
-  --tol 1e-8 --output /tmp/pde-3d-wsindy-lasso-noise1.md
+OPENBLAS_NUM_THREADS=1 python experiments.py --instance nonlinear_viscous_burgers --noise-multipliers 0 1 2 --replicates 3 --n-observations 524288 --append
 ```

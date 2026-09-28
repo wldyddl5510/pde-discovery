@@ -1,6 +1,7 @@
-"""Estimate PDE coefficients from observations on a uniform space-time grid.
+"""Estimate PDE coefficients from space-time observations.
 
-Arrays have spatial axes first and time last, as in simulation_generation.py.
+Grid-based arrays have spatial axes first and time last, as in
+simulation_generation.py. The debiased method takes independent point samples.
 SINDy differentiates the observations; WSINDy differentiates test functions.
 Both offer least squares with an optional LASSO penalty, or the WSINDy
 paper's modified sequential-thresholding least squares (MSTLS).
@@ -17,35 +18,45 @@ import warnings
 import numpy as np
 from numpy.polynomial import Polynomial
 from scipy import linalg, optimize, sparse, stats
+from scipy.spatial import cKDTree
 
 
 def polynomial_library_terms(
     spatial_dim: int,
     max_derivative_order: int = 5,
     max_polynomial_degree: int = 5,
+    *,
+    min_derivative_order: int = 1,
+    min_polynomial_degree: int = 1,
 ) -> list[tuple[tuple[int, ...], int]]:
     """List (spatial_derivative, polynomial_power) in coefficient-vector order.
 
-    Include every mixed derivative with total order 1 through the maximum,
-    and every power 1 through the maximum. There is no zeroth derivative or
-    constant feature. In 2D, derivative order starts (1, 0), (0, 1), (2, 0),
-    (1, 1), (0, 2), ... . All powers of one derivative are listed together,
-    matching the draft's coefficient index (s - 1) * J + (j - 1) in Python.
+    Defaults retain the existing order: positive spatial derivatives and
+    powers u through u^5. Set both minimum orders to zero and both maxima to
+    six for the Burgers library. The constant u^0 is listed only with the
+    zeroth derivative; its positive derivatives are identically zero.
     """
-    for name, value in (
-        ("spatial_dim", spatial_dim),
-        ("max_derivative_order", max_derivative_order),
-        ("max_polynomial_degree", max_polynomial_degree),
+    if not isinstance(spatial_dim, (int, np.integer)) or spatial_dim < 1:
+        raise ValueError("spatial_dim must be a positive integer.")
+    for name, minimum, maximum in (
+        ("derivative_order", min_derivative_order, max_derivative_order),
+        ("polynomial_degree", min_polynomial_degree, max_polynomial_degree),
     ):
-        if not isinstance(value, (int, np.integer)) or value < 1:
-            raise ValueError(f"{name} must be a positive integer.")
+        if any(not isinstance(value, (int, np.integer)) for value in (minimum, maximum)):
+            raise ValueError(f"{name} limits must be integers.")
+        if minimum < 0 or maximum < minimum:
+            raise ValueError(f"{name} limits must satisfy 0 <= minimum <= maximum.")
 
     terms = []
-    for total_order in range(1, max_derivative_order + 1):
+    for total_order in range(min_derivative_order, max_derivative_order + 1):
         for axes in combinations_with_replacement(range(spatial_dim), total_order):
             derivative = tuple(axes.count(axis) for axis in range(spatial_dim))
-            for power in range(1, max_polynomial_degree + 1):
+            for power in range(min_polynomial_degree, max_polynomial_degree + 1):
+                if total_order > 0 and power == 0:
+                    continue
                 terms.append((derivative, power))
+    if not terms:
+        raise ValueError("The requested library has no nonzero terms.")
     return terms
 
 
@@ -97,6 +108,8 @@ def build_sindy_system(
     *,
     max_derivative_order: int = 5,
     max_polynomial_degree: int = 5,
+    min_derivative_order: int = 1,
+    min_polynomial_degree: int = 1,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Build X and y for u_t = sum beta[alpha, j] * d^alpha(u**j).
 
@@ -111,7 +124,9 @@ def build_sindy_system(
     u = np.asarray(u, dtype=float)
     spatial_dim = len(spatial_grid)
     terms = polynomial_library_terms(
-        spatial_dim, max_derivative_order, max_polynomial_degree
+        spatial_dim, max_derivative_order, max_polynomial_degree,
+        min_derivative_order=min_derivative_order,
+        min_polynomial_degree=min_polynomial_degree,
     )
     if u.ndim != spatial_dim + 1:
         raise ValueError("u must have one axis per spatial coordinate, then time.")
@@ -128,15 +143,15 @@ def build_sindy_system(
         raise ValueError(
             f"Need at least {2 * radius + 1} points on each spatial axis and 3 time points."
         )
-    interior = (slice(radius, -radius),) * spatial_dim + (slice(1, -1),)
+    interior = (slice(radius, -radius if radius else None),) * spatial_dim + (slice(1, -1),)
 
     time_derivative = _finite_difference(u, time_step, axis=spatial_dim, order=1)
     y = time_derivative[interior].ravel()
     X = np.empty((len(y), len(terms)))
-    powers = [u**power for power in range(1, max_polynomial_degree + 1)]
+    powers = [u**power for power in range(min_polynomial_degree, max_polynomial_degree + 1)]
 
     for column, (derivative, power) in enumerate(terms):
-        feature = powers[power - 1]
+        feature = powers[power - min_polynomial_degree]
         for axis, order in enumerate(derivative):
             if order > 0:
                 feature = _finite_difference(feature, spatial_steps[axis], axis, order)
@@ -308,6 +323,8 @@ def sindy(
     thresholds: tuple[float, ...] | np.ndarray | None = None,
     max_derivative_order: int = 5,
     max_polynomial_degree: int = 5,
+    min_derivative_order: int = 1,
+    min_polynomial_degree: int = 1,
     max_iter: int = 10000,
     tol: float = 1e-8,
 ) -> np.ndarray:
@@ -346,11 +363,13 @@ def sindy(
         u, spatial_grid, time,
         max_derivative_order=max_derivative_order,
         max_polynomial_degree=max_polynomial_degree,
+        min_derivative_order=min_derivative_order,
+        min_polynomial_degree=min_polynomial_degree,
     )
     return _fit_coefficients(X, y, rho_1, max_iter, tol, regression, thresholds)
 
 
-def _test_function_weights(half_width, spacing, degree, max_order):
+def _test_function_weights(half_width, spacing, degree, max_order, test_function="polynomial"):
     """Sample derivatives of b(r)=(1-r^2)^degree, including quadrature weights.
 
     r=(z-center)/(half_width*spacing). The test function has peak one and
@@ -359,6 +378,11 @@ def _test_function_weights(half_width, spacing, degree, max_order):
     """
     r = np.arange(-half_width, half_width + 1, dtype=float) / half_width
     radius = half_width * spacing
+    if test_function == "paper":
+        derivatives = _paper_bump_derivatives_at_points(
+            r * radius, 0.0, radius, _paper_bump_factors(max_order)
+        )
+        return [spacing * derivatives[:, order] for order in range(max_order + 1)]
     base = Polynomial([1.0, 0.0, -1.0])
     factor = Polynomial([1.0])
     weights = []
@@ -398,15 +422,20 @@ def _prepare_weak_tests(
     *,
     max_derivative_order: int = 5,
     max_polynomial_degree: int = 5,
+    min_derivative_order: int = 1,
+    min_polynomial_degree: int = 1,
     half_widths: tuple[int, ...] | None = None,
     strides: tuple[int, ...] | None = None,
     test_degrees: tuple[int, ...] | None = None,
+    test_function: str = "polynomial",
 ):
     """Validate weak-form inputs and construct the shared test-function weights."""
     u = np.asarray(u, dtype=float)
     spatial_dim = len(spatial_grid)
     terms = polynomial_library_terms(
-        spatial_dim, max_derivative_order, max_polynomial_degree
+        spatial_dim, max_derivative_order, max_polynomial_degree,
+        min_derivative_order=min_derivative_order,
+        min_polynomial_degree=min_polynomial_degree,
     )
     if u.ndim != spatial_dim + 1:
         raise ValueError("u must have one axis per spatial coordinate, then time.")
@@ -418,6 +447,8 @@ def _prepare_weak_tests(
         steps.append(_grid_spacing(grid, u.shape[axis], f"spatial_grid[{axis}]"))
     steps.append(_grid_spacing(time, u.shape[-1], "time"))
     max_orders = (max_derivative_order,) * spatial_dim + (1,)
+    if test_function not in ("polynomial", "paper"):
+        raise ValueError("test_function must be 'polynomial' or 'paper'.")
 
     if half_widths is None:
         half_widths = tuple(max(2, size // 4) for size in u.shape)
@@ -434,23 +465,29 @@ def _prepare_weak_tests(
     ):
         raise ValueError("strides must contain one positive integer per spatial axis and time.")
 
-    if test_degrees is None:
+    if test_function == "paper":
+        if test_degrees is not None:
+            raise ValueError("test_degrees must be omitted for the paper bump.")
+        test_degrees = tuple(0 for _ in u.shape)
+    elif test_degrees is None:
         degrees = []
         for m, order in zip(half_widths, max_orders):
             first_interior_value = (2.0 * m - 1.0) / m**2
             decay_degree = int(np.ceil(np.log(1e-10) / np.log(first_interior_value)))
             degrees.append(max(order + 1, decay_degree))
         test_degrees = tuple(degrees)
-    if len(test_degrees) != u.ndim or any(
-        not isinstance(p, (int, np.integer)) or p <= order
-        for p, order in zip(test_degrees, max_orders)
+    if test_function == "polynomial" and (
+        len(test_degrees) != u.ndim or any(
+            not isinstance(p, (int, np.integer)) or p <= order
+            for p, order in zip(test_degrees, max_orders)
+        )
     ):
         raise ValueError("Each test_degree must be an integer greater than its axis derivative order.")
 
     # weights[axis][order] includes that coordinate's quadrature spacing.
     weights = []
     for m, step, p, order in zip(half_widths, steps, test_degrees, max_orders):
-        weights.append(_test_function_weights(m, step, p, order))
+        weights.append(_test_function_weights(m, step, p, order, test_function))
     return u, terms, weights, strides
 
 
@@ -461,9 +498,12 @@ def build_wsindy_system(
     *,
     max_derivative_order: int = 5,
     max_polynomial_degree: int = 5,
+    min_derivative_order: int = 1,
+    min_polynomial_degree: int = 1,
     half_widths: tuple[int, ...] | None = None,
     strides: tuple[int, ...] | None = None,
     test_degrees: tuple[int, ...] | None = None,
+    test_function: str = "polynomial",
 ) -> tuple[np.ndarray, np.ndarray]:
     """Build the weak system X, y from the draft's Section 2, equation (4).
 
@@ -493,17 +533,20 @@ def build_wsindy_system(
         u, spatial_grid, time,
         max_derivative_order=max_derivative_order,
         max_polynomial_degree=max_polynomial_degree,
+        min_derivative_order=min_derivative_order,
+        min_polynomial_degree=min_polynomial_degree,
         half_widths=half_widths, strides=strides, test_degrees=test_degrees,
+        test_function=test_function,
     )
 
     time_weights = [axis_weights[0] for axis_weights in weights[:-1]] + [weights[-1][1]]
     y = -_weak_integrals(u, time_weights, strides)
     X = np.empty((len(y), len(terms)))
-    powers = [u**power for power in range(1, max_polynomial_degree + 1)]
+    powers = [u**power for power in range(min_polynomial_degree, max_polynomial_degree + 1)]
     for column, (derivative, power) in enumerate(terms):
         spatial_weights = [weights[axis][order] for axis, order in enumerate(derivative)]
         feature_weights = spatial_weights + [weights[-1][0]]
-        integrals = _weak_integrals(powers[power - 1], feature_weights, strides)
+        integrals = _weak_integrals(powers[power - min_polynomial_degree], feature_weights, strides)
         X[:, column] = (-1)**sum(derivative) * integrals
 
     if not np.all(np.isfinite(X)) or not np.all(np.isfinite(y)):
@@ -521,9 +564,12 @@ def wsindy(
     thresholds: tuple[float, ...] | np.ndarray | None = None,
     max_derivative_order: int = 5,
     max_polynomial_degree: int = 5,
+    min_derivative_order: int = 1,
+    min_polynomial_degree: int = 1,
     half_widths: tuple[int, ...] | None = None,
     strides: tuple[int, ...] | None = None,
     test_degrees: tuple[int, ...] | None = None,
+    test_function: str = "polynomial",
     max_iter: int = 10000,
     tol: float = 1e-8,
 ) -> np.ndarray:
@@ -551,11 +597,317 @@ def wsindy(
         u, spatial_grid, time,
         max_derivative_order=max_derivative_order,
         max_polynomial_degree=max_polynomial_degree,
+        min_derivative_order=min_derivative_order,
+        min_polynomial_degree=min_polynomial_degree,
         half_widths=half_widths,
         strides=strides,
         test_degrees=test_degrees,
+        test_function=test_function,
     )
     return _fit_coefficients(X, y, rho_1, max_iter, tol, regression, thresholds)
+
+
+def _bump_derivative_factors(degree, max_order):
+    """Polynomial factors in derivatives of (1-r^2)^degree."""
+    base = Polynomial([1.0, 0.0, -1.0])
+    factor = Polynomial([1.0])
+    factors = []
+    for order in range(max_order + 1):
+        factors.append(factor)
+        factor = base * factor.deriv() - Polynomial([0.0, 2.0 * (degree - order)]) * factor
+    return factors
+
+
+def _bump_derivatives_at_points(coordinates, center, radius, degree, factors):
+    """Evaluate a compact bump and its derivatives at irregular coordinates."""
+    scaled = (coordinates - center) / radius
+    base = np.maximum(1.0 - scaled**2, 0.0)
+    inside = np.abs(scaled) < 1.0
+    return np.column_stack([
+        np.where(inside, base**(degree - order) * factor(scaled) / radius**order, 0.0)
+        for order, factor in enumerate(factors)
+    ])
+
+
+def _paper_bump_factors(max_order):
+    """Numerators of derivatives of exp(-9/(1-r^2)) on |r|<1."""
+    q = Polynomial([1.0, 0.0, -1.0])
+    r = Polynomial([0.0, 1.0])
+    factor = Polynomial([1.0])
+    factors = []
+    for order in range(max_order + 1):
+        factors.append(factor)
+        factor = q**2 * factor.deriv() + 4 * order * r * q * factor - 18 * r * factor
+    return factors
+
+
+def _paper_bump_derivatives_at_points(coordinates, center, radius, factors):
+    """Evaluate the paper's C-infinity bump and its spatial derivatives."""
+    scaled = (np.asarray(coordinates) - center) / radius
+    values = np.zeros((len(scaled), len(factors)))
+    inside = np.abs(scaled) < 1.0
+    r = scaled[inside]
+    q = 1.0 - r**2
+    bump = np.exp(-9.0 / q)
+    for order, factor in enumerate(factors):
+        values[inside, order] = bump * factor(r) / q**(2 * order) / radius**order
+    return values
+
+
+def _sampled_weak_inputs(points, observations, domain_bounds, test_centers,
+                         test_half_widths, test_degrees, max_derivative_order,
+                         test_function):
+    """Validate the shared Monte Carlo observations and test geometry."""
+    points = np.asarray(points, dtype=float)
+    observations = np.asarray(observations, dtype=float)
+    bounds = np.asarray(domain_bounds, dtype=float)
+    centers = np.asarray(test_centers, dtype=float)
+    widths = np.asarray(test_half_widths, dtype=float)
+    if test_function not in ("polynomial", "paper"):
+        raise ValueError("test_function must be 'polynomial' or 'paper'.")
+    degrees = np.asarray(test_degrees) if test_degrees is not None else None
+    if points.ndim != 2 or points.shape[1] < 2:
+        raise ValueError("Point coordinates must have spatial axes followed by time.")
+    dimension = points.shape[1]
+    if (
+        len(points) == 0 or observations.shape != (len(points),)
+        or bounds.shape != (dimension, 2) or centers.ndim != 2
+        or centers.shape[1] != dimension or len(centers) == 0
+        or widths.shape != (dimension,)
+        or (test_function == "polynomial" and (degrees is None or degrees.shape != (dimension,)))
+    ):
+        raise ValueError("Data, bounds, centers, widths, and degrees have incompatible shapes.")
+    if not all(np.all(np.isfinite(a)) for a in (
+        points, observations, bounds, centers, widths,
+    )):
+        raise ValueError("All observations and test-function settings must be finite.")
+    if np.any(bounds[:, 1] <= bounds[:, 0]) or np.any(widths <= 0):
+        raise ValueError("Domain bounds and test-function widths must be positive.")
+    if np.any(points < bounds[:, 0]) or np.any(points > bounds[:, 1]):
+        raise ValueError("Evaluation coordinates must lie inside domain_bounds.")
+    boundary_tolerance = 1e-12 * np.maximum(1.0, bounds[:, 1] - bounds[:, 0])
+    if (
+        np.any(centers - widths < bounds[:, 0] - boundary_tolerance)
+        or np.any(centers + widths > bounds[:, 1] + boundary_tolerance)
+    ):
+        raise ValueError("Every test-function support must lie inside domain_bounds.")
+    max_orders = [max_derivative_order] * (dimension - 1) + [1]
+    if test_function == "polynomial":
+        if not np.all(np.isfinite(degrees)):
+            raise ValueError("test_degrees must be finite.")
+        if np.any(degrees != np.floor(degrees)) or np.any(degrees <= max_orders):
+            raise ValueError("Each test degree must be an integer above its derivative order.")
+    else:
+        if degrees is not None:
+            raise ValueError("test_degrees must be omitted for the paper bump.")
+        degrees = np.zeros(dimension, dtype=int)
+    return points, observations, bounds, centers, widths, degrees
+
+
+def _integrate_sampled_weak_system(points, observations, powers, bounds,
+                                   centers, widths, degrees,
+                                   max_derivative_order, max_polynomial_degree,
+                                   min_derivative_order, min_polynomial_degree,
+                                   test_function):
+    """Integrate raw or corrected powers against the same compact tests."""
+    dimension = points.shape[1]
+    spatial_dim = dimension - 1
+    terms = polynomial_library_terms(
+        spatial_dim, max_derivative_order, max_polynomial_degree,
+        min_derivative_order=min_derivative_order,
+        min_polynomial_degree=min_polynomial_degree,
+    )
+    derivatives = list(dict.fromkeys(derivative for derivative, _ in terms))
+    derivative_indices = {derivative: index for index, derivative in enumerate(derivatives)}
+    term_derivatives = np.array([derivative_indices[derivative] for derivative, _ in terms])
+    term_powers = np.array([power - min_polynomial_degree for _, power in terms])
+    orders = np.asarray(derivatives)
+    signs = (-1.0)**np.sum(orders, axis=1)
+    max_orders = [max_derivative_order] * spatial_dim + [1]
+    if test_function == "paper":
+        factors = [_paper_bump_factors(order) for order in max_orders]
+    else:
+        factors = [
+            _bump_derivative_factors(int(degree), order)
+            for degree, order in zip(degrees, max_orders)
+        ]
+
+    x = np.empty((len(centers), len(terms)))
+    y = np.empty(len(centers))
+    weight = np.prod(bounds[:, 1] - bounds[:, 0]) / len(points)
+    tree = cKDTree(points / widths)
+    for row, center in enumerate(centers):
+        indices = tree.query_ball_point(center / widths, r=1.0, p=np.inf)
+        if not indices:
+            raise ValueError("A test function has no evaluation observations in its support.")
+        local_points = points[indices]
+        bumps = []
+        for axis in range(dimension):
+            if test_function == "paper":
+                bumps.append(_paper_bump_derivatives_at_points(
+                    local_points[:, axis], center[axis], widths[axis], factors[axis]
+                ))
+            else:
+                bumps.append(_bump_derivatives_at_points(
+                    local_points[:, axis], center[axis], widths[axis],
+                    int(degrees[axis]), factors[axis]
+                ))
+        spatial_bump = np.ones(len(indices))
+        spatial_derivatives = np.ones((len(indices), len(derivatives)))
+        for axis in range(spatial_dim):
+            spatial_bump *= bumps[axis][:, 0]
+            spatial_derivatives *= bumps[axis][:, orders[:, axis]]
+        y[row] = -weight * np.dot(spatial_bump * bumps[-1][:, 1], observations[indices])
+        weighted_powers = powers[indices] * bumps[-1][:, 0, None]
+        integrals = spatial_derivatives.T @ weighted_powers
+        x[row] = weight * signs[term_derivatives] * integrals[term_derivatives, term_powers]
+
+    if not np.all(np.isfinite(x)) or not np.all(np.isfinite(y)):
+        raise ValueError("Monte Carlo weak integrals are non-finite.")
+    return x, y
+
+
+def build_debiased_wsindy_system(
+    training_points, training_values, evaluation_points, evaluation_values,
+    u_estimator, *, domain_bounds, test_centers, test_half_widths,
+    test_degrees=None, max_derivative_order=5, max_polynomial_degree=5,
+    min_derivative_order=1, min_polynomial_degree=1,
+    test_function="polynomial",
+):
+    """Build the corrected Monte Carlo weak system (X_db, Y_db).
+
+    Training and evaluation are independent samples of space-time coordinates.
+    Evaluation coordinates must be uniform over domain_bounds. The estimator
+    is fitted only on training data; its predictions are evaluated on the
+    independent sample. Spatial derivatives act on the compact test functions.
+    """
+    training_points = np.asarray(training_points, dtype=float)
+    training_values = np.asarray(training_values, dtype=float)
+    evaluation_points, evaluation_values, bounds, centers, widths, degrees = (
+        _sampled_weak_inputs(
+            evaluation_points, evaluation_values, domain_bounds, test_centers,
+            test_half_widths, test_degrees, max_derivative_order, test_function,
+        )
+    )
+    if (
+        training_points.ndim != 2
+        or training_points.shape[1] != evaluation_points.shape[1]
+        or len(training_points) == 0
+        or training_values.shape != (len(training_points),)
+    ):
+        raise ValueError("Training points and values have incompatible shapes.")
+    if not np.all(np.isfinite(training_points)) or not np.all(np.isfinite(training_values)):
+        raise ValueError("Training observations must be finite.")
+
+    fitted_u = u_estimator.fit(training_points, training_values)
+    values = np.asarray(fitted_u.predict(evaluation_points), dtype=float)
+    if values.shape != evaluation_values.shape or not np.all(np.isfinite(values)):
+        raise ValueError("u_estimator must predict one finite value per evaluation point.")
+
+    # The exact first-order correction to v^j is v^j - j*v^(j-1)*(v-U).
+    corrected_powers = np.column_stack([
+        np.ones_like(values) if power == 0 else
+        values**power - power * values**(power - 1) * (values - evaluation_values)
+        for power in range(min_polynomial_degree, max_polynomial_degree + 1)
+    ])
+
+    return _integrate_sampled_weak_system(
+        evaluation_points, evaluation_values, corrected_powers, bounds,
+        centers, widths, degrees, max_derivative_order, max_polynomial_degree,
+        min_derivative_order, min_polynomial_degree, test_function,
+    )
+
+
+def build_sampled_wsindy_system(
+    points, observations, *, domain_bounds, test_centers, test_half_widths,
+    test_degrees=None, max_derivative_order=5, max_polynomial_degree=5,
+    min_derivative_order=1, min_polynomial_degree=1,
+    test_function="polynomial",
+):
+    """Build ordinary WSINDy weak equations from uniform iid point samples."""
+    points, observations, bounds, centers, widths, degrees = _sampled_weak_inputs(
+        points, observations, domain_bounds, test_centers, test_half_widths,
+        test_degrees, max_derivative_order, test_function,
+    )
+    powers = np.column_stack([
+        observations**power for power in range(min_polynomial_degree, max_polynomial_degree + 1)
+    ])
+    return _integrate_sampled_weak_system(
+        points, observations, powers, bounds, centers, widths, degrees,
+        max_derivative_order, max_polynomial_degree,
+        min_derivative_order, min_polynomial_degree, test_function,
+    )
+
+
+def sampled_wsindy(
+    points, observations, *, domain_bounds, test_centers, test_half_widths,
+    test_degrees=None, lambda_=0.0, regression="lasso", thresholds=None,
+    max_derivative_order=5, max_polynomial_degree=5,
+    min_derivative_order=1, min_polynomial_degree=1,
+    test_function="polynomial",
+    max_iter=10000, tol=1e-8,
+):
+    """Fit ordinary WSINDy on iid points using Monte Carlo weak integrals."""
+    x, y = build_sampled_wsindy_system(
+        points, observations, domain_bounds=domain_bounds, test_centers=test_centers,
+        test_half_widths=test_half_widths, test_degrees=test_degrees,
+        max_derivative_order=max_derivative_order,
+        max_polynomial_degree=max_polynomial_degree,
+        min_derivative_order=min_derivative_order,
+        min_polynomial_degree=min_polynomial_degree,
+        test_function=test_function,
+    )
+    return fit_sampled_wsindy_system(
+        x, y, lambda_=lambda_, regression=regression, thresholds=thresholds,
+        max_iter=max_iter, tol=tol,
+    )
+
+
+def fit_sampled_wsindy_system(
+    x, y, *, lambda_=0.0, regression="lasso", thresholds=None,
+    max_iter=10000, tol=1e-8,
+):
+    """Fit a precomputed Monte Carlo weak system, reusable across regressions."""
+    if not np.isscalar(lambda_) or not np.isfinite(lambda_) or lambda_ < 0:
+        raise ValueError("lambda_ must be finite and nonnegative.")
+    return _fit_coefficients(
+        x, y, 2.0 * lambda_ / len(y), max_iter, tol, regression, thresholds
+    )
+
+
+def debiased_wsindy(
+    training_points, training_values, evaluation_points, evaluation_values,
+    u_estimator, *, domain_bounds, test_centers, test_half_widths,
+    test_degrees=None, lambda_=0.0, regression="lasso", thresholds=None,
+    max_derivative_order=5,
+    max_polynomial_degree=5, min_derivative_order=1, min_polynomial_degree=1,
+    test_function="polynomial",
+    max_iter=10000, tol=1e-8,
+) -> np.ndarray:
+    """Fit the corrected weak system by OLS/LASSO or MSTLS.
+
+    The default minimizes ||Y_db-X_db beta||^2/2 + lambda_*||beta||_1;
+    lambda_=0 uses OLS. regression='mstls' applies the WSINDy threshold-and-
+    refit rule to the same corrected system, with lambda_=0.
+    ``tol`` controls KKT error on the equivalent mean-squared-loss scale,
+    which is 2/K times the gradient scale of the displayed LASSO objective.
+    """
+    if not np.isscalar(lambda_) or not np.isfinite(lambda_) or lambda_ < 0:
+        raise ValueError("lambda_ must be finite and nonnegative.")
+    x_debiased, y_debiased = build_debiased_wsindy_system(
+        training_points, training_values, evaluation_points, evaluation_values,
+        u_estimator, domain_bounds=domain_bounds, test_centers=test_centers,
+        test_half_widths=test_half_widths, test_degrees=test_degrees,
+        max_derivative_order=max_derivative_order,
+        max_polynomial_degree=max_polynomial_degree,
+        min_derivative_order=min_derivative_order,
+        min_polynomial_degree=min_polynomial_degree,
+        test_function=test_function,
+    )
+    rho_1 = 2.0 * lambda_ / len(y_debiased)
+    return _fit_coefficients(
+        x_debiased, y_debiased, rho_1, max_iter, tol, regression, thresholds
+    )
 
 
 def _tensor_weights(weights):
@@ -578,8 +930,22 @@ class _WeakResidual:
         self.X, self.y = build_wsindy_system(u, spatial_grid, time, **test_settings)
         u, terms, weights, strides = _prepare_weak_tests(u, spatial_grid, time, **test_settings)
         self.u = u.ravel()
+        self.terms = terms
         self.degree = max(power for _, power in terms)
         derivatives = list(dict.fromkeys(alpha for alpha, _ in terms))
+        derivative_indices = {derivative: index for index, derivative in enumerate(derivatives)}
+        self.term_derivative_indices = np.array([
+            derivative_indices[derivative] for derivative, _ in terms
+        ])
+        self.term_powers = np.array([power for _, power in terms])
+        self.columns_by_derivative = [
+            np.flatnonzero(self.term_derivative_indices == index)
+            for index in range(len(derivatives))
+        ]
+        self.columns_by_power = [
+            np.flatnonzero(self.term_powers == power)
+            for power in range(1, self.degree + 1)
+        ]
 
         widths = [len(axis_weights[0]) // 2 for axis_weights in weights]
         starts = np.meshgrid(
@@ -608,12 +974,14 @@ class _WeakResidual:
     def jacobian(self, beta):
         """A = d(y-X beta)/dU = W_t - sum beta[alpha,j] W_alpha diag(j U^(j-1))."""
         values = np.broadcast_to(self.time_kernel, self.indices.shape).copy()
-        coefficients = np.asarray(beta).reshape(-1, self.degree)
-        for kernel, powers in zip(self.spatial_kernels, coefficients):
-            if np.any(powers):
-                slope = np.polynomial.polynomial.polyval(
-                    self.u, powers * np.arange(1, self.degree + 1)
-                )
+        for kernel, columns in zip(self.spatial_kernels, self.columns_by_derivative):
+            slope_coefficients = np.zeros(self.degree)
+            for column in columns:
+                power = self.term_powers[column]
+                if power > 0:
+                    slope_coefficients[power - 1] = power * beta[column]
+            if np.any(slope_coefficients):
+                slope = np.polynomial.polynomial.polyval(self.u, slope_coefficients)
                 values -= kernel[None, :] * slope[self.indices]
         return sparse.csr_matrix(
             (values.ravel(), self.indices.ravel(), self.indptr),
@@ -662,17 +1030,21 @@ class _WeakResidual:
         # dC = (1-alpha) (dA A.T + A dA.T).
         inverse = linalg.cho_solve((factor, True), np.eye(count))
         metric = inverse - np.outer(weighted_residual, weighted_residual) / variance
-        covariance_gradient = np.zeros((len(self.spatial_kernels), self.degree))
+        covariance_gradient = np.zeros(len(self.terms))
         for start in range(0, count, 32):
             stop = min(start + 32, count)
             # Only materialize 32 rows of metric @ A, not the full K-by-N array.
             block = (A.T @ metric[start:stop].T).T
             local = block[np.arange(stop - start)[:, None], self.indices[start:stop]].copy()
-            for power in range(1, self.degree + 1):
+            for power, matching in enumerate(self.columns_by_power, start=1):
                 moments = power * np.sum(local, axis=0)
-                covariance_gradient[:, power - 1] -= self.spatial_kernels @ moments
+                if len(matching):
+                    derivatives = self.spatial_kernels @ moments
+                    covariance_gradient[matching] -= derivatives[
+                        self.term_derivative_indices[matching]
+                    ]
                 local *= self.local_u[start:stop]
-        gradient += (1.0 - alpha) * covariance_gradient.ravel() / count
+        gradient += (1.0 - alpha) * covariance_gradient / count
         return float(value), gradient
 
 
@@ -720,9 +1092,12 @@ def wendy(
     initial_beta: np.ndarray | None = None,
     max_derivative_order: int = 5,
     max_polynomial_degree: int = 5,
+    min_derivative_order: int = 1,
+    min_polynomial_degree: int = 1,
     half_widths: tuple[int, ...] | None = None,
     strides: tuple[int, ...] | None = None,
     test_degrees: tuple[int, ...] | None = None,
+    test_function: str = "polynomial",
     max_iter: int = 10000,
     tol: float = 1e-8,
 ) -> np.ndarray:
@@ -759,7 +1134,9 @@ def wendy(
     problem = _WeakResidual(
         u, spatial_grid, time,
         max_derivative_order=max_derivative_order, max_polynomial_degree=max_polynomial_degree,
+        min_derivative_order=min_derivative_order, min_polynomial_degree=min_polynomial_degree,
         half_widths=half_widths, strides=strides, test_degrees=test_degrees,
+        test_function=test_function,
     )
     beta = _initial_coefficients(problem, initial_beta, rho_1, regression, thresholds, max_iter, tol)
     for iteration in range(max_reweights):
@@ -908,9 +1285,12 @@ def wendy_mle(
     initial_beta: np.ndarray | None = None,
     max_derivative_order: int = 5,
     max_polynomial_degree: int = 5,
+    min_derivative_order: int = 1,
+    min_polynomial_degree: int = 1,
     half_widths: tuple[int, ...] | None = None,
     strides: tuple[int, ...] | None = None,
     test_degrees: tuple[int, ...] | None = None,
+    test_function: str = "polynomial",
     max_iter: int = 1000,
     tol: float = 1e-6,
 ) -> np.ndarray:
@@ -952,7 +1332,9 @@ def wendy_mle(
     problem = _WeakResidual(
         u, spatial_grid, time,
         max_derivative_order=max_derivative_order, max_polynomial_degree=max_polynomial_degree,
+        min_derivative_order=min_derivative_order, min_polynomial_degree=min_polynomial_degree,
         half_widths=half_widths, strides=strides, test_degrees=test_degrees,
+        test_function=test_function,
     )
     beta = _initial_coefficients(problem, initial_beta, rho_1, regression, thresholds, max_iter, tol)
     if regression == "mstls":

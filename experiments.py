@@ -12,10 +12,24 @@ from time import perf_counter
 import numpy as np
 import scipy
 
-from methods import polynomial_library_terms, sindy, wsindy, wendy, wendy_mle
+from methods import (
+    build_debiased_wsindy_system, build_sampled_wsindy_system,
+    build_sindy_system, build_wsindy_system,
+    debiased_wsindy, fit_sampled_wsindy_system,
+    polynomial_library_terms,
+    sindy, wsindy, wendy, wendy_mle,
+)
 from simulation_generation import (
+    BURGERS_CRITICAL_NOISE_STD,
     generate_anisotropic_porous_medium,
     generate_anisotropic_porous_medium_3d,
+    generate_anisotropic_porous_medium_3d_samples,
+    generate_nonlinear_viscous_burgers,
+    sample_nonlinear_viscous_burgers,
+)
+from utils import (
+    MovingAverageEstimator, estimate_grid_noise_std,
+    filter_grid_moving_average, paper_filter_width,
 )
 
 
@@ -29,12 +43,27 @@ METHOD_LABELS = {
     "wendy-ols": "WENDy (OLS)",
     "wendy-mle-lasso": "WENDy-MLE (LASSO)",
     "wendy-mle": "WENDy-MLE (unpenalized)",
+    "debiased-wsindy": "Debiased WSINDy",
+    "sampled-wsindy-ols": "Sampled WSINDy (OLS)",
+    "sampled-wsindy-lasso": "Sampled WSINDy (LASSO)",
+    "sampled-wsindy-mstls": "Sampled WSINDy (MSTLS)",
+    "sindy-mstls": "SINDy (MSTLS)",
+    "paper-filtered-wsindy": "Paper filtered WSINDy (MSTLS)",
+    "sampled-plug-in-wsindy": "Sampled plug-in WSINDy (MSTLS)",
+    "sampled-debiased-wsindy": "Sampled debiased WSINDy (MSTLS)",
 }
+SAMPLED_METHODS = ("sampled-wsindy-ols", "sampled-wsindy-lasso", "sampled-wsindy-mstls")
 DEFAULT_METHODS = ["sindy-ols", "wsindy-ols", "sindy-lasso", "wsindy-lasso", "wsindy-mstls"]
 GENERATORS = {
     "anisotropic_porous_medium": generate_anisotropic_porous_medium,
     "anisotropic_porous_medium_3d": generate_anisotropic_porous_medium_3d,
+    "nonlinear_viscous_burgers": generate_nonlinear_viscous_burgers,
 }
+BURGERS_METHODS = [
+    "sindy-ols", "sindy-mstls", "wsindy-ols", "wsindy-mstls",
+    "paper-filtered-wsindy", "sampled-wsindy-mstls",
+    "sampled-plug-in-wsindy", "sampled-debiased-wsindy",
+]
 
 
 def parse_arguments():
@@ -42,6 +71,10 @@ def parse_arguments():
     parser.add_argument("--instance", choices=GENERATORS, default="anisotropic_porous_medium")
     parser.add_argument("--methods", nargs="+", choices=METHOD_LABELS, default=DEFAULT_METHODS)
     parser.add_argument("--noise-ratios", nargs="+", type=float, default=[0.0, 1.0])
+    parser.add_argument("--noise-multipliers", nargs="+", type=float, default=[0.0, 1.0, 2.0],
+                        help="Burgers only: sigma / sqrt(0.01/3).")
+    parser.add_argument("--replicates", type=int, default=3,
+                        help="Burgers only: independent noise and sample realizations.")
     parser.add_argument("--nx", type=int, default=None, help="Default: 64 in 2D, 32 in 3D.")
     parser.add_argument("--ny", type=int, default=None, help="Default: 64 in 2D, 32 in 3D.")
     parser.add_argument("--nz", type=int, default=None, help="3D only; default: 32.")
@@ -51,6 +84,16 @@ def parse_arguments():
     parser.add_argument("--wsindy-rho-1", type=float, default=1e-6)
     parser.add_argument("--wendy-rho-1", type=float, default=1e-4)
     parser.add_argument("--wendy-mle-rho-1", type=float, default=1e-3)
+    parser.add_argument("--debiased-lambda", type=float, default=0.0,
+                        help="Penalty in 0.5*||Y_db-X_db beta||^2 + lambda*||beta||_1.")
+    parser.add_argument("--debiased-regression", choices=("lasso", "mstls"),
+                        default="lasso", help="Regression rule for the corrected weak system.")
+    parser.add_argument("--sampled-lambda", type=float, default=0.2,
+                        help="L1 penalty for ordinary WSINDy on iid point samples.")
+    parser.add_argument("--pilot-bandwidths", nargs="+", type=float, default=None,
+                        help="Physical box-kernel bandwidths in x, y, z, t order.")
+    parser.add_argument("--n-observations", type=int, default=None,
+                        help="Total iid observations, split equally for the debiased method.")
     parser.add_argument("--wendy-alpha", type=float, default=1e-10)
     parser.add_argument("--wendy-mle-alpha", type=float, default=0.0)
     parser.add_argument("--mle-noise-std", type=float, default=None,
@@ -73,6 +116,27 @@ def parse_arguments():
     parser.add_argument("--append", action="store_true",
                         help="Append this experiment's report, preserving previous results.")
     args = parser.parse_args()
+    if args.instance == "nonlinear_viscous_burgers":
+        if args.ny is not None or args.nz is not None:
+            parser.error("The Burgers instance has one spatial dimension; omit --ny and --nz.")
+        args.nx = 256 if args.nx is None else args.nx
+        args.nt = 257 if args.nt is None else args.nt
+        args.n_observations = 524288 if args.n_observations is None else args.n_observations
+        if args.nx < 32 or args.nt < 17 or args.n_observations < 2:
+            parser.error("Burgers needs nx>=32, nt>=17, and n-observations>=2.")
+        if (args.nx % 8 != 0 or (args.nt - 1) % 8 != 0):
+            parser.error("Burgers needs nx divisible by 8 and nt-1 divisible by 8.")
+        if args.test_degrees is not None or args.half_widths is not None or args.strides is not None:
+            parser.error("The Burgers comparison fixes the paper bump and physical test supports.")
+        if args.methods == DEFAULT_METHODS:
+            args.methods = BURGERS_METHODS.copy()
+        if any(method not in BURGERS_METHODS for method in args.methods):
+            parser.error("The Burgers instance supports only its eight comparison methods.")
+        if args.replicates < 1 or args.repeats < 1:
+            parser.error("--replicates and --repeats must be positive.")
+        if any(not np.isfinite(level) or level < 0 for level in args.noise_multipliers):
+            parser.error("--noise-multipliers must contain finite nonnegative values.")
+        return args
     spatial_dim = 3 if args.instance == "anisotropic_porous_medium_3d" else 2
     if spatial_dim == 2 and args.nz is not None:
         parser.error("--nz is only used by a 3D instance.")
@@ -90,6 +154,34 @@ def parse_arguments():
             parser.error(f"--{flag.replace('_', '-')} needs {spatial_dim + 1} values (space, then time).")
     if args.repeats < 1:
         parser.error("--repeats must be positive.")
+    if "debiased-wsindy" in args.methods:
+        if args.methods != ["debiased-wsindy"] or spatial_dim != 3:
+            parser.error("Run debiased-wsindy alone on the 3D instance.")
+        if not np.isfinite(args.debiased_lambda) or args.debiased_lambda < 0:
+            parser.error("--debiased-lambda must be finite and nonnegative.")
+        if args.debiased_regression == "mstls" and args.debiased_lambda != 0:
+            parser.error("MSTLS uses --thresholds; set --debiased-lambda to zero.")
+        if args.debiased_regression == "lasso" and args.thresholds is not None:
+            parser.error("--thresholds applies only to MSTLS.")
+        if args.n_observations is not None and args.n_observations < 2:
+            parser.error("--n-observations must be at least two.")
+        if args.pilot_bandwidths is not None and (
+            len(args.pilot_bandwidths) != 4
+            or not np.all(np.isfinite(args.pilot_bandwidths))
+            or any(width <= 0 for width in args.pilot_bandwidths)
+        ):
+            parser.error("--pilot-bandwidths needs four finite positive values.")
+    if any(method in SAMPLED_METHODS for method in args.methods):
+        if spatial_dim != 3 or any(method not in SAMPLED_METHODS for method in args.methods):
+            parser.error("Run sampled-wsindy methods together on the 3D instance.")
+        if not np.isfinite(args.sampled_lambda) or args.sampled_lambda < 0:
+            parser.error("--sampled-lambda must be finite and nonnegative.")
+        if "sampled-wsindy-lasso" in args.methods and args.sampled_lambda == 0:
+            parser.error("sampled-wsindy-lasso requires a positive --sampled-lambda.")
+        if args.n_observations is not None and args.n_observations < 2:
+            parser.error("--n-observations must be at least two.")
+        if args.thresholds is not None and "sampled-wsindy-mstls" not in args.methods:
+            parser.error("--thresholds applies only to MSTLS.")
     if args.max_iter < 1 or not np.isfinite(args.tol) or args.tol <= 0:
         parser.error("--max-iter and --tol must be positive, with finite --tol.")
     if args.mle_max_iter < 1 or not np.isfinite(args.mle_tol) or args.mle_tol <= 0:
@@ -123,6 +215,237 @@ def call_estimator(estimator, inputs, settings, timeout_seconds):
     finally:
         signal.setitimer(signal.ITIMER_REAL, 0)
         signal.signal(signal.SIGALRM, previous_handler)
+
+
+def _burgers_settings(data):
+    """Fixed physical support ratio 1/16 and the paper's polynomial library."""
+    x, = data.spatial_grid
+    nx, nt = data.u_true.shape
+    half_widths = (nx // 8, (nt - 1) // 8)
+    strides = (max(1, half_widths[0] // 4), max(1, half_widths[1] // 4))
+    centers = np.column_stack([
+        axis.ravel() for axis in np.meshgrid(
+            x[half_widths[0]:nx - half_widths[0]:strides[0]],
+            data.time[half_widths[1]:nt - half_widths[1]:strides[1]],
+            indexing="ij",
+        )
+    ])
+    library = dict(
+        min_derivative_order=0, max_derivative_order=6,
+        min_polynomial_degree=0, max_polynomial_degree=6,
+    )
+    grid_tests = dict(
+        half_widths=half_widths, strides=strides, test_function="paper"
+    )
+    sampled_tests = dict(
+        domain_bounds=((-1.0, 1.0), (0.0, 1.5)), test_centers=centers,
+        test_half_widths=(half_widths[0] * (x[1] - x[0]),
+                          half_widths[1] * (data.time[1] - data.time[0])),
+        test_function="paper",
+    )
+    return library, grid_tests, sampled_tests
+
+
+def _burgers_pilot_bandwidths(data, sample_count, filter_width):
+    """Map the paper's grid width to iid boxes, with 64 expected training neighbors."""
+    x, = data.spatial_grid
+    training_count = sample_count // 2
+    density_fraction = np.sqrt(64.0 / training_count)
+    grid_radii = ((filter_width - 1) * (x[1] - x[0]) / 2.0,
+                  (filter_width - 1) * (data.time[1] - data.time[0]) / 2.0)
+    density_radii = (density_fraction, 0.75 * density_fraction)
+    return tuple(max(grid, floor) for grid, floor in zip(grid_radii, density_radii))
+
+
+def _fit_burgers_method(method, data, samples, library, grid_tests,
+                        sampled_tests, bandwidths, filter_width, thresholds):
+    """Build one system and fit it; return the inputs for a truth-residual check."""
+    if method.startswith("sindy-"):
+        X, y = build_sindy_system(data.u_observed, data.spatial_grid, data.time, **library)
+    elif method in ("wsindy-ols", "wsindy-mstls", "paper-filtered-wsindy"):
+        observations = data.u_observed
+        if method == "paper-filtered-wsindy":
+            observations = filter_grid_moving_average(observations, filter_width)
+        X, y = build_wsindy_system(
+            observations, data.spatial_grid, data.time, **library, **grid_tests
+        )
+    elif method == "sampled-wsindy-mstls":
+        X, y = build_sampled_wsindy_system(
+            samples.evaluation_points, samples.evaluation_values,
+            **library, **sampled_tests,
+        )
+    elif method == "sampled-plug-in-wsindy":
+        pilot = MovingAverageEstimator(bandwidths).fit(
+            samples.training_points, samples.training_values
+        )
+        predictions = pilot.predict(samples.evaluation_points)
+        X, y = build_sampled_wsindy_system(
+            samples.evaluation_points, predictions, **library, **sampled_tests,
+        )
+    elif method == "sampled-debiased-wsindy":
+        X, y = build_debiased_wsindy_system(
+            samples.training_points, samples.training_values,
+            samples.evaluation_points, samples.evaluation_values,
+            MovingAverageEstimator(bandwidths), **library, **sampled_tests,
+        )
+    else:
+        raise ValueError(f"Unknown Burgers method: {method}")
+
+    regression = "lasso" if method.endswith("-ols") else "mstls"
+    beta = fit_sampled_wsindy_system(
+        X, y, regression=regression,
+        thresholds=thresholds if regression == "mstls" else None,
+    )
+    return beta, X, y
+
+
+def run_burgers_experiments(args):
+    """Compare grid and independent-sample methods on one Burgers solution."""
+    thresholds = np.logspace(-4, 0, 100)
+    results = []
+    metadata = []
+    for multiplier in args.noise_multipliers:
+        noise_std = multiplier * BURGERS_CRITICAL_NOISE_STD
+        for replicate in range(args.replicates):
+            seed = args.seed + replicate
+            data = generate_nonlinear_viscous_burgers(
+                nx=args.nx, nt=args.nt, noise_std=noise_std, seed=seed
+            )
+            samples = sample_nonlinear_viscous_burgers(
+                data, args.n_observations, seed=seed + 10000
+            )
+            library, grid_tests, sampled_tests = _burgers_settings(data)
+            terms = polynomial_library_terms(1, **library)
+            beta_true = np.array([data.true_coefficients.get(term, 0.0) for term in terms])
+            support_points = np.prod([2 * width + 1 for width in grid_tests["half_widths"]])
+            sigma_est = estimate_grid_noise_std(data.u_observed)
+            filter_width = paper_filter_width(sigma_est, int(support_points))
+            bandwidths = _burgers_pilot_bandwidths(data, args.n_observations, filter_width)
+            pilot = MovingAverageEstimator(bandwidths).fit(
+                samples.training_points, samples.training_values
+            )
+            prediction = pilot.predict(samples.evaluation_points[:10000])
+            pilot_mse = float(np.mean((prediction - samples.evaluation_true[:10000])**2))
+            metadata.append(dict(
+                multiplier=multiplier, replicate=replicate, sigma_est=sigma_est,
+                filter_width=filter_width, bandwidths=bandwidths,
+                pilot_mse=pilot_mse, K=len(sampled_tests["test_centers"]),
+                grid_n=data.u_true.size, iid_n=args.n_observations,
+            ))
+            for method in args.methods:
+                start = perf_counter()
+                try:
+                    beta, X, y = _fit_burgers_method(
+                        method, data, samples, library, grid_tests,
+                        sampled_tests, bandwidths, filter_width, thresholds,
+                    )
+                    result = dict(
+                        multiplier=multiplier, replicate=replicate, method=method,
+                        status="ok", runtime=perf_counter() - start,
+                        squared_error=float(np.sum((beta - beta_true)**2)),
+                        truth_residual=float(np.linalg.norm(y - X @ beta_true) / np.linalg.norm(y)),
+                        support_recovered=bool(np.array_equal(beta != 0, beta_true != 0)),
+                        nonzero=int(np.count_nonzero(beta)),
+                    )
+                    print(
+                        f"sigma/sigma_c={multiplier:g} seed={seed} {METHOD_LABELS[method]}: "
+                        f"error={result['squared_error']:.6g}, residual={result['truth_residual']:.3g}, "
+                        f"runtime={result['runtime']:.2f}s", flush=True,
+                    )
+                except (RuntimeError, ValueError, np.linalg.LinAlgError) as error:
+                    result = dict(
+                        multiplier=multiplier, replicate=replicate, method=method,
+                        status="failed", runtime=perf_counter() - start,
+                        reason=str(error),
+                    )
+                    print(f"sigma/sigma_c={multiplier:g} seed={seed} {method}: failed: {error}", flush=True)
+                results.append(result)
+    return results, metadata
+
+
+def write_burgers_report(args, results, metadata):
+    """Keep grid and iid estimates separate while reporting the same metrics."""
+    lines = [
+        "## Nonlinear viscous Burgers: paper-filter comparison", "",
+        "PDE: `u_t = 0.01 u_xx - 0.5 d_x(u^2) - u^3 + 2u^2 + 1`.",
+        "This is an adapted instance: periodic `x in [-1,1)`, `t in [0,1.5]`, and",
+        "`u(x,0)=0.5+0.7 sin(pi*x)+0.25 sin(2*pi*x+0.3)`. The",
+        "[Messenger–Bortz paper](https://arxiv.org/pdf/2211.16000) does not",
+        "specify these initial/boundary data. A centered-difference, sparse-BDF",
+        "solution is the numerical truth; the grid and iid observations share it.", "",
+        f"- Grid: `{args.nx} x {args.nt}` (`n={metadata[0]['grid_n']}`); iid observations: "
+        f"`n={args.n_observations}`, split equally into independent pilot and evaluation samples.",
+        f"- `K={metadata[0]['K']}` tests, support half-widths `(0.25,0.1875)` in `(x,t)`, "
+        "support volume ratio `1/16`; translated paper bump "
+        "`exp(9/(r^2-1))` on `|r|<1`.",
+        "- Library: spatial orders `0..6`, powers `u^0..u^6`; 43 nonzero columns "
+        "after omitting positive derivatives of the constant. All sparse fits use "
+        "MSTLS with `logspace(-4,0,100)` thresholds.",
+        "- Paper filter: sixth-difference estimate of `sigma`, then the paper's "
+        "equation (5.6) per-axis box width (periodic space, reflected time). For iid pilots, the "
+        "grid width is mapped to physical units with a floor giving 64 expected "
+        "training neighbors in an interior box. This is an adaptation to iid data.",
+        f"- `sigma_c=sqrt(0.01/3)={BURGERS_CRITICAL_NOISE_STD:.6g}`. "
+        f"Each level has {args.replicates} independent seeds starting at `{args.seed}`. "
+        "Entries are mean squared coefficient error, support recovery count, "
+        "mean relative system residual at the true coefficients, and median "
+        "complete fit runtime (seconds). Data generation and width selection "
+        "are excluded from runtime. OLS has no sparse support score.", "",
+        "| sigma/sigma_c | estimated sigma | filter width | iid pilot bandwidths (x,t) | pilot MSE |",
+        "| ---: | ---: | ---: | --- | ---: |",
+    ]
+    for multiplier in args.noise_multipliers:
+        entries = [item for item in metadata if item["multiplier"] == multiplier]
+        widths = sorted({item["filter_width"] for item in entries})
+        bandwidths = entries[0]["bandwidths"]
+        lines.append(
+            f"| {multiplier:g} | {np.mean([item['sigma_est'] for item in entries]):.4g} | "
+            f"{','.join(map(str, widths))} | ({bandwidths[0]:.5g}, {bandwidths[1]:.5g}) | "
+            f"{np.mean([item['pilot_mse'] for item in entries]):.4g} |"
+        )
+    for title, methods in (
+        ("Grid methods", [method for method in args.methods if not method.startswith("sampled-")]),
+        ("Independent-point Monte Carlo methods", [method for method in args.methods if method.startswith("sampled-")]),
+    ):
+        if not methods:
+            continue
+        lines.extend(["", f"### {title}", "",
+                      "| sigma/sigma_c | Method | Squared error | Support | True-system residual | Runtime (s) |",
+                      "| ---: | --- | ---: | ---: | ---: | ---: |"])
+        for multiplier in args.noise_multipliers:
+            for method in methods:
+                entries = [item for item in results if item["multiplier"] == multiplier
+                           and item["method"] == method]
+                successes = [item for item in entries if item["status"] == "ok"]
+                if not successes:
+                    lines.append(f"| {multiplier:g} | {METHOD_LABELS[method]} | failed | — | — | — |")
+                    continue
+                errors = [item["squared_error"] for item in successes]
+                residuals = [item["truth_residual"] for item in successes]
+                support = "—" if method.endswith("-ols") else (
+                    f"{sum(item['support_recovered'] for item in successes)}/{len(entries)}"
+                )
+                lines.append(
+                    f"| {multiplier:g} | {METHOD_LABELS[method]} | "
+                    f"{np.mean(errors):.6g} | {support} | {np.mean(residuals):.4g} | "
+                    f"{np.median([item['runtime'] for item in successes]):.3f} |"
+                )
+    lines.extend(["", "Grid and iid errors are separate comparisons because their observation "
+                  "locations and quadrature differ. The paper reports 200 noise realizations; "
+                  "these runs are a smaller numerical check, not a reproduction of its figure.",
+                  "", "Reproduce with:", "",
+                  "```sh",
+                  "OPENBLAS_NUM_THREADS=1 python experiments.py --instance nonlinear_viscous_burgers "
+                  f"--noise-multipliers {' '.join(f'{level:g}' for level in args.noise_multipliers)} "
+                  f"--replicates {args.replicates} --n-observations {args.n_observations} "
+                  "--append",
+                  "```", ""])
+    report = "\n".join(lines)
+    if args.append and args.output.exists() and args.output.stat().st_size:
+        with args.output.open("a", encoding="utf-8") as stream:
+            stream.write("\n\n" + report)
+    else:
+        args.output.write_text(report, encoding="utf-8")
 
 
 def run_experiments(args):
@@ -223,6 +546,314 @@ def run_experiments(args):
                 flush=True,
             )
     return results
+
+
+def _debiased_test_geometry(args):
+    """Translate the existing 3D grid's test centers to physical coordinates."""
+    sizes = (args.nx, args.ny, args.nz, args.nt)
+    bounds = np.array(((-5.0, 5.0),) * 3 + ((0.5, 2.5),))
+    widths_in_cells = tuple(args.half_widths) if args.half_widths else tuple(
+        max(2, size // 4) for size in sizes
+    )
+    strides = tuple(args.strides) if args.strides else tuple(
+        max(1, width // 4) for width in widths_in_cells
+    )
+    degrees = tuple(args.test_degrees) if args.test_degrees else tuple(
+        max(order + 1, int(np.ceil(np.log(1e-10) / np.log((2 * width - 1) / width**2))))
+        for width, order in zip(widths_in_cells, (5, 5, 5, 1))
+    )
+    grids = [np.linspace(lower, upper, size) for (lower, upper), size in zip(bounds, sizes)]
+    if any(2 * width + 1 > size for width, size in zip(widths_in_cells, sizes)):
+        raise ValueError("Each test-function support must fit inside its observation axis.")
+    center_axes = [
+        grid[np.arange(width, size - width, stride)]
+        for grid, size, width, stride in zip(grids, sizes, widths_in_cells, strides)
+    ]
+    centers = np.column_stack([
+        axis.ravel() for axis in np.meshgrid(*center_axes, indexing="ij")
+    ])
+    widths = tuple(
+        width * (grid[1] - grid[0]) for width, grid in zip(widths_in_cells, grids)
+    )
+    return bounds, centers, widths, degrees, widths_in_cells, strides
+
+
+def run_debiased_experiments(args):
+    """Measure the new method on independent samples from the same 3D PDE."""
+    bounds, centers, widths, degrees, cell_widths, strides = _debiased_test_geometry(args)
+    n_observations = args.n_observations or args.nx * args.ny * args.nz * args.nt
+    pilot_bandwidths = tuple(args.pilot_bandwidths) if args.pilot_bandwidths else (0.8, 0.8, 0.8, 0.35)
+    metadata = {
+        "bounds": bounds, "centers": centers, "widths": widths,
+        "degrees": degrees, "cell_widths": cell_widths, "strides": strides,
+        "n_observations": n_observations, "pilot_bandwidths": pilot_bandwidths,
+    }
+    results = {}
+    for noise_ratio in args.noise_ratios:
+        data = generate_anisotropic_porous_medium_3d_samples(
+            n_observations=n_observations, bounds=bounds,
+            noise_reference_shape=(args.nx, args.ny, args.nz, args.nt),
+            noise_ratio=noise_ratio, seed=args.seed,
+        )
+        terms = polynomial_library_terms(3)
+        beta_true = np.array([data.true_coefficients.get(term, 0.0) for term in terms])
+        inputs = (
+            data.training_points, data.training_values,
+            data.evaluation_points, data.evaluation_values,
+        )
+        settings = {
+            "domain_bounds": bounds, "test_centers": centers,
+            "test_half_widths": widths, "test_degrees": degrees,
+            "lambda_": args.debiased_lambda, "max_iter": args.max_iter, "tol": args.tol,
+            "regression": args.debiased_regression, "thresholds": args.thresholds,
+        }
+        durations = []
+        print(f"noise={noise_ratio:g} debiased WSINDy: starting", flush=True)
+        try:
+            for call_index in range(args.repeats + 1):
+                estimator = MovingAverageEstimator(pilot_bandwidths)
+                start = perf_counter()
+                beta = call_estimator(
+                    debiased_wsindy, inputs + (estimator,), settings, args.timeout_seconds
+                )
+                elapsed = perf_counter() - start
+                if call_index:
+                    durations.append(elapsed)
+                print(f"  {'warm-up' if call_index == 0 else f'run {call_index}'}: {elapsed:.3f} s", flush=True)
+        except (RuntimeError, ValueError, np.linalg.LinAlgError, TimeoutError) as error:
+            results[noise_ratio] = {
+                "status": "timeout" if isinstance(error, TimeoutError) else "failed",
+                "squared_error": None, "runtime_seconds": None,
+                "reason": str(error), "failed_attempt_seconds": perf_counter() - start,
+                "durations": durations, "noise_std": data.noise_std,
+            }
+            print(f"  {results[noise_ratio]['status']}: {error}", flush=True)
+            continue
+        if beta.shape != beta_true.shape or not np.all(np.isfinite(beta)):
+            raise ValueError("Debiased estimator returned an invalid coefficient vector.")
+        results[noise_ratio] = {
+            "status": "ok", "squared_error": float(np.sum((beta - beta_true)**2)),
+            "runtime_seconds": float(np.median(durations)), "durations": durations,
+            "noise_std": data.noise_std,
+            "nonzero_coefficients": int(np.count_nonzero(beta)),
+            "beta": beta.tolist(),
+        }
+        print(
+            f"noise={noise_ratio:g} debiased WSINDy: "
+            f"squared error={results[noise_ratio]['squared_error']:.9e}, "
+            f"median runtime={results[noise_ratio]['runtime_seconds']:.6f} s",
+            flush=True,
+        )
+    return results, metadata
+
+
+def run_sampled_experiments(args):
+    """Fit ordinary WSINDy on the debiased method's evaluation sample."""
+    bounds, centers, widths, degrees, cell_widths, strides = _debiased_test_geometry(args)
+    n_observations = args.n_observations or args.nx * args.ny * args.nz * args.nt
+    metadata = {
+        "n_observations": n_observations, "centers": centers,
+        "cell_widths": cell_widths, "strides": strides, "degrees": degrees,
+    }
+    results = {}
+    for noise_ratio in args.noise_ratios:
+        data = generate_anisotropic_porous_medium_3d_samples(
+            n_observations=n_observations, bounds=bounds,
+            noise_reference_shape=(args.nx, args.ny, args.nz, args.nt),
+            noise_ratio=noise_ratio, seed=args.seed,
+        )
+        terms = polynomial_library_terms(3)
+        beta_true = np.array([data.true_coefficients.get(term, 0.0) for term in terms])
+        durations = {method: [] for method in args.methods}
+        estimates = {}
+        failures = {}
+        for call_index in range(args.repeats + 1):
+            start = perf_counter()
+            try:
+                x, y = call_estimator(
+                    build_sampled_wsindy_system,
+                    (data.evaluation_points, data.evaluation_values),
+                    {
+                        "domain_bounds": bounds, "test_centers": centers,
+                        "test_half_widths": widths, "test_degrees": degrees,
+                    },
+                    args.timeout_seconds,
+                )
+            except (RuntimeError, ValueError, np.linalg.LinAlgError, TimeoutError) as error:
+                for method in args.methods:
+                    failures[method] = error
+                break
+            construction_seconds = perf_counter() - start
+            print(
+                f"noise={noise_ratio:g} weak-system "
+                f"{'warm-up' if call_index == 0 else f'run {call_index}'}: "
+                f"{construction_seconds:.3f} s", flush=True,
+            )
+            for method in args.methods:
+                if method in failures:
+                    continue
+                regression = "mstls" if method.endswith("mstls") else "lasso"
+                penalty = args.sampled_lambda if method.endswith("lasso") else 0.0
+                start = perf_counter()
+                try:
+                    beta = call_estimator(
+                        fit_sampled_wsindy_system, (x, y),
+                        {
+                            "lambda_": penalty, "regression": regression,
+                            "thresholds": args.thresholds if regression == "mstls" else None,
+                            "max_iter": args.max_iter, "tol": args.tol,
+                        },
+                        args.timeout_seconds,
+                    )
+                except (RuntimeError, ValueError, np.linalg.LinAlgError, TimeoutError) as error:
+                    failures[method] = error
+                    print(f"noise={noise_ratio:g} {METHOD_LABELS[method]}: failed: {error}", flush=True)
+                    continue
+                total_seconds = construction_seconds + perf_counter() - start
+                estimates[method] = beta
+                if call_index:
+                    durations[method].append(total_seconds)
+                print(
+                    f"  {METHOD_LABELS[method]}: {total_seconds:.3f} s "
+                    "including construction", flush=True,
+                )
+        for method in args.methods:
+            if method in failures:
+                error = failures[method]
+                results[(noise_ratio, method)] = {
+                    "status": "timeout" if isinstance(error, TimeoutError) else "failed",
+                    "reason": str(error), "runtime_seconds": None, "squared_error": None,
+                }
+                continue
+            beta = estimates[method]
+            penalty = args.sampled_lambda if method.endswith("lasso") else 0.0
+            results[(noise_ratio, method)] = {
+                "status": "ok", "runtime_seconds": float(np.median(durations[method])),
+                "squared_error": float(np.sum((beta - beta_true)**2)),
+                "nonzero_coefficients": int(np.count_nonzero(beta)),
+                "penalty": penalty,
+            }
+            print(
+                f"noise={noise_ratio:g} {METHOD_LABELS[method]}: "
+                f"squared error={results[(noise_ratio, method)]['squared_error']:.9e}, "
+                f"median runtime={results[(noise_ratio, method)]['runtime_seconds']:.6f} s",
+                flush=True,
+            )
+    return results, metadata
+
+
+def write_sampled_report(args, results, metadata):
+    """Write ordinary WSINDy results from the matched iid evaluation sample."""
+    n_evaluation = metadata["n_observations"] - metadata["n_observations"] // 2
+    lines = [
+        "# 3D ordinary WSINDy on iid point samples", "",
+        f"- Seed={args.seed}; total n={metadata['n_observations']}; "
+        f"the final {n_evaluation} evaluation observations are used for each fit.",
+        f"- K={len(metadata['centers'])}; half-widths in cells={metadata['cell_widths']}; "
+        f"strides={metadata['strides']}; bump degrees={metadata['degrees']}.",
+        "- Same evaluation sample, test functions, and Monte Carlo integration "
+        "as debiased WSINDy; only the latter fits a pilot on the training half.",
+        f"- Runtime: median of {args.repeats} construction-plus-fit sums after one warm-up. "
+        "Construction is shared across methods within each repeat; data generation excluded.",
+        "", "| Noise | Method | lambda | Squared error | Runtime (s) | Nonzero | Status |",
+        "| ---: | --- | ---: | ---: | ---: | ---: | --- |",
+    ]
+    for (noise_ratio, method), result in results.items():
+        if result["status"] == "ok":
+            lines.append(
+                f"| {noise_ratio:g} | {METHOD_LABELS[method]} | "
+                f"{result['penalty']:g} | {result['squared_error']:.9e} | "
+                f"{result['runtime_seconds']:.6f} | "
+                f"{result['nonzero_coefficients']} | ok |"
+            )
+        else:
+            lines.append(
+                f"| {noise_ratio:g} | {METHOD_LABELS[method]} | — | — | — | — | "
+                f"{result['status']} |"
+            )
+            lines.append(f"\n{result['reason']}\n")
+    with args.output.open("a" if args.append else "w", encoding="utf-8") as report:
+        if args.append and args.output.stat().st_size:
+            report.write("\n---\n\n")
+        report.write("\n".join(lines) + "\n")
+
+
+def write_debiased_report(args, results, metadata):
+    """Write the random-design comparison without relabeling old grid results."""
+    if args.debiased_regression == "mstls":
+        threshold_description = (
+            "50 log-spaced thresholds from 1e-4 to 1"
+            if args.thresholds is None else f"thresholds={args.thresholds}"
+        )
+        regression_description = (
+            "- Regression: MSTLS on the corrected weak system; "
+            f"{threshold_description}. This is a threshold-and-refit rule, "
+            "not L1 minimization."
+        )
+    else:
+        regression_description = (
+            f"- Regression: {'OLS' if args.debiased_lambda == 0 else 'LASSO'}; "
+            f"lambda={args.debiased_lambda:g}; objective is "
+            "||Y_db-X_db beta||^2/2 + lambda*||beta||_1."
+        )
+    lines = [
+        "# 3D porous medium: debiased WSINDy on iid point samples", "",
+        "- Same exact 3D PDE, domain, seed, S=55, J=5, and polynomial coefficient order as the grid experiment.",
+        f"- n={metadata['n_observations']} total observations; "
+        f"{metadata['n_observations']//2} train and "
+        f"{metadata['n_observations']-metadata['n_observations']//2} evaluation observations.",
+        "- Observation coordinates are iid uniform on [-5,5]^3 x [0.5,2.5]; "
+        "the older results use a fixed grid, so their errors and runtimes are not controlled comparisons.",
+        f"- K={len(metadata['centers'])} translated bump tests; cell half-widths={metadata['cell_widths']}, "
+        f"strides={metadata['strides']}, degrees={metadata['degrees']}.",
+        "- Test reference: b_p(r)=(1-r^2)^p for |r|<1, zero outside; "
+        "the 4D test is a product of these translated bumps.",
+        "- Physical test half-widths=("
+        + ", ".join(f"{width:.6f}" for width in metadata["widths"])
+        + f"); pilot moving-average bandwidths={metadata['pilot_bandwidths']}.",
+        regression_description,
+        "- Monte Carlo weight is domain volume / evaluation sample size. "
+        "The same evaluation observations enter Y and the first-order correction to X.",
+        f"- Seed={args.seed}; noise std = noise ratio * RMS(clean solution on the fixed "
+        f"{(args.nx, args.ny, args.nz, args.nt)} reference grid).",
+        f"- Runtime: median of {args.repeats} complete calls after one warm-up, "
+        "including pilot fitting, weak-system construction, and regression; data generation excluded.",
+        "",
+        "| Noise ratio | Squared coefficient error | Runtime (seconds) | Nonzero coefficients | Noise std | Status |",
+        "| ---: | ---: | ---: | ---: | ---: | --- |",
+    ]
+    for noise_ratio, result in results.items():
+        error = f"{result['squared_error']:.9e}" if result['squared_error'] is not None else "N/A"
+        runtime = f"{result['runtime_seconds']:.6f}" if result['runtime_seconds'] is not None else "N/A"
+        nonzero = str(result.get("nonzero_coefficients", "N/A"))
+        lines.append(
+            f"| {noise_ratio:g} | {error} | {runtime} | {nonzero} | "
+            f"{result['noise_std']:.9e} | {result['status']} |"
+        )
+        if result['status'] != "ok":
+            lines.append(f"\nNoise {noise_ratio:g} failure: {result['reason']}\n")
+    lines.extend(["", "## Reproduce", "", "```sh",
+        "OPENBLAS_NUM_THREADS=1 conda run -n pde_discovery python experiments.py \\",
+        "  --instance anisotropic_porous_medium_3d --methods debiased-wsindy \\",
+        f"  --nx {args.nx} --ny {args.ny} --nz {args.nz} --nt {args.nt} \\",
+        f"  --n-observations {metadata['n_observations']} --seed {args.seed} --repeats {args.repeats} \\",
+        "  --noise-ratios " + " ".join(f"{ratio:g}" for ratio in args.noise_ratios) + " \\",
+        "  --half-widths " + " ".join(map(str, metadata["cell_widths"])) + " \\",
+        "  --strides " + " ".join(map(str, metadata["strides"])) + " \\",
+        "  --test-degrees " + " ".join(map(str, metadata["degrees"])) + " \\",
+        "  --pilot-bandwidths " + " ".join(map(str, metadata["pilot_bandwidths"])) + " \\",
+        f"  --debiased-regression {args.debiased_regression} "
+        f"--debiased-lambda {args.debiased_lambda:g} "
+        f"--max-iter {args.max_iter} --tol {args.tol:g} \\",
+    ])
+    if args.thresholds is not None:
+        lines.append("  --thresholds " + " ".join(map(str, args.thresholds)) + " \\")
+    lines.extend(["  --output /tmp/pde-debiased-results.md", "```", ""])
+    mode = "a" if args.append else "w"
+    with args.output.open(mode, encoding="utf-8") as report:
+        if args.append and args.output.stat().st_size:
+            report.write("\n---\n\n")
+        report.write("\n".join(lines))
 
 
 def write_report(args, results):
@@ -502,6 +1133,16 @@ def write_report(args, results):
 
 if __name__ == "__main__":
     arguments = parse_arguments()
-    measurements = run_experiments(arguments)
-    write_report(arguments, measurements)
+    if arguments.instance == "nonlinear_viscous_burgers":
+        measurements, settings = run_burgers_experiments(arguments)
+        write_burgers_report(arguments, measurements, settings)
+    elif arguments.methods == ["debiased-wsindy"]:
+        measurements, settings = run_debiased_experiments(arguments)
+        write_debiased_report(arguments, measurements, settings)
+    elif all(method in SAMPLED_METHODS for method in arguments.methods):
+        measurements, settings = run_sampled_experiments(arguments)
+        write_sampled_report(arguments, measurements, settings)
+    else:
+        measurements = run_experiments(arguments)
+        write_report(arguments, measurements)
     print(f"Saved {arguments.output}")
