@@ -1,0 +1,9 @@
+{
+  "state": "stopped",
+  "completed": 46769,
+  "requested": 57400,
+  "pid": 90668,
+  "updated_at": "2026-10-04T06:14:00.453637+00:00",
+  "error": null,
+  "stop_reason": "User reduced the schedule to 50 trials at 10 noise levels."
+}

@@ -23,16 +23,14 @@ from simulation_generation import BENCHMARKS, DEFAULT_DATA_DIR, load_clean_bench
 
 PAPER_NOISE_RATIOS = tuple(float(k/40) for k in range(41))
 PAPER_TRIALS = 200
-BENCHMARK_NOISE_RATIOS = tuple(float(k/40) for k in (0, 2, 4, 8, 9, 12, 16, 20, 30, 40))
-BENCHMARK_TRIALS = 50
 PROTOCOL_VERSION = 2
 
 
 def parse_arguments(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--benchmarks", choices=tuple(BENCHMARKS), nargs="+", default=list(BENCHMARKS))
-    parser.add_argument("--noise-ratios", type=float, nargs="+", default=list(BENCHMARK_NOISE_RATIOS))
-    parser.add_argument("--trials", type=int, default=BENCHMARK_TRIALS)
+    parser.add_argument("--noise-ratios", type=float, nargs="+", default=list(PAPER_NOISE_RATIOS))
+    parser.add_argument("--trials", type=int, default=PAPER_TRIALS)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--profile", choices=("authors", "printed"), default="authors")
     parser.add_argument("--workers", type=int, default=1, help="Concurrent benchmark processes.")
@@ -126,7 +124,6 @@ def run(args, on_result=None, *, completed=frozenset(), keep_records=True):
 def format_report(args, records):
     requested = len(args.benchmarks)*len(args.noise_ratios)*args.trials
     complete = len(records) == requested
-    reused = sum("reused_from_protocol_id" in r for r in records)
     paper_schedule = args.trials == PAPER_TRIALS and tuple(args.noise_ratios) == PAPER_NOISE_RATIOS
     lines = ["# WSINDy reproduction", "",
         "Target: [Messenger & Bortz, arXiv:2007.02848v3](https://arxiv.org/html/2007.02848v3). "
@@ -134,8 +131,7 @@ def format_report(args, records):
         "No resimulation, interpolation, or coarsening.", "",
         f"Status: {'complete' if complete else 'in progress'}; {len(records):,}/{requested:,} completed trials. "
         "KS, NLS, RD are primary benchmarks; IB, KdV, NS, SG are supplementary.", "",
-        f"Schedule: {args.trials} trials per noise level; root seed {args.seed}. "
-        f"Noise ratios: {', '.join(f'{r:g}' for r in args.noise_ratios)}. "
+        f"Schedule: {args.trials} independent observation instances per noise level; root seed {args.seed}. "
         f"{'Full paper identification schedule for the selected PDEs.' if paper_schedule else 'Subset of the paper identification schedule.'}", "",
         ("Author-code baseline: least squares on the scaled system, physical-unit MSTLS bounds, "
          "return before an empty support, and state scale exponent `1/(beta_max-1)`. "
@@ -156,10 +152,6 @@ def format_report(args, records):
         "These results measure identification and coefficient accuracy as in arXiv v3. "
         "Solution-prediction metrics added in the later journal article are not evaluated. "
         "Original MATLAB random draws and runtime measurements are not reproduced.", ""]
-    if reused:
-        lines.extend([f"Reused {reused:,} previously completed trials with unchanged numerical method and seeds. "
-            "Selection is by requested noise level and trial index only. Original protocol IDs are retained "
-            "in raw records; see `results.reuse.json` for provenance.", ""])
     for name in args.benchmarks:
         spec = BENCHMARKS[name]
         first = next((record for record in records if record["name"] == name), None)
@@ -321,7 +313,7 @@ def plot_results(args):
         x = [r["noise_ratio"] for r in rows]
         for axis, field in zip(axes.ravel(), ("tpr_mean", "exact_rate", "e2_mean", "e_inf_mean")):
             axis.plot(x, [max(r[field], 1e-12) if field.startswith("e") and field != "exact_rate" else r[field]
-                          for r in rows], label=name, marker=".", markersize=3)
+                          for r in rows], label=name)
     for axis, label in zip(axes.ravel(), ("Mean support TPR", "Exact support recovery probability",
                                           "Mean relative coefficient error E2", "Mean true-coefficient error E_inf")):
         axis.set(xlabel="Noise / clean RMS", ylabel=label)
@@ -332,9 +324,7 @@ def plot_results(args):
     axes[1, 1].set_yscale("log")
     axes[0, 0].legend(ncol=3)
     complete = all(r["trials"] == args.trials for r in summaries) and len(summaries) == len(args.benchmarks)*len(args.noise_ratios)
-    sizes = [r["trials"] for r in summaries]
-    sample_label = f"n={min(sizes)}–{max(sizes)}" if sizes and min(sizes) != max(sizes) else f"n={sizes[0] if sizes else 0}"
-    figure.suptitle(f"WSINDy {args.profile} — {'complete' if complete else 'partial results'}; {sample_label} per noise level")
+    figure.suptitle(f"WSINDy {args.profile} — {'complete' if complete else 'partial results'}")
     figure.savefig(args.output.with_suffix(".png"), dpi=180)
     figure.savefig(args.output.with_suffix(".pdf"))
     plt.close(figure)

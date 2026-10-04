@@ -39,7 +39,7 @@ python experiments.py --benchmarks IB KdV KS --noise-ratios 0 --trials 1 --offli
 # All seven clean-data experiments.
 python experiments.py --noise-ratios 0 --trials 1 --offline --output benchmark_results/clean/results.md
 
-# Comparison schedule: 7 PDEs, 10 noise levels, 50 trials per level (3,500 total).
+# Full identification schedule: 7 PDEs, 41 noise levels, 200 draws per level.
 python experiments.py --offline --workers 3 --output benchmark_results/authors/results.md
 
 # Resume the same saved protocol after interruption.
@@ -52,14 +52,8 @@ python experiments.py --offline --output benchmark_results/authors/results.md --
 The existing `pde_discovery` conda environment can be used by replacing `python`
 with `conda run -n pde_discovery python`. The numerical method requires NumPy and
 SciPy; reports also use Matplotlib.
-The default is a subset of the paper schedule: 50 trials at noise ratios
-`0, 0.05, 0.1, 0.2, 0.225, 0.3, 0.4, 0.5, 0.75, 1.0`.
-The low levels resolve sensitivity to modest noise; 0.2/0.225/0.3 cover the RD
-transition region; 0.4/0.5 cover the NLS transition region; 0.75/1.0 test high
-noise. These shared levels are fixed for every method. This samples notable
-parts of the curves rather than estimating each transition precisely.
-The paper's 41-level, 200-trial schedule remains available by explicitly setting
-`--trials 200 --noise-ratios` followed by `k/40` for `k=0,...,40`.
+The full schedule is a substantial computation. A shorter run must explicitly
+set `--trials` and `--noise-ratios`; the report labels it as a subset.
 Use `--output /path/to/report.md` for a separate run.
 On macOS Accelerate, prefix the command with `VECLIB_MAXIMUM_THREADS=1`
 to avoid thread overhead in the many small least-squares refits; for OpenBLAS
@@ -74,7 +68,7 @@ periodically and at completion. The report states the actual sample count at eve
 noise level; partial results are not labelled as complete.
 
 The execution first collects up to 20 trials at noise ratios 0, 0.2, 0.5, and 1,
-then fills the requested levels to the requested trial count. Every trial keeps the same seed regardless of
+then fills all 41 levels to 200. Every trial keeps the same seed regardless of
 execution order or requested subsets. All repeats, including noise zero, are
 actually executed. Timings cover the method, excluding loading and noise generation,
 and are measured under the recorded process/thread settings.
@@ -98,15 +92,6 @@ Use the saved term order and ground truth for physical coefficient comparison.
 Summaries include TPR, exact-support recovery with Wilson 95% intervals, E_inf,
 E2, runtime, threshold, sample SD, median, and 90th percentile. Failed model
 identifications are included in error summaries.
-
-The reduced comparison run reuses completed trials with indices 0 through 49
-from the interrupted 200-trial run. Selection uses only noise level and trial
-index, never the recovery result. Each reused record retains its original
-protocol ID in `reused_from_protocol_id`; `results.reuse.json` records the source
-manifest and unchanged numerical source hashes. The original run is preserved
-in `benchmark_results/authors_200_stopped/`. At zero noise all observations are
-identical, so those repeated trials are clean-data checks, not independent
-statistical samples.
 
 ## Method
 

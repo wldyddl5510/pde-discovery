@@ -1,275 +1,103 @@
-"""Physical and statistical checks for the synthetic reference solution."""
-
+"""Original data conventions, libraries, and reproducible observation noise."""
+from dataclasses import replace
+from pathlib import Path
+import tempfile
 import unittest
-
+from unittest.mock import patch
 import numpy as np
-
-from simulation_generation import (
-    anisotropic_porous_medium_solution,
-    anisotropic_porous_medium_solution_3d,
-    generate_anisotropic_porous_medium,
-    generate_anisotropic_porous_medium_3d,
-    generate_linear_advection_diffusion,
-    linear_advection_diffusion_solution,
-    sample_linear_advection_diffusion,
-)
+from scipy.io import savemat
+from simulation_generation import (BENCHMARKS, add_gaussian_noise, file_checksum,
+    load_clean_benchmark, observation_instance)
 
 
-def trapezoid_weights(grid):
-    weights = np.full(len(grid), grid[1] - grid[0])
-    weights[0] *= 0.5
-    weights[-1] *= 0.5
-    return weights
+class BenchmarkTests(unittest.TestCase):
+    def test_published_libraries_with_archived_rd_definition(self):
+        expected = {"IB": 43, "KdV": 43, "KS": 43, "NLS": 190, "SG": 73, "RD": 181, "NS": 50}
+        for name, count in expected.items():
+            with self.subTest(name=name):
+                spec = BENCHMARKS[name]
+                terms = spec.library()
+                self.assertEqual(len(terms), count)
+                self.assertEqual(len(set(terms)), count)
+                self.assertEqual(spec.truth().shape, (count, len(spec.lhs_components)))
+                self.assertTrue(all(t.derivative[-1] == 0 for t in terms))
+                self.assertEqual(sum(t.kind == "poly" and not any(t.powers) for t in terms), 1)
+        self.assertEqual(BENCHMARKS["SG"].lhs_time_order, 2)
+        self.assertEqual(BENCHMARKS["NS"].lhs_components, (0,))
+        self.assertNotIn("PM", BENCHMARKS)  # PM is in the journal version, not arXiv v3.
 
+    def test_navier_stokes_special_library(self):
+        for term in BENCHMARKS["NS"].library():
+            if any(term.derivative):
+                self.assertGreater(term.powers[0], 0)
+                self.assertLessEqual(sum(term.powers), 3)
+            else:
+                self.assertLessEqual(sum(term.powers), 2)
 
-def bump_derivatives(coordinate, radius):
-    """A compact test function and its first two derivatives."""
-    base = np.maximum(1.0 - (coordinate / radius) ** 2, 0.0)
-    value = base**4
-    first = -8.0 * coordinate / radius**2 * base**3
-    second = -8.0 / radius**2 * base**3
-    second += 48.0 * coordinate**2 / radius**4 * base**2
-    return value, first, second
+    def test_cell_arrays_keep_component_and_axis_order(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/"NLS.mat"
+            components = np.empty(2, dtype=object)
+            components[0], components[1] = np.arange(99).reshape(9, 11), -np.arange(99).reshape(9, 11)
+            axes = np.empty(2, dtype=object)
+            axes[0], axes[1] = np.linspace(-2, 2, 9), np.linspace(0, 1, 11)
+            savemat(path, {"U_exact": components, "xs": axes})
+            spec = replace(BENCHMARKS["NLS"], shape=(9, 11), checksum=file_checksum(path))
+            with patch.dict(BENCHMARKS, {"NLS": spec}):
+                data = load_clean_benchmark("NLS", data_dir=directory, download=False)
+            np.testing.assert_array_equal(data.u_true[0], components[0])
+            np.testing.assert_array_equal(data.u_true[1], components[1])
+            np.testing.assert_array_equal(data.time, axes[1])
+            noisy = observation_instance(data, 0.1, 3)
+            np.testing.assert_array_equal(data.u_true[0], components[0])
+            self.assertFalse(np.array_equal(noisy.u_observed[0], data.u_true[0]))
 
+    def test_navier_stokes_archive_order_is_mapped_to_vorticity_first(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/"Nav_Stokes.mat"
+            components = np.empty(3, dtype=object)
+            for i in range(3):
+                components[i] = np.full((9, 11, 13), i+1.0)
+            axes = np.empty(3, dtype=object)
+            for i, size in enumerate((9, 11, 13)):
+                axes[i] = np.linspace(0, 1, size)
+            savemat(path, {"U_exact": components, "xs": axes})
+            spec = replace(BENCHMARKS["NS"], shape=(9, 11, 13), checksum=file_checksum(path))
+            with patch.dict(BENCHMARKS, {"NS": spec}):
+                data = load_clean_benchmark("NS", data_dir=directory, download=False)
+            self.assertEqual([v[0, 0, 0] for v in data.u_true], [3, 1, 2])
 
-class LinearAdvectionDiffusionTests(unittest.TestCase):
-    def test_exact_solution_satisfies_the_linear_pde(self):
-        u = linear_advection_diffusion_solution
-        x = np.array([0.3, 1.2, 3.1, 5.5])
-        y = np.array([0.9, 2.4, 4.0, 5.7])
-        t = np.array([0.03, 0.12, 0.3, 0.46])
-        h = 1e-3
-        center = u(x, y, t)
-        ux = (u(x + h, y, t) - u(x - h, y, t)) / (2 * h)
-        uy = (u(x, y + h, t) - u(x, y - h, t)) / (2 * h)
-        uxx = (u(x + h, y, t) - 2 * center + u(x - h, y, t)) / h**2
-        uyy = (u(x, y + h, t) - 2 * center + u(x, y - h, t)) / h**2
-        uxy = (u(x + h, y + h, t) - u(x + h, y - h, t)
-               - u(x - h, y + h, t) + u(x - h, y - h, t)) / (4 * h**2)
-        ut = (u(x, y, t + h) - u(x, y, t - h)) / (2 * h)
-        np.testing.assert_allclose(
-            ut, -0.3 * ux + 0.2 * uy + 0.08 * uxx + 0.04 * uxy + 0.05 * uyy,
-            rtol=0, atol=2e-6,
-        )
-        np.testing.assert_allclose(u(x + 2*np.pi, y, t), center, rtol=0, atol=1e-14)
+    def test_missing_and_corrupt_files_are_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaises(FileNotFoundError):
+                load_clean_benchmark("IB", data_dir=directory, download=False)
+            (Path(directory)/"burgers.mat").write_bytes(b"not the authors data")
+            with self.assertRaisesRegex(ValueError, "Checksum mismatch"):
+                load_clean_benchmark("IB", data_dir=directory, download=False)
 
-    def test_grid_and_iid_samples_share_truth_and_noise_scale(self):
-        grid = generate_linear_advection_diffusion(nx=16, ny=18, nt=10,
-                                                   noise_ratio=0.2, seed=7)
-        samples = sample_linear_advection_diffusion(
-            n_observations=101, noise_ratio=0.2, seed=7,
-            noise_reference_shape=(16, 18, 10),
-        )
-        self.assertEqual(grid.u_true.shape, (16, 18, 10))
-        self.assertEqual(samples.training_points.shape, (50, 3))
-        self.assertEqual(samples.evaluation_points.shape, (51, 3))
-        self.assertAlmostEqual(grid.noise_std, samples.noise_std)
-        self.assertEqual(grid.true_coefficients, samples.true_coefficients)
-        np.testing.assert_allclose(
-            samples.evaluation_true,
-            linear_advection_diffusion_solution(*samples.evaluation_points.T),
-        )
+    def test_noise_per_component_rms_seed_and_input_preservation(self):
+        clean = (np.ones((200, 200)), 10*np.ones((200, 200)))
+        before = tuple(v.copy() for v in clean)
+        first, sigma = add_gaussian_noise(clean, 0.2, 7)
+        second, _ = add_gaussian_noise(clean, 0.2, 7)
+        self.assertEqual(sigma, (0.2, 2.0))
+        for i in range(2):
+            np.testing.assert_array_equal(clean[i], before[i])
+            np.testing.assert_array_equal(first[i], second[i])
+            self.assertAlmostEqual(np.std(first[i]-clean[i])/sigma[i], 1, delta=0.02)
+        self.assertLess(abs(np.corrcoef((first[0]-clean[0]).ravel(), (first[1]-clean[1]).ravel())[0, 1]), 0.02)
+        np.random.seed(12)
+        expected = np.random.rand()
+        np.random.seed(12)
+        add_gaussian_noise(clean, 0.2, 7)
+        self.assertEqual(np.random.rand(), expected)
 
-
-class PorousMediumTests(unittest.TestCase):
-    def test_grid_axes_boundary_and_true_coefficients(self):
-        data = generate_anisotropic_porous_medium(nx=45, ny=51, nt=7)
-        x, y = data.spatial_grid
-        self.assertEqual(data.u_true.shape, (45, 51, 7))
-        np.testing.assert_array_equal(x[[0, -1]], [-5.0, 5.0])
-        np.testing.assert_array_equal(y[[0, -1]], [-5.0, 5.0])
-        np.testing.assert_array_equal(data.time[[0, -1]], [0.5, 2.5])
-        np.testing.assert_array_equal(data.u_observed, data.u_true)
-        self.assertEqual(data.noise_std, 0.0)
-        self.assertTrue(np.all(data.u_true >= 0.0))
-        self.assertTrue(np.any(data.u_true > 0.0))
-        self.assertTrue(np.all(data.u_true[[0, -1], :, :] == 0.0))
-        self.assertTrue(np.all(data.u_true[:, [0, -1], :] == 0.0))
-        self.assertEqual(
-            data.true_coefficients,
-            {((2, 0), 2): 0.3, ((1, 1), 2): -0.8, ((0, 2), 2): 1.0},
-        )
-        expected = anisotropic_porous_medium_solution(x[23], y[26], data.time[2])
-        self.assertEqual(data.u_true[23, 26, 2], expected)
-
-    def test_unit_mass_at_multiple_times_under_grid_refinement(self):
-        errors = []
-        for size in (65, 129):
-            data = generate_anisotropic_porous_medium(nx=size, ny=size, nt=3)
-            x, y = data.spatial_grid
-            wx = trapezoid_weights(x)
-            wy = trapezoid_weights(y)
-            weighted_solution = data.u_true * wx[:, None, None] * wy[None, :, None]
-            mass = np.sum(weighted_solution, axis=(0, 1))
-            errors.append(np.max(np.abs(mass - 1.0)))
-
-        self.assertLess(errors[1], 1e-4)
-        self.assertLess(errors[1], errors[0] / 5.0)
-
-    def test_pointwise_pde_inside_the_positive_support(self):
-        # Avoid the moving front, where only the weak PDE is appropriate.
-        u = anisotropic_porous_medium_solution
-        x = np.array([0.1, 0.5, -0.6, 0.3])
-        y = np.array([0.2, -0.1, 0.1, -0.3])
-        t = np.array([0.6, 1.0, 1.7, 2.0])
-        errors = []
-
-        for h in (0.02, 0.01):
-            dt = h**2
-            time_derivative = (u(x, y, t + dt) - u(x, y, t - dt)) / (2.0 * dt)
-            squared_solution = u(x, y, t) ** 2
-            dxx = (u(x + h, y, t)**2 - 2*squared_solution + u(x - h, y, t)**2) / h**2
-            dyy = (u(x, y + h, t)**2 - 2*squared_solution + u(x, y - h, t)**2) / h**2
-            dxy = (
-                u(x + h, y + h, t)**2 - u(x + h, y - h, t)**2
-                - u(x - h, y + h, t)**2 + u(x - h, y - h, t)**2
-            ) / (4.0 * h**2)
-            rhs = 0.3 * dxx - 0.8 * dxy + dyy
-            errors.append(np.max(np.abs(time_derivative - rhs)))
-
-        self.assertLess(errors[1], 6e-5)
-        self.assertLess(errors[1], 0.3 * errors[0])
-
-    def test_weak_pde_across_the_moving_support_boundary(self):
-        # This integral includes the nonsmooth front, unlike the pointwise check.
-        errors = []
-        for size, nt in ((65, 33), (129, 65)):
-            data = generate_anisotropic_porous_medium(nx=size, ny=size, nt=nt)
-            x, y = data.spatial_grid
-            t = data.time
-            bx, dx, dxx = bump_derivatives(x[:, None, None], radius=4.0)
-            by, dy, dyy = bump_derivatives(y[None, :, None], radius=4.0)
-            bt, dt, _ = bump_derivatives(t[None, None, :] - 1.5, radius=1.0)
-
-            wx = trapezoid_weights(x)
-            wy = trapezoid_weights(y)
-            wt = trapezoid_weights(t)
-            weights = wx[:, None, None] * wy[None, :, None] * wt[None, None, :]
-
-            lhs = -np.sum(bx * by * dt * data.u_true * weights)
-            rhs_test_function = (0.3 * dxx * by - 0.8 * dx * dy + bx * dyy) * bt
-            rhs = np.sum(rhs_test_function * data.u_true**2 * weights)
-            errors.append(abs(lhs - rhs) / abs(rhs))
-
-        self.assertLess(errors[1], 2e-5)
-        self.assertLess(errors[1], errors[0] / 5.0)
-
-    def test_gaussian_noise_scaling_and_reproducibility(self):
-        first = generate_anisotropic_porous_medium(noise_ratio=0.1, seed=17)
-        repeated = generate_anisotropic_porous_medium(noise_ratio=0.1, seed=17)
-        other = generate_anisotropic_porous_medium(noise_ratio=0.1, seed=18)
-        np.testing.assert_array_equal(first.u_observed, repeated.u_observed)
-        np.testing.assert_array_equal(first.u_true, other.u_true)
-        self.assertFalse(np.array_equal(first.u_observed, other.u_observed))
-        self.assertFalse(np.shares_memory(first.u_true, first.u_observed))
-
-        expected_std = 0.1 * np.sqrt(np.mean(first.u_true**2))
-        self.assertAlmostEqual(first.noise_std, expected_std)
-        standardized_noise = (first.u_observed - first.u_true) / first.noise_std
-        self.assertLess(abs(standardized_noise.mean()), 5 / np.sqrt(standardized_noise.size))
-        self.assertLess(abs(standardized_noise.std() - 1.0), 0.01)
-        self.assertTrue(np.any(first.u_observed < 0.0))
-
-    def test_invalid_time_grid_and_noise(self):
-        for settings in (
-            {"time_bounds": (0.0, 2.5)},
-            {"nx": 1},
-            {"x_bounds": (5.0, -5.0)},
-            {"noise_ratio": -0.1},
-        ):
-            with self.subTest(settings=settings):
-                with self.assertRaises(ValueError):
-                    generate_anisotropic_porous_medium(**settings)
-
-
-class PorousMedium3DTests(unittest.TestCase):
-    def test_grid_coefficients_boundary_and_noise(self):
-        data = generate_anisotropic_porous_medium_3d(nx=25, ny=27, nz=29, nt=5, noise_ratio=1, seed=7)
-        self.assertEqual(data.name, "anisotropic_porous_medium_3d")
-        self.assertEqual(data.u_true.shape, (25, 27, 29, 5))
-        self.assertEqual(data.true_coefficients, {
-            ((2, 0, 0), 2): 0.3, ((1, 1, 0), 2): -0.2, ((1, 0, 1), 2): 0.1,
-            ((0, 2, 0), 2): 0.7, ((0, 1, 1), 2): -0.16, ((0, 0, 2), 2): 1.0,
-        })
-        for axis, grid in enumerate(data.spatial_grid):
-            np.testing.assert_array_equal(grid[[0, -1]], [-5, 5])
-            self.assertTrue(np.all(np.take(data.u_true, [0, -1], axis=axis) == 0))
-        self.assertTrue(np.any(data.u_true > 0))
-        self.assertTrue(np.all(data.u_true >= 0))
-        self.assertAlmostEqual(data.noise_std, np.sqrt(np.mean(data.u_true**2)))
-        repeated = generate_anisotropic_porous_medium_3d(nx=25, ny=27, nz=29, nt=5, noise_ratio=1, seed=7)
-        np.testing.assert_array_equal(data.u_observed, repeated.u_observed)
-        for settings in ({"nz": 1}, {"z_bounds": (5, -5)}, {"time_bounds": (0, 1)}):
-            with self.subTest(settings=settings), self.assertRaises(ValueError):
-                generate_anisotropic_porous_medium_3d(**settings)
-
-    def test_unit_mass_under_grid_refinement(self):
-        errors = []
-        for size in (65, 129):
-            data = generate_anisotropic_porous_medium_3d(nx=size, ny=size, nz=size, nt=3)
-            mass = data.u_true
-            for grid in data.spatial_grid:
-                mass = np.trapezoid(mass, grid, axis=0)
-            errors.append(np.max(np.abs(mass - 1)))
-        self.assertLess(errors[1], 1e-4)
-        self.assertLess(errors[1], errors[0] / 3)
-
-    def test_pointwise_pde_with_all_mixed_derivatives(self):
-        u = anisotropic_porous_medium_solution_3d
-        coordinates = np.array([[0.1, 0.4, -0.3], [0.2, -0.1, 0.2], [-0.1, 0.3, 0.1]])
-        t = np.array([0.6, 1.0, 2.0])
-        coefficients = generate_anisotropic_porous_medium_3d(nx=3, ny=3, nz=3, nt=2).true_coefficients
-        errors = []
-        for h in (0.02, 0.01):
-            dt = h**2
-            lhs = (u(*coordinates, t + dt) - u(*coordinates, t - dt)) / (2 * dt)
-            center = u(*coordinates, t)**2
-            rhs = np.zeros_like(t)
-            for (derivative, power), coefficient in coefficients.items():
-                axes = np.flatnonzero(derivative)
-                if len(axes) == 1:
-                    shift = np.zeros_like(coordinates)
-                    shift[axes[0]] = h
-                    value = (u(*(coordinates + shift), t)**2 - 2*center + u(*(coordinates - shift), t)**2) / h**2
-                else:
-                    value = np.zeros_like(t)
-                    for first in (-1, 1):
-                        for second in (-1, 1):
-                            shifted = coordinates.copy()
-                            shifted[axes[0]] += first * h
-                            shifted[axes[1]] += second * h
-                            value += first * second * u(*shifted, t)**2 / (4*h**2)
-                rhs += coefficient * value
-            errors.append(np.max(np.abs(lhs - rhs)))
-        self.assertLess(errors[1], 6e-5)
-        self.assertLess(errors[1], 0.3 * errors[0])
-
-    def test_weak_pde_across_the_moving_front(self):
-        errors = []
-        for size, nt in ((65, 33), (129, 65)):
-            grid = np.linspace(-5, 5, size)
-            time = np.linspace(0.5, 2.5, nt)
-            x, y, z = grid[:, None, None], grid[None, :, None], grid[None, None, :]
-            bx, dx, dxx = bump_derivatives(x, radius=4)
-            by, dy, dyy = bump_derivatives(y, radius=4)
-            bz, dz, dzz = bump_derivatives(z, radius=4)
-            bt, dt, _ = bump_derivatives(time - 1.5, radius=1)
-            weights = trapezoid_weights(grid)
-            volume_weights = weights[:, None, None] * weights[None, :, None] * weights[None, None, :]
-            spatial_test = bx * by * bz * volume_weights
-            rhs_test = (
-                0.3*dxx*by*bz - 0.2*dx*dy*bz + 0.1*dx*by*dz
-                + 0.7*bx*dyy*bz - 0.16*bx*dy*dz + bx*by*dzz
-            ) * volume_weights
-            lhs, rhs = 0.0, 0.0
-            # Integrate one time slice at a time to bound the test's memory use.
-            for index, (t, weight) in enumerate(zip(time, trapezoid_weights(time))):
-                value = anisotropic_porous_medium_solution_3d(x, y, z, t)
-                lhs -= dt[index] * weight * np.sum(spatial_test * value)
-                rhs += bt[index] * weight * np.sum(rhs_test * value**2)
-            errors.append(abs(lhs - rhs) / abs(rhs))
-        self.assertLess(errors[1], 2e-4)
-        self.assertLess(errors[1], errors[0] / 3)
+    def test_invalid_noise_and_clean_values(self):
+        for ratio in (-1, np.nan, np.inf):
+            with self.assertRaises(ValueError):
+                add_gaussian_noise(np.ones((3, 3)), ratio)
+        with self.assertRaises(ValueError):
+            add_gaussian_noise(np.full((3, 3), np.nan))
 
 
 if __name__ == "__main__":

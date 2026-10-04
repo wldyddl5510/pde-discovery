@@ -1,114 +1,84 @@
-"""Check that unavailable or failed fits remain explicit in experiment reports."""
-
+"""Paper schedules, coefficient metrics, and the actual execution path."""
 import contextlib
 import io
+import json
 from pathlib import Path
-import signal
 import tempfile
 import unittest
-from unittest.mock import patch
-import warnings
-
 import numpy as np
-
-import experiments
-
-
-def arguments(*options):
-    with patch("sys.argv", ["experiments.py", "--nx", "16", "--ny", "16", "--nt", "12",
-                            "--repeats", "1", *options]):
-        return experiments.parse_arguments()
+from experiments import (BENCHMARK_NOISE_RATIOS, PAPER_NOISE_RATIOS, coefficient_metrics, format_report,
+                         parse_arguments, read_records, run, summary_rows, trial_seed)
+from simulation_generation import DEFAULT_DATA_DIR
 
 
 class ExperimentTests(unittest.TestCase):
-    def test_monte_carlo_instances_default_to_sampled_methods(self):
-        for instance in ("linear_advection_diffusion", "nonlinear_viscous_burgers"):
-            with self.subTest(instance=instance):
-                with patch("sys.argv", ["experiments.py", "--instance", instance]):
-                    args = experiments.parse_arguments()
-                self.assertTrue(args.methods)
-                self.assertTrue(all(method.startswith("sampled-") for method in args.methods))
+    def test_defaults_are_the_reduced_comparison_schedule(self):
+        args = parse_arguments([])
+        self.assertEqual(args.trials, 50)
+        self.assertEqual(tuple(args.noise_ratios), BENCHMARK_NOISE_RATIOS)
+        self.assertEqual(len(args.noise_ratios), 10)
+        self.assertTrue(set(args.noise_ratios).issubset(PAPER_NOISE_RATIOS))
+        self.assertEqual(args.benchmarks, ["IB", "KdV", "KS", "NLS", "SG", "RD", "NS"])
+        self.assertEqual(args.profile, "authors")
 
-    def test_3d_dispatch_and_appended_report(self):
-        args = arguments("--instance", "anisotropic_porous_medium_3d", "--nz", "18",
-                         "--methods", "wsindy-ols", "--noise-ratios", "0",
-                         "--strides", "2", "2", "2", "1", "--append")
-        with patch.object(experiments, "wsindy", return_value=np.zeros(275)) as estimator:
-            with contextlib.redirect_stdout(io.StringIO()):
-                results = experiments.run_experiments(args)
-        self.assertEqual(estimator.call_args.args[0].shape, (16, 16, 18, 12))
-        self.assertEqual(estimator.call_args.kwargs["strides"], [2, 2, 2, 1])
-        self.assertAlmostEqual(results[0]["wsindy-ols"]["squared_error"], 1.6556)
+    def test_seed_is_independent_of_request_order_and_varies_by_trial(self):
+        seed = trial_seed(0, "KS", 0.2, 3)
+        self.assertEqual(seed, trial_seed(0, "KS", 0.2, 3))
+        for other in (trial_seed(0, "KS", 0.2, 4), trial_seed(0, "KS", 0.3, 3), trial_seed(0, "NLS", 0.2, 3)):
+            self.assertNotEqual(seed, other)
+
+    def test_metrics_count_false_positive_and_missing_terms(self):
+        truth = np.array([[2., 0.], [-1., 1.], [0., 0.]])
+        fitted = np.array([[1., 0.], [0., 1.], [0.5, 0.]])
+        result = coefficient_metrics(fitted, truth)
+        self.assertEqual((result["tp"], result["fn"], result["fp"]), (2, 1, 1))
+        self.assertEqual(result["tpr"], 0.5)
+        self.assertEqual(result["e_inf"], 1)
+        self.assertFalse(result["exact_support"])
+        self.assertAlmostEqual(result["e2"], np.sqrt(2.25/6))
+
+    def test_bad_cli_arguments_are_rejected(self):
+        for flags in (["--trials", "0"], ["--seed", "-1"], ["--noise-ratios", "1.1"],
+                      ["--noise-ratios", "0", "0"], ["--benchmarks", "IB", "IB"]):
+            with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+                parse_arguments(flags)
+
+    @unittest.skipUnless((DEFAULT_DATA_DIR/"burgers.mat").exists(), "Original IB data are not cached")
+    def test_original_burgers_runs_without_mocks(self):
+        args = parse_arguments(["--benchmarks", "IB", "--noise-ratios", "0", "--trials", "1", "--offline"])
+        with contextlib.redirect_stderr(io.StringIO()):
+            rows = run(args)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["G_shape"], (784, 43))
+        self.assertEqual(rows[0]["tpr"], 1)
+        self.assertLess(rows[0]["e2"], 1e-3)
+        report = format_report(args, rows)
+        self.assertIn("Subset of the paper", report)
+        self.assertIn("1/(beta_max-1)", report)
+        self.assertIn("physical-unit MSTLS", report)
+        self.assertNotIn("LASSO", report)
+
+    def test_resume_repairs_only_an_incomplete_final_record(self):
         with tempfile.TemporaryDirectory() as directory:
-            args.output = Path(directory) / "results.md"
-            args.output.write_text("Previous 2D measurements.\n")
-            experiments.write_report(args, results)
-            report = args.output.read_text()
-        self.assertTrue(report.startswith("Previous 2D measurements.\n"))
-        for text in ("**n = 55,296**", "**K = 480**", "**S = 55**", "**J = 5**",
-                     "all 275 coefficients", "[-1,1]^4", "r_z", "--nz 18", "1.655600e+00"):
-            self.assertIn(text, report)
+            path = Path(directory)/"trials.jsonl"
+            valid = json.dumps({"trial": 0})+"\n"
+            path.write_text(valid+'{"trial":')
+            self.assertEqual(read_records(path), [{"trial": 0}])
+            self.assertEqual(read_records(path, repair=True), [{"trial": 0}])
+            self.assertEqual(path.read_text(), valid)
+            path.write_text(valid+"broken\n"+valid)
+            with self.assertRaisesRegex(ValueError, "Invalid record inside"):
+                read_records(path, repair=True)
 
-    def test_dimension_specific_defaults_and_weak_axis_counts(self):
-        with patch("sys.argv", ["experiments.py", "--instance", "anisotropic_porous_medium_3d"]):
-            args = experiments.parse_arguments()
-        self.assertEqual((args.nx, args.ny, args.nz, args.nt), (32, 32, 32, 16))
-        for options in (("--nz", "32"), ("--instance", "anisotropic_porous_medium_3d", "--strides", "4", "4", "1")):
-            with self.subTest(options=options), contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
-                arguments(*options)
-
-    def test_noiseless_mle_is_skipped_and_positive_noise_is_fitted(self):
-        args = arguments("--methods", "wendy-mle-lasso")
-        with patch.object(experiments, "wendy_mle", return_value=np.zeros(100)) as estimator:
-            with contextlib.redirect_stdout(io.StringIO()):
-                results = experiments.run_experiments(args)
-        self.assertEqual(results[0]["wendy-mle-lasso"]["status"], "not_applicable")
-        self.assertEqual(results[1]["wendy-mle-lasso"]["status"], "ok")
-        self.assertEqual(estimator.call_count, 2)  # One warm-up and one timed noisy fit.
-        self.assertGreater(estimator.call_args.kwargs["noise_std"], 0)
-        self.assertEqual(estimator.call_args.kwargs["max_iter"], args.mle_max_iter)
-
-    def test_failed_fit_does_not_prevent_other_measurements(self):
-        args = arguments("--methods", "wsindy-lasso", "wendy-lasso", "--noise-ratios", "1")
-        with patch.object(experiments, "wsindy", side_effect=RuntimeError("did not converge")):
-            with patch.object(experiments, "wendy", return_value=np.zeros(100)):
-                with contextlib.redirect_stdout(io.StringIO()):
-                    results = experiments.run_experiments(args)
-        failed = results[1]["wsindy-lasso"]
-        self.assertEqual(failed["status"], "failed")
-        self.assertIsNone(failed["squared_error"])
-        self.assertIsNone(failed["runtime_seconds"])
-        self.assertEqual(failed["failed_call"], "warm-up")
-        self.assertEqual(results[1]["wendy-lasso"]["status"], "ok")
-
-    def test_warning_and_undefined_mle_are_visible_in_report(self):
-        def normality_stop(*inputs, **settings):
-            warnings.warn("normality stop; fixed-point tolerance was not met", RuntimeWarning)
-            return np.zeros(100)
-
-        args = arguments("--methods", "wendy-lasso", "wendy-mle-lasso", "--noise-ratios", "0")
-        with patch.object(experiments, "wendy", side_effect=normality_stop):
-            with contextlib.redirect_stdout(io.StringIO()):
-                results = experiments.run_experiments(args)
-        with tempfile.TemporaryDirectory() as directory:
-            args.output = Path(directory) / "results.md"
-            experiments.write_report(args, results)
-            report = args.output.read_text()
-        self.assertIn("1.730000e+00 * | N/A", report)
-        self.assertIn("fixed-point tolerance was not met", report)
-        self.assertEqual(len(results[0]["wendy-lasso"]["warnings"]), 1)
-
-    @unittest.skipUnless(hasattr(signal, "setitimer"), "Unix interval timer required")
-    def test_timeout_is_propagated_and_timer_is_cleared(self):
-        previous_handler = signal.getsignal(signal.SIGALRM)
-
-        def exceed_deadline():
-            signal.raise_signal(signal.SIGALRM)
-
-        with self.assertRaises(TimeoutError):
-            experiments.call_estimator(exceed_deadline, (), {}, 10)
-        self.assertEqual(signal.getsignal(signal.SIGALRM), previous_handler)
-        self.assertEqual(signal.getitimer(signal.ITIMER_REAL), (0.0, 0.0))
+    def test_summary_counts_exact_recovery_and_includes_failures(self):
+        args = parse_arguments(["--benchmarks", "KS", "--noise-ratios", "0.2", "--trials", "2"])
+        rows = [dict(name="KS", noise_ratio=.2, exact_support=i == 0, tpr=1-i*.5,
+                     e_inf=i, e2=i, runtime=2+i, threshold=.1) for i in range(2)]
+        summary = summary_rows(args, rows)[0]
+        self.assertEqual(summary["exact_rate"], .5)
+        self.assertEqual(summary["e2_mean"], .5)
+        self.assertLess(summary["exact_ci95_low"], .5)
+        self.assertGreater(summary["exact_ci95_high"], .5)
 
 
 if __name__ == "__main__":

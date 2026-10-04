@@ -1,0 +1,29 @@
+{
+  "source_manifest": "benchmark_results/authors_200_stopped/results.manifest.json",
+  "source_protocol_id": "396953fd69c63ec9b588ff15f3c6d142b3479eee4ba2dd69533b3ee9d74f68e5",
+  "target_protocol_id": "7d5d1cc3e2c446ac595617df1cdbdd79da96904486947201db63011bd4fcedd8",
+  "selection": "Requested noise ratios and trial indices 0..49; no filtering by recovery outcome.",
+  "noise_ratios": [
+    0.0,
+    0.05,
+    0.1,
+    0.2,
+    0.225,
+    0.3,
+    0.4,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "trials_per_level": 50,
+  "reused_trials": 3180,
+  "newly_requested_trials": 320,
+  "unchanged_numerical_source_sha256": {
+    "methods.py": "f7bf4e29bd8865682137b440ae76fd14cddb6a3f8b1aadde6638e301b78ed23d",
+    "simulation_generation.py": "356307761c40c1caacf94d7ed83f3b6a84471790bf146fc808d8a97c0da6a95f"
+  },
+  "source_runner_sha256": "11e0a495e69ea9a505dea7e0ccee5f74800a18c08d452ba25baa60d163f08793",
+  "target_runner_sha256": "13ca1891582025ff05d2cefd654b53eaacd629b57efa6cd03ca145458860ad39",
+  "runner_changes": "Reduced default schedule and report text only; numerical method, seed mapping and trial execution unchanged.",
+  "converted_at": "2026-10-04T06:14:00.453439+00:00"
+}

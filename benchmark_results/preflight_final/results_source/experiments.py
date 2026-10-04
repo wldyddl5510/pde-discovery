@@ -4,7 +4,6 @@ import argparse
 from concurrent.futures import ProcessPoolExecutor, wait, FIRST_COMPLETED
 import csv
 from dataclasses import asdict
-from datetime import datetime, timezone
 import hashlib
 import json
 import os
@@ -23,16 +22,14 @@ from simulation_generation import BENCHMARKS, DEFAULT_DATA_DIR, load_clean_bench
 
 PAPER_NOISE_RATIOS = tuple(float(k/40) for k in range(41))
 PAPER_TRIALS = 200
-BENCHMARK_NOISE_RATIOS = tuple(float(k/40) for k in (0, 2, 4, 8, 9, 12, 16, 20, 30, 40))
-BENCHMARK_TRIALS = 50
 PROTOCOL_VERSION = 2
 
 
 def parse_arguments(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--benchmarks", choices=tuple(BENCHMARKS), nargs="+", default=list(BENCHMARKS))
-    parser.add_argument("--noise-ratios", type=float, nargs="+", default=list(BENCHMARK_NOISE_RATIOS))
-    parser.add_argument("--trials", type=int, default=BENCHMARK_TRIALS)
+    parser.add_argument("--noise-ratios", type=float, nargs="+", default=list(PAPER_NOISE_RATIOS))
+    parser.add_argument("--trials", type=int, default=PAPER_TRIALS)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--profile", choices=("authors", "printed"), default="authors")
     parser.add_argument("--workers", type=int, default=1, help="Concurrent benchmark processes.")
@@ -83,14 +80,8 @@ def run(args, on_result=None, *, completed=frozenset(), keep_records=True):
             continue
         terms = spec.library()
         truth = spec.truth(terms)
-        # Produce 20 paired trials at diagnostic noise levels first, then fill
-        # the complete schedule. Execution order does not change any seed.
-        priority = [r for r in (0., .2, .5, 1.) if r in args.noise_ratios]
-        initial = min(20, args.trials)
-        schedule = [(r, 0, initial) for r in priority] + [
-            (r, initial if r in priority else 0, args.trials) for r in args.noise_ratios]
-        for ratio, first_trial, last_trial in schedule:
-            for trial in range(first_trial, last_trial):
+        for ratio in args.noise_ratios:
+            for trial in range(args.trials):
                 if (name, ratio, trial) in completed:
                     continue
                 seed = trial_seed(args.seed, name, ratio, trial)
@@ -126,7 +117,6 @@ def run(args, on_result=None, *, completed=frozenset(), keep_records=True):
 def format_report(args, records):
     requested = len(args.benchmarks)*len(args.noise_ratios)*args.trials
     complete = len(records) == requested
-    reused = sum("reused_from_protocol_id" in r for r in records)
     paper_schedule = args.trials == PAPER_TRIALS and tuple(args.noise_ratios) == PAPER_NOISE_RATIOS
     lines = ["# WSINDy reproduction", "",
         "Target: [Messenger & Bortz, arXiv:2007.02848v3](https://arxiv.org/html/2007.02848v3). "
@@ -134,8 +124,7 @@ def format_report(args, records):
         "No resimulation, interpolation, or coarsening.", "",
         f"Status: {'complete' if complete else 'in progress'}; {len(records):,}/{requested:,} completed trials. "
         "KS, NLS, RD are primary benchmarks; IB, KdV, NS, SG are supplementary.", "",
-        f"Schedule: {args.trials} trials per noise level; root seed {args.seed}. "
-        f"Noise ratios: {', '.join(f'{r:g}' for r in args.noise_ratios)}. "
+        f"Schedule: {args.trials} independent observation instances per noise level; root seed {args.seed}. "
         f"{'Full paper identification schedule for the selected PDEs.' if paper_schedule else 'Subset of the paper identification schedule.'}", "",
         ("Author-code baseline: least squares on the scaled system, physical-unit MSTLS bounds, "
          "return before an empty support, and state scale exponent `1/(beta_max-1)`. "
@@ -156,10 +145,6 @@ def format_report(args, records):
         "These results measure identification and coefficient accuracy as in arXiv v3. "
         "Solution-prediction metrics added in the later journal article are not evaluated. "
         "Original MATLAB random draws and runtime measurements are not reproduced.", ""]
-    if reused:
-        lines.extend([f"Reused {reused:,} previously completed trials with unchanged numerical method and seeds. "
-            "Selection is by requested noise level and trial index only. Original protocol IDs are retained "
-            "in raw records; see `results.reuse.json` for provenance.", ""])
     for name in args.benchmarks:
         spec = BENCHMARKS[name]
         first = next((record for record in records if record["name"] == name), None)
@@ -308,7 +293,6 @@ def refresh_reports(args, raw_dir):
 def plot_results(args):
     """Static scientific plots from saved summaries; no fitting or recomputation."""
     os.environ["MPLCONFIGDIR"] = str(args.output.parent.resolve()/".mplcache")
-    os.environ["XDG_CACHE_HOME"] = str(args.output.parent.resolve()/".mplcache"/"xdg")
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -321,7 +305,7 @@ def plot_results(args):
         x = [r["noise_ratio"] for r in rows]
         for axis, field in zip(axes.ravel(), ("tpr_mean", "exact_rate", "e2_mean", "e_inf_mean")):
             axis.plot(x, [max(r[field], 1e-12) if field.startswith("e") and field != "exact_rate" else r[field]
-                          for r in rows], label=name, marker=".", markersize=3)
+                          for r in rows], label=name)
     for axis, label in zip(axes.ravel(), ("Mean support TPR", "Exact support recovery probability",
                                           "Mean relative coefficient error E2", "Mean true-coefficient error E_inf")):
         axis.set(xlabel="Noise / clean RMS", ylabel=label)
@@ -332,9 +316,7 @@ def plot_results(args):
     axes[1, 1].set_yscale("log")
     axes[0, 0].legend(ncol=3)
     complete = all(r["trials"] == args.trials for r in summaries) and len(summaries) == len(args.benchmarks)*len(args.noise_ratios)
-    sizes = [r["trials"] for r in summaries]
-    sample_label = f"n={min(sizes)}–{max(sizes)}" if sizes and min(sizes) != max(sizes) else f"n={sizes[0] if sizes else 0}"
-    figure.suptitle(f"WSINDy {args.profile} — {'complete' if complete else 'partial results'}; {sample_label} per noise level")
+    figure.suptitle(f"WSINDy {args.profile} — {'complete' if complete else 'partial results'}")
     figure.savefig(args.output.with_suffix(".png"), dpi=180)
     figure.savefig(args.output.with_suffix(".pdf"))
     plt.close(figure)
@@ -364,33 +346,22 @@ def main():
         snapshot.mkdir(exist_ok=True)
         for filename in (*manifest["source_sha256"], "requirements.txt", "README.md"):
             shutil.copyfile(Path(__file__).parent/filename, snapshot/filename)
-    def status(state, count, error=None):
-        _atomic_text(args.output.with_suffix(".status.json"), json.dumps(dict(state=state,
-            completed=count, requested=len(args.benchmarks)*len(args.noise_ratios)*args.trials,
-            pid=os.getpid(), updated_at=datetime.now(timezone.utc).isoformat(), error=error), indent=2)+"\n")
+    if not args.report_only:
+        refresh_reports(args, raw_dir)
+        last_plot = perf_counter()
+        with ProcessPoolExecutor(max_workers=args.workers) as pool:
+            pending = {pool.submit(_saved_benchmark, args, name, manifest["protocol_id"], raw_dir/(name+".jsonl"))
+                       for name in args.benchmarks}
+            while pending:
+                finished, pending = wait(pending, timeout=30, return_when=FIRST_COMPLETED)
+                for future in finished:
+                    print(f"Completed {future.result()}", flush=True)
+                count = refresh_reports(args, raw_dir)
+                if count and (finished or perf_counter()-last_plot > 600):
+                    plot_results(args)
+                    last_plot = perf_counter()
     count = refresh_reports(args, raw_dir)
-    try:
-        if not args.report_only:
-            status("running", count)
-            last_plot = perf_counter()
-            with ProcessPoolExecutor(max_workers=args.workers) as pool:
-                pending = {pool.submit(_saved_benchmark, args, name, manifest["protocol_id"], raw_dir/(name+".jsonl"))
-                           for name in args.benchmarks}
-                while pending:
-                    finished, pending = wait(pending, timeout=30, return_when=FIRST_COMPLETED)
-                    for future in finished:
-                        print(f"Completed {future.result()}", flush=True)
-                    count = refresh_reports(args, raw_dir)
-                    status("running", count)
-                    if count and (finished or perf_counter()-last_plot > 600):
-                        plot_results(args)
-                        last_plot = perf_counter()
-        count = refresh_reports(args, raw_dir)
-        plot_results(args)
-        status("complete" if count == len(args.benchmarks)*len(args.noise_ratios)*args.trials else "incomplete", count)
-    except BaseException as error:
-        status("failed", count, f"{type(error).__name__}: {error}")
-        raise
+    plot_results(args)
     print(f"Saved {count} trials, {args.output}, summaries, manifest, PNG/PDF plots, and {raw_dir}")
 
 

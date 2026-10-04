@@ -1,208 +1,158 @@
-"""Check weak integrals independently of the regression and of data derivatives."""
-
+"""Independent checks of the paper's weak integrals and sparse selection."""
 import unittest
-
 import numpy as np
+from methods import (LibraryTerm, build_wsindy_system, mstls, polynomial_library,
+                     select_test_supports, test_function_weights, wsindy)
 
-from methods import build_wsindy_system, polynomial_library_terms, wsindy
-from simulation_generation import generate_anisotropic_porous_medium, generate_anisotropic_porous_medium_3d
 
+class WeakIntegralTests(unittest.TestCase):
+    def test_all_columns_against_continuous_quadrature(self):
+        x, t = np.linspace(-1, 1, 161), np.linspace(0, 0.6, 121)
+        a, b, c, d = 0.8, -0.6, 0.7, -0.4
+        u, v = np.exp(a*x[:, None]+c*t), np.exp(b*x[:, None]+d*t)
+        terms = polynomial_library(2, 1, 3, 6)
+        m, s, p = (70, 50), (8, 8), (16, 8)
+        system = build_wsindy_system((u, v), (x,), t, library_terms=terms,
+            lhs_components=(0, 1), half_widths=m, strides=s, test_degrees=p, rescale=False)
+        nodes, weights = np.polynomial.legendre.leggauss(64)
+        def integral(xrate, trate):
+            values = []
+            for grid, rate, radius_points, stride, degree in zip((x, t), (xrate, trate), m, s, p):
+                radius = radius_points*(grid[1]-grid[0])
+                centers = grid[radius_points:len(grid)-radius_points:stride]
+                locations = centers[:, None]+radius*nodes
+                values.append(radius*((1-nodes**2)**degree*np.exp(rate*locations))@weights)
+            return (values[0][:, None]*values[1]).ravel()
+        expected = []
+        for term in terms:
+            xrate = term.powers[0]*a+term.powers[1]*b
+            trate = term.powers[0]*c+term.powers[1]*d
+            expected.append(xrate**term.derivative[0]*integral(xrate, trate))
+        np.testing.assert_allclose(system.G, np.column_stack(expected), rtol=1e-6, atol=2e-10)
+        np.testing.assert_allclose(system.b, np.column_stack((c*integral(a, c), d*integral(b, d))), rtol=1e-8, atol=1e-11)
 
-class WsindyTests(unittest.TestCase):
-    def test_3d_porous_medium_residual_under_grid_refinement(self):
-        errors = []
-        for refinement in (1, 2):
-            size = 31 * refinement + 1
-            nt = 15 * refinement + 1
-            data = generate_anisotropic_porous_medium_3d(nx=size, ny=size, nz=size, nt=nt)
-            # Same physical tests and centers as the 32^3 x 16 benchmark.
-            # Only the integration grid is refined. The smaller diagnostic
-            # library includes every nonzero truth term; this is not a fit.
-            X, target = build_wsindy_system(
-                data.u_true, data.spatial_grid, data.time,
-                max_derivative_order=2, max_polynomial_degree=2,
-                half_widths=tuple(refinement * m for m in (8, 8, 8, 4)),
-                strides=tuple(refinement * s for s in (4, 4, 4, 1)),
-                test_degrees=(16, 16, 16, 28),
-            )
-            truth = np.array([
-                data.true_coefficients.get(term, 0.0)
-                for term in polynomial_library_terms(3, 2, 2)
-            ])
-            self.assertEqual(X.shape, (512, 18))
-            errors.append(np.linalg.norm(X @ truth - target) / np.linalg.norm(target))
-        # The front is nonsmooth: check second-order convergence rather than
-        # treating either finite observation grid as an exact integral.
-        self.assertLess(errors[1], errors[0] / 4)
+    def test_scaling_identity_for_monomials_trigonometry_and_second_time_derivative(self):
+        x, t = np.linspace(-1, 1, 65), np.linspace(0, 1, 49)
+        u = 20*np.exp(0.2*x[:, None]+0.1*t)
+        terms = polynomial_library(1, 1, 4, 2, trigonometric_frequencies=(1, 2))
+        options = dict(library_terms=terms, lhs_time_order=2, half_widths=(24, 18),
+                       strides=(5, 4), test_degrees=(14, 12))
+        original = build_wsindy_system(u, (x,), t, rescale=False, **options)
+        scaled = build_wsindy_system(u, (x,), t, rescale=True, **options)
+        volume = np.prod(scaled.coordinate_scales)
+        lhs_factor = scaled.state_scales[0]/scaled.coordinate_scales[-1]**2
+        np.testing.assert_allclose(scaled.b, original.b*volume*lhs_factor, rtol=2e-8, atol=1e-10)
+        np.testing.assert_allclose(scaled.G, original.G*volume*lhs_factor*scaled.coefficient_scales[:, 0], rtol=2e-8, atol=2e-9)
+        gamma = (np.linalg.norm(u)/np.linalg.norm(u**4))**0.25
+        self.assertAlmostEqual(scaled.state_scales[0], gamma, places=14)
+        authors = build_wsindy_system(u, (x,), t, state_scale_rule="authors", **options)
+        self.assertAlmostEqual(authors.state_scales[0], gamma**(4/3), places=14)
 
-    def test_all_weak_columns_against_continuous_integrals(self):
-        # For exp(a*x+b*y+c*t), every strong derivative is known exactly.
-        # Independently integrate phi times that derivative using Gauss
-        # quadrature. This checks all mixed derivatives through order five,
-        # powers, signs, physical spacings, and the order of translated tests.
-        x = np.linspace(-1.0, 1.0, 81)
-        y = np.linspace(-0.8, 1.2, 85)
-        time = np.linspace(0.0, 0.6, 61)
-        rates = (0.8, -0.6, 0.7)
-        u = np.exp(
-            rates[0] * x[:, None, None]
-            + rates[1] * y[None, :, None]
-            + rates[2] * time[None, None, :]
-        )
-        original = u.copy()
-        half_widths, strides, degrees = (35, 36, 25), (8, 9, 8), (16, 16, 8)
-        X, target = build_wsindy_system(
-            u, (x, y), time,
-            half_widths=half_widths, strides=strides, test_degrees=degrees,
-        )
+    def test_second_time_derivative_and_mixed_spatial_term(self):
+        x, y, t = np.linspace(-1, 1, 49), np.linspace(-2, 2, 53), np.linspace(0, 1, 81)
+        u = np.exp(0.3*x[:, None, None]-0.4*y[None, :, None]+0.7*t)
+        terms = (LibraryTerm((1,), (0, 0, 0)), LibraryTerm((1,), (1, 1, 0)))
+        system = build_wsindy_system(u, (x, y), t, library_terms=terms, lhs_time_order=2,
+            half_widths=(18, 20, 30), strides=(6, 6, 10), test_degrees=(14, 14, 12), rescale=False)
+        np.testing.assert_allclose(system.G[:, 1], -0.12*system.G[:, 0], rtol=1e-8, atol=1e-10)
+        np.testing.assert_allclose(system.b[:, 0], 0.49*system.G[:, 0], rtol=1e-8, atol=1e-10)
 
-        nodes, weights = np.polynomial.legendre.leggauss(48)
-        integrals = {}
-        for power in range(1, 6):
-            axis_integrals = []
-            for grid, rate, m, stride, degree in zip(
-                (x, y, time), rates, half_widths, strides, degrees
-            ):
-                centers = grid[m:len(grid) - m:stride]
-                radius = m * (grid[1] - grid[0])
-                locations = centers[:, None] + radius * nodes[None, :]
-                integrand = (1.0 - nodes**2)**degree * np.exp(power * rate * locations)
-                axis_integrals.append(radius * (integrand @ weights))
-            integral = (
-                axis_integrals[0][:, None, None]
-                * axis_integrals[1][None, :, None]
-                * axis_integrals[2][None, None, :]
-            )
-            integrals[power] = integral.ravel()
+    def test_analytic_test_derivatives_and_decay(self):
+        table, p = test_function_weights(8, 4)
+        r = np.linspace(-1, 1, 17)
+        self.assertLessEqual((1-(1-1/8)**2)**p, 1e-10)
+        self.assertGreater((1-(1-1/8)**2)**(p-1), 1e-10)
+        np.testing.assert_allclose(table[1], -2*p*r*(1-r**2)**(p-1), atol=1e-13)
+        np.testing.assert_allclose(table[2], -2*p*(1-r**2)**(p-1)+4*p*(p-1)*r**2*(1-r**2)**(p-2), atol=1e-12)
+        self.assertTrue(np.all(table[:, (0, -1)] == 0))
 
-        expected = np.column_stack([
-            (power * rates[0])**alpha[0] * (power * rates[1])**alpha[1] * integrals[power]
-            for alpha, power in polynomial_library_terms(2)
-        ])
-        self.assertEqual(X.shape, (8, 100))
-        np.testing.assert_array_equal(u, original)
-        np.testing.assert_allclose(X, expected, rtol=1e-7, atol=1e-10)
-        np.testing.assert_allclose(target, rates[2] * integrals[1], rtol=1e-8, atol=1e-11)
-
-    def test_dense_nonlinear_coefficients(self):
-        # Exact smooth solution of u_t = 0.4*u_x - 0.5*d_x(u^2).
-        x = np.linspace(-1.0, 1.0, 81)
-        time = np.linspace(0.0, 0.5, 81)
-        u = (0.3 * x[:, None] + 0.8 + 0.12 * time[None, :]) / (1.0 + 0.3 * time[None, :])
-        beta = wsindy(u, (x,), time, max_derivative_order=1, max_polynomial_degree=2)
-        np.testing.assert_allclose(beta, [0.4, -0.5], rtol=1e-7, atol=1e-8)
-
-    def test_anisotropic_diffusion_coefficients_on_smooth_data(self):
-        errors = []
-        for size, nt in ((33, 25), (65, 49)):
-            x = np.linspace(0.0, 2.0 * np.pi, size)
-            y = np.linspace(0.0, 2.0 * np.pi, size + 2)
-            time = np.linspace(0.0, 0.5, nt)
-            u = np.zeros((len(x), len(y), nt))
-            modes = [
-                (1, 0, 1.0, 0.1), (0, 1, 0.7, -0.2), (1, 1, 0.8, 0.4),
-                (1, -1, 0.6, -0.7), (2, 1, 0.4, 0.9),
-            ]
-            for kx, ky, amplitude, phase in modes:
-                decay_rate = 0.3 * kx**2 - 0.8 * kx * ky + ky**2
-                angle = kx * x[:, None, None] + ky * y[None, :, None] + phase
-                u += amplitude * np.cos(angle) * np.exp(-decay_rate * time[None, None, :])
-            beta = wsindy(u, (x, y), time, max_derivative_order=2, max_polynomial_degree=1)
-            errors.append(np.linalg.norm(beta - [0.0, 0.0, 0.3, -0.8, 1.0]))
-
-        self.assertLess(errors[1], 1e-8)
-        self.assertLess(errors[1], 0.1 * errors[0])
-
-    def test_weak_porous_medium_residual_converges_across_the_front(self):
-        errors = []
-        for size in (65, 129):
-            data = generate_anisotropic_porous_medium(nx=size, ny=size, nt=(size + 1) // 2)
-            m, mt = (size - 1) // 4, (size - 1) // 8
-            # Fix the physical test functions and centers under refinement.
-            X, target = build_wsindy_system(
-                data.u_observed, data.spatial_grid, data.time,
-                max_derivative_order=2, max_polynomial_degree=2,
-                half_widths=(m, m, mt), strides=(m // 2, m // 2, mt // 2),
-                test_degrees=(12, 12, 12),
-            )
-            truth = np.array([
-                data.true_coefficients.get(term, 0.0)
-                for term in polynomial_library_terms(2, 2, 2)
-            ])
-            self.assertEqual(X.shape, (125, 10))
-            errors.append(np.linalg.norm(X @ truth - target) / np.linalg.norm(target))
-        self.assertLess(errors[1], 0.002)
-        self.assertLess(errors[1], 0.15 * errors[0])
-
-    def test_full_porous_medium_ols_and_lasso_objectives(self):
-        for noise_ratio in (0.0, 0.05):
-            with self.subTest(noise_ratio=noise_ratio):
-                data = generate_anisotropic_porous_medium(
-                    nx=36, ny=40, nt=20, noise_ratio=noise_ratio, seed=0
-                )
-                inputs = (data.u_observed, data.spatial_grid, data.time)
-                X, target = build_wsindy_system(*inputs)
-                beta = wsindy(*inputs)
-                np.testing.assert_array_equal(beta, wsindy(*inputs, rho_1=0.0))
-                self.assertEqual(beta.shape, (100,))
-                self.assertTrue(np.all(np.isfinite(beta)))
-                gradient = (X / np.linalg.norm(X, axis=0)).T @ (X @ beta - target)
-                self.assertLess(np.linalg.norm(gradient) / np.linalg.norm(target), 1e-10)
-
-                rho_1 = 1e-6
-                beta = wsindy(*inputs, rho_1=rho_1, tol=1e-10)
-                gradient = 2.0 * X.T @ (X @ beta - target) / len(target)
-                nonzero = beta != 0
-                self.assertTrue(np.any(nonzero))
-                self.assertTrue(np.any(~nonzero))
-                np.testing.assert_allclose(
-                    gradient[nonzero], -rho_1 * np.sign(beta[nonzero]), rtol=0, atol=1.1e-10
-                )
-                self.assertLessEqual(np.max(np.abs(gradient[~nonzero])), rho_1 + 1.1e-10)
-
-    def test_rank_checks_and_positive_penalty_on_zero_data(self):
-        x = np.linspace(0.0, 1.0, 17)
-        time = np.linspace(0.0, 1.0, 9)
-        u = np.zeros((17, 17, 9))
-        with self.assertRaises(np.linalg.LinAlgError):
-            wsindy(u, (x, x), time)
-        with self.assertRaisesRegex(np.linalg.LinAlgError, "Only 1 samples"):
-            wsindy(u, (x, x), time, strides=(100, 100, 100))
-        beta = wsindy(u, (x, x), time, rho_1=0.1, strides=(100, 100, 100))
-        np.testing.assert_array_equal(beta, np.zeros(100))
-
-    def test_invalid_test_functions_and_solver_controls(self):
-        x = np.linspace(0.0, 1.0, 17)
-        time = np.linspace(0.0, 1.0, 9)
+    def test_invalid_grids_terms_and_test_support(self):
+        x, t = np.linspace(0, 1, 17), np.linspace(0, 1, 9)
         u = np.ones((17, 9))
-        invalid = [
-            {"half_widths": (4,)}, {"half_widths": (1, 2)},
-            {"half_widths": (9, 2)}, {"half_widths": (3.5, 2)},
-            {"strides": (1,)}, {"strides": (1, 0)}, {"strides": (1, 1.5)},
-            {"test_degrees": (8,)}, {"test_degrees": (5, 4)},
-            {"test_degrees": (8, 1)}, {"test_degrees": (8.5, 4)},
-            {"rho_1": -1.0}, {"rho_1": np.nan}, {"rho_1": np.inf},
-            {"rho_1": 0.1, "max_iter": 0}, {"rho_1": 0.1, "tol": 0.0},
-        ]
-        for parameters in invalid:
-            with self.subTest(parameters=parameters):
-                with self.assertRaises(ValueError):
-                    wsindy(u, (x,), time, **parameters)
-
-    def test_invalid_observations_and_grids(self):
-        x = np.linspace(0.0, 1.0, 17)
-        time = np.linspace(0.0, 1.0, 9)
-        u = np.ones((17, 9))
+        base = dict(library_terms=polynomial_library(1, 1, 1, 2), half_widths=(4, 2), strides=(1, 1))
+        for change in ({"half_widths": (9, 2)}, {"strides": (0, 1)}, {"test_degrees": (2, 4)},
+                       {"library_terms": (LibraryTerm((1.5,), (1, 0)),)}, {"lhs_components": (1,)}):
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                build_wsindy_system(u, (x,), t, **(base | change))
         irregular = x.copy()
-        irregular[4] += 0.01
-        invalid = [
-            (u, (irregular,), time), (u, (x[:-1],), time), (u, (x,), time[:-1]),
-            (u[..., None], (x,), time), (u * np.nan, (x,), time),
-            (u[:, :4], (x,), time[:4]),
-        ]
-        for inputs in invalid:
-            with self.assertRaises(ValueError):
-                build_wsindy_system(*inputs)
+        irregular[3] += 0.01
+        with self.assertRaises(ValueError):
+            build_wsindy_system(u, (irregular,), t, **base)
+
+    def test_spectral_support_selection_is_deterministic_and_fits_grid(self):
+        x, t = np.linspace(0, 2*np.pi, 64), np.linspace(0, 1, 64)
+        # An exactly piecewise-constant Fourier amplitude gives a known
+        # cumulative-spectrum corner, independent of a PDE or random noise.
+        waves = np.fft.fftfreq(64)*64
+        amplitudes = np.where(np.abs(waves) <= 8, 0.5, 0.01)
+        profile = np.fft.ifft(amplitudes).real
+        u = profile[:, None]*profile[None, :]
+        widths, corners = select_test_supports(u, (x,), t)
+        self.assertEqual(corners, ((9, 9),))
+        self.assertEqual((widths, corners), select_test_supports(u, (x,), t))
+        for m, size in zip(widths, u.shape):
+            self.assertGreaterEqual(m, 2)
+            self.assertLessEqual(2*m+1, size)
+        with self.assertRaisesRegex(ValueError, "nonzero"):
+            select_test_supports(np.zeros_like(u), (x,), t)
+
+
+class SparseSelectionTests(unittest.TestCase):
+    def test_physical_selection_is_invariant_to_diagonal_preconditioning(self):
+        G, b = np.diag([1., 10.]), np.array([0.2, 0.3])
+        scales = np.array([[10.], [0.01]])
+        for threshold in (0.01, 0.1, 0.5):
+            original = mstls(G, b, [threshold], threshold_units="physical", allow_empty=False)
+            scaled = mstls(G*scales[:, 0], b, [threshold], coefficient_scales=scales,
+                           threshold_units="physical", allow_empty=False)
+            np.testing.assert_allclose(original.coefficients, scaled.coefficients, atol=1e-14)
+            np.testing.assert_allclose(original.losses, scaled.losses, atol=1e-14)
+
+    def test_author_empty_guard_returns_previous_model(self):
+        G, b = np.eye(2), np.array([0.2, 0.03])
+        guarded = mstls(G, b, [1], allow_empty=False)
+        np.testing.assert_allclose(guarded.coefficients[:, 0], b)
+        np.testing.assert_array_equal(mstls(G, b, [1], allow_empty=True).coefficients, np.zeros((2, 1)))
+
+    def test_bounds_apply_to_scaled_coefficients_and_allow_empty_support(self):
+        result = mstls(np.eye(2), np.array([0.2, 0.03]), [0.1])
+        np.testing.assert_allclose(result.scaled_coefficients[:, 0], [0.2, 0])
+        np.testing.assert_array_equal(mstls(np.eye(2), [0.2, 0.03], [1]).coefficients, np.zeros((2, 1)))
+
+    def test_smallest_threshold_wins_exact_loss_tie(self):
+        result = mstls(np.eye(2), [0.2, 0.03], [0.15, 0.1])
+        self.assertEqual(result.threshold, 0.1)
+        self.assertEqual(result.losses[0], result.losses[1])
+
+    def test_joint_loss_uses_the_matrix_two_norm(self):
+        result = mstls(np.eye(2), np.diag([0.2, 0.03]), [0.1])
+        # Removed projection norm: .03; full projection norm: .2;
+        # one selected entry among four candidate coefficients.
+        self.assertAlmostEqual(result.losses[0], 0.03/0.2 + 1/4)
+
+    def test_rank_deficiency_and_zero_columns_are_supported(self):
+        G = np.array([[1., 1., 0.], [0., 0., 0.]])
+        result = mstls(G, [0.4, 0], [0.01])
+        self.assertEqual(result.rank, 1)
+        np.testing.assert_allclose(G@result.coefficients[:, 0], [0.4, 0])
+        np.testing.assert_array_equal(mstls(G, [0, 0]).coefficients, np.zeros((3, 1)))
+
+    def test_nonlinear_transport_recovers_physical_coefficients(self):
+        x, t = np.linspace(-1, 1, 81), np.linspace(0, 0.5, 81)
+        u = (0.3*x[:, None]+0.8+0.12*t)/(1+0.3*t)
+        terms = (LibraryTerm((1,), (1, 0)), LibraryTerm((2,), (1, 0)))
+        for rescale in (False, True):
+            result, _ = wsindy(u, (x,), t, library_terms=terms, half_widths=(25, 25),
+                strides=(5, 5), test_degrees=(12, 12), thresholds=(0.01,), rescale=rescale)
+            np.testing.assert_allclose(result.coefficients[:, 0], [0.4, -0.5], rtol=1e-7, atol=1e-8)
+
+    def test_coupled_linear_schrodinger_equations(self):
+        x, t = np.linspace(-np.pi, np.pi, 81), np.linspace(0, 3, 81)
+        u, v = np.sin(x[:, None])*np.cos(0.5*t), np.sin(x[:, None])*np.sin(0.5*t)
+        terms = (LibraryTerm((1, 0), (2, 0)), LibraryTerm((0, 1), (2, 0)))
+        result, _ = wsindy((u, v), (x,), t, library_terms=terms, lhs_components=(0, 1),
+            half_widths=(25, 25), strides=(5, 5), test_degrees=(12, 12), thresholds=(0.01,))
+        np.testing.assert_allclose(result.coefficients, [[0, -0.5], [0.5, 0]], rtol=1e-7, atol=1e-8)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,33 @@
+Completed KS
+SG noise=0.75 trial=1/50: TPR=1 E2=0.3058 lambda=0.007543 seconds=4
+Matplotlib is building the font cache; this may take a moment.
+Completed IB
+Completed NLS
+Completed KdV
+RD noise=0.3 trial=1/50: TPR=0.875 E2=0.03761 lambda=0.0233 seconds=12.9
+NS noise=1 trial=40/50: TPR=0.5 E2=0.04559 lambda=0.07197 seconds=3.05
+SG noise=0.75 trial=20/50: TPR=1 E2=0.2884 lambda=0.007543 seconds=3.88
+NS noise=1 trial=50/50: TPR=0.5 E2=0.04557 lambda=0.07197 seconds=3.35
+Completed NS
+SG noise=0.75 trial=40/50: TPR=1 E2=0.2949 lambda=0.007543 seconds=3.81
+SG noise=0.75 trial=50/50: TPR=1 E2=0.3193 lambda=0.006251 seconds=3.87
+RD noise=0.3 trial=20/50: TPR=0.875 E2=0.03188 lambda=0.04942 seconds=12.4
+SG noise=1 trial=40/50: TPR=1 E2=0.6279 lambda=0.007543 seconds=3.7
+SG noise=1 trial=50/50: TPR=0.6667 E2=0.5797 lambda=0.04942 seconds=3.89
+Completed SG
+RD noise=0.3 trial=40/50: TPR=0.875 E2=0.03257 lambda=0.03393 seconds=9.94
+RD noise=0.3 trial=50/50: TPR=0.875 E2=0.03224 lambda=0.0233 seconds=10.1
+RD noise=0.4 trial=1/50: TPR=0.875 E2=0.05872 lambda=0.03393 seconds=10.3
+RD noise=0.4 trial=20/50: TPR=0.875 E2=0.0586 lambda=0.04095 seconds=10.1
+RD noise=0.4 trial=40/50: TPR=0.875 E2=0.0602 lambda=0.02812 seconds=10.2
+RD noise=0.4 trial=50/50: TPR=0.875 E2=0.05753 lambda=0.03393 seconds=10.2
+RD noise=0.5 trial=40/50: TPR=0.875 E2=0.08854 lambda=0.04942 seconds=10.2
+RD noise=0.5 trial=50/50: TPR=0.875 E2=0.09204 lambda=0.0233 seconds=10.2
+RD noise=0.75 trial=1/50: TPR=0.7368 E2=0.2187 lambda=0.07197 seconds=10.4
+RD noise=0.75 trial=20/50: TPR=0.7368 E2=0.2918 lambda=0.04942 seconds=10.4
+RD noise=0.75 trial=40/50: TPR=0.7778 E2=0.2363 lambda=0.04942 seconds=10.5
+RD noise=0.75 trial=50/50: TPR=0.7778 E2=0.2389 lambda=0.05964 seconds=10.4
+RD noise=1 trial=40/50: TPR=0.7 E2=0.4049 lambda=0.07197 seconds=10.3
+RD noise=1 trial=50/50: TPR=0.5833 E2=0.4755 lambda=0.04095 seconds=10.6
+Completed RD
+Saved 3500 trials, benchmark_results/authors/results.md, summaries, manifest, PNG/PDF plots, and benchmark_results/authors/results_trials

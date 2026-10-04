@@ -1,0 +1,4 @@
+[submodule "third_party/PyWSINDy-for-PDEs"]
+	path = third_party/PyWSINDy-for-PDEs
+	url = https://github.com/SethMinor/PyWSINDy-for-PDEs.git
+	ignore = untracked
