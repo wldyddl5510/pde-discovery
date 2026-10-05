@@ -35,29 +35,29 @@ Observation shape `(256, 256, 201)`; library 181 terms; weak half-widths `(13, 1
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.368421 ± 5.58e-17 | 0.0381231 ± 6.97e-18 | 0.0329104 ± 1.39e-17 | 23.2 | u=0.0002145; v=0.0002146 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.368421 ± 5.58e-17 | 0.0381231 ± 6.97e-18 | 0.0329104 ± 1.39e-17 | 23.2 | u=0.0002145; v=0.0002146 |
 
 ### Noise ratio 0.2
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.299874 ± 0.0159 | 0.972419 ± 0.0776 | 0.890435 ± 0.112 | 22 | u=0.008829; v=0.008831 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.299874 ± 0.0159 | 0.972419 ± 0.0776 | 0.890435 ± 0.112 | 22 | u=0.008829; v=0.008831 |
 
 ### Noise ratio 0.5
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.208079 ± 0.0128 | 1 ± 0 | 0.877272 ± 0.0456 | 21.1 | u=0.01042; v=0.01043 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.208079 ± 0.0128 | 1 ± 0 | 0.877272 ± 0.0456 | 21.1 | u=0.01042; v=0.01043 |
 
 ### Noise ratio 0.75
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.196781 ± 0.0146 | 1 ± 0 | 0.845487 ± 0.0332 | 21.1 | u=0.01227; v=0.01227 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.196781 ± 0.0146 | 1 ± 0 | 0.845487 ± 0.0332 | 21.1 | u=0.01227; v=0.01227 |
 
 ### Noise ratio 1
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.187261 ± 0.0165 | 1 ± 0 | 0.810359 ± 0.034 | 21.1 | u=0.01423; v=0.01424 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.187261 ± 0.0165 | 1 ± 0 | 0.810359 ± 0.034 | 21.1 | u=0.01423; v=0.01424 |
 

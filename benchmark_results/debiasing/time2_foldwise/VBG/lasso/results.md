@@ -34,29 +34,29 @@ Observation shape `(512, 451)`; library 43 terms; weak half-widths `(64, 56)`, s
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.222222 ± 2.79e-17 | 1 ± 0 | 0.936931 ± 1.12e-16 | 0.0814 | u=0.006524 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.222222 ± 2.79e-17 | 1 ± 0 | 0.936931 ± 1.12e-16 | 0.0814 | u=0.006524 |
 
 ### Noise ratio 0.2
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.229111 ± 0.0315 | 1 ± 0 | 0.92576 ± 0.00641 | 0.0915 | u=0.01498 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.229111 ± 0.0315 | 1 ± 0 | 0.92576 ± 0.00641 | 0.0915 | u=0.01498 |
 
 ### Noise ratio 0.5
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.315495 ± 0.0249 | 1 ± 0 | 0.923946 ± 0.00729 | 0.0938 | u=0.02122 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.315495 ± 0.0249 | 1 ± 0 | 0.923946 ± 0.00729 | 0.0938 | u=0.02122 |
 
 ### Noise ratio 0.75
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.295434 ± 0.0289 | 1 ± 0 | 0.933211 ± 0.015 | 0.0905 | u=0.02093 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.295434 ± 0.0289 | 1 ± 0 | 0.933211 ± 0.015 | 0.0905 | u=0.02093 |
 
 ### Noise ratio 1
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.299482 ± 0.0377 | 1 ± 0 | 0.928707 ± 0.0149 | 0.0894 | u=0.02878 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.299482 ± 0.0377 | 1 ± 0 | 0.928707 ± 0.0149 | 0.0894 | u=0.02878 |
 

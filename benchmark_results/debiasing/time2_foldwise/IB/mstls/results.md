@@ -34,29 +34,29 @@ Observation shape `(256, 256)`; library 43 terms; weak half-widths `(60, 60)`, s
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 0.0% | 0.166667 ± 5.58e-17 | 0.0122654 ± 0 | 27.4227 ± 7.14e-15 | 0.0242 | — |
+| Debiased WSINDy + MSTLS | 100 | 0.0% | 0.166667 ± 5.58e-17 | 0.0122654 ± 0 | 27.4227 ± 7.14e-15 | 0.0242 | — |
 
 ### Noise ratio 0.2
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 8.0% | 0.334262 ± 0.212 | 0.0584391 ± 0.0972 | 26.0369 ± 100 | 0.0246 | — |
+| Debiased WSINDy + MSTLS | 100 | 8.0% | 0.334262 ± 0.212 | 0.0584391 ± 0.0972 | 26.0369 ± 100 | 0.0246 | — |
 
 ### Noise ratio 0.5
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 25.0% | 0.477833 ± 0.312 | 0.0510718 ± 0.0322 | 15.5908 ± 25 | 0.0245 | — |
+| Debiased WSINDy + MSTLS | 100 | 25.0% | 0.477833 ± 0.312 | 0.0510718 ± 0.0322 | 15.5908 ± 25 | 0.0245 | — |
 
 ### Noise ratio 0.75
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 22.0% | 0.470667 ± 0.297 | 0.0540189 ± 0.0661 | 21.8176 ± 65.5 | 0.0243 | — |
+| Debiased WSINDy + MSTLS | 100 | 22.0% | 0.470667 ± 0.297 | 0.0540189 ± 0.0661 | 21.8176 ± 65.5 | 0.0243 | — |
 
 ### Noise ratio 1
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 24.0% | 0.4955 ± 0.297 | 0.0596323 ± 0.0743 | 22.9425 ± 68.3 | 0.0244 | — |
+| Debiased WSINDy + MSTLS | 100 | 24.0% | 0.4955 ± 0.297 | 0.0596323 ± 0.0743 | 22.9425 ± 68.3 | 0.0244 | — |
 

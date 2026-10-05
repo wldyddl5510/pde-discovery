@@ -34,29 +34,29 @@ Observation shape `(256, 301)`; library 43 terms; weak half-widths `(23, 22)`, s
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 100.0% | 1 ± 0 | 0.00204525 ± 0 | 0.00170512 ± 4.36e-19 | 0.0327 | — |
+| Debiased WSINDy + MSTLS | 100 | 100.0% | 1 ± 0 | 0.00204525 ± 0 | 0.00170512 ± 4.36e-19 | 0.0327 | — |
 
 ### Noise ratio 0.2
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 0.0% | 0.142857 ± 5.58e-17 | 1.60645 ± 0.0324 | 2.56245 ± 0.0909 | 0.0472 | — |
+| Debiased WSINDy + MSTLS | 100 | 0.0% | 0.142857 ± 5.58e-17 | 1.60645 ± 0.0324 | 2.56245 ± 0.0909 | 0.0472 | — |
 
 ### Noise ratio 0.5
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 0.0% | 0.0147469 ± 0.0455 | 1.10817 ± 0.31 | 1.68134 ± 0.99 | 0.0419 | — |
+| Debiased WSINDy + MSTLS | 100 | 0.0% | 0.0147469 ± 0.0455 | 1.10817 ± 0.31 | 1.68134 ± 0.99 | 0.0419 | — |
 
 ### Noise ratio 0.75
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 0.0% | 0.0108683 ± 0.0388 | 1.0852 ± 0.273 | 1.56451 ± 0.887 | 0.0421 | — |
+| Debiased WSINDy + MSTLS | 100 | 0.0% | 0.0108683 ± 0.0388 | 1.0852 ± 0.273 | 1.56451 ± 0.887 | 0.0421 | — |
 
 ### Noise ratio 1
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 0.0% | 0.00907634 ± 0.0277 | 1.09071 ± 0.277 | 1.52218 ± 0.844 | 0.043 | — |
+| Debiased WSINDy + MSTLS | 100 | 0.0% | 0.00907634 ± 0.0277 | 1.09071 ± 0.277 | 1.52218 ± 0.844 | 0.043 | — |
 

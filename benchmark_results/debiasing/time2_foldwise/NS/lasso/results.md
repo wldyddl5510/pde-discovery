@@ -36,29 +36,29 @@ Observation shape `(324, 149, 201)`; library 50 terms; weak half-widths `(31, 31
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.571429 ± 2.23e-16 | 0.097654 ± 0 | 0.00660374 ± 8.72e-19 | 9.58 | omega=0.0009366 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.571429 ± 2.23e-16 | 0.097654 ± 0 | 0.00660374 ± 8.72e-19 | 9.58 | omega=0.0009366 |
 
 ### Noise ratio 0.2
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.450893 ± 0.0727 | 0.561745 ± 0.409 | 0.0436035 ± 0.0292 | 10 | omega=0.002164 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.450893 ± 0.0727 | 0.561745 ± 0.409 | 0.0436035 ± 0.0292 | 10 | omega=0.002164 |
 
 ### Noise ratio 0.5
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.428571 ± 5.58e-17 | 1 ± 0 | 0.0989538 ± 0.00994 | 11 | omega=0.0139 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.428571 ± 5.58e-17 | 1 ± 0 | 0.0989538 ± 0.00994 | 11 | omega=0.0139 |
 
 ### Noise ratio 0.75
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.398155 ± 0.0274 | 1 ± 0 | 0.111612 ± 0.0139 | 9.43 | omega=0.01525 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.398155 ± 0.0274 | 1 ± 0 | 0.111612 ± 0.0139 | 9.43 | omega=0.01525 |
 
 ### Noise ratio 1
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.353988 ± 0.0233 | 1 ± 0 | 0.153071 ± 0.0202 | 9.19 | omega=0.01265 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.353988 ± 0.0233 | 1 ± 0 | 0.153071 ± 0.0202 | 9.19 | omega=0.01265 |
 

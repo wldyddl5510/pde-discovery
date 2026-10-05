@@ -34,29 +34,29 @@ Observation shape `(512, 451)`; library 43 terms; weak half-widths `(64, 56)`, s
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 100.0% | 1 ± 0 | 0.00066011 ± 3.27e-19 | 1.49056e-05 ± 0 | 0.081 | — |
+| Debiased WSINDy + MSTLS | 100 | 100.0% | 1 ± 0 | 0.00066011 ± 3.27e-19 | 1.49056e-05 ± 0 | 0.081 | — |
 
 ### Noise ratio 0.2
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 20.0% | 0.834238 ± 0.0901 | 0.773952 ± 0.383 | 0.0647664 ± 0.0608 | 0.0967 | — |
+| Debiased WSINDy + MSTLS | 100 | 20.0% | 0.834238 ± 0.0901 | 0.773952 ± 0.383 | 0.0647664 ± 0.0608 | 0.0967 | — |
 
 ### Noise ratio 0.5
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 0.0% | 0.714774 ± 0.147 | 1.00062 ± 0.0579 | 0.328902 ± 0.301 | 0.0982 | — |
+| Debiased WSINDy + MSTLS | 100 | 0.0% | 0.714774 ± 0.147 | 1.00062 ± 0.0579 | 0.328902 ± 0.301 | 0.0982 | — |
 
 ### Noise ratio 0.75
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 0.0% | 0.582466 ± 0.214 | 1.03907 ± 0.206 | 0.690778 ± 0.495 | 0.0945 | — |
+| Debiased WSINDy + MSTLS | 100 | 0.0% | 0.582466 ± 0.214 | 1.03907 ± 0.206 | 0.690778 ± 0.495 | 0.0945 | — |
 
 ### Noise ratio 1
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 0.0% | 0.50885 ± 0.2 | 1.08043 ± 0.211 | 0.822207 ± 0.437 | 0.0938 | — |
+| Debiased WSINDy + MSTLS | 100 | 0.0% | 0.50885 ± 0.2 | 1.08043 ± 0.211 | 0.822207 ± 0.437 | 0.0938 | — |
 

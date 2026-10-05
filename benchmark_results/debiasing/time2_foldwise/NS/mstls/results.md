@@ -36,29 +36,29 @@ Observation shape `(324, 149, 201)`; library 50 terms; weak half-widths `(31, 31
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 100.0% | 1 ± 0 | 0.00435014 ± 0 | 0.000599219 ± 1.09e-19 | 9.59 | — |
+| Debiased WSINDy + MSTLS | 100 | 100.0% | 1 ± 0 | 0.00435014 ± 0 | 0.000599219 ± 1.09e-19 | 9.59 | — |
 
 ### Noise ratio 0.2
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 100.0% | 1 ± 0 | 0.0121845 ± 0.00927 | 0.00114294 ± 0.000473 | 10.1 | — |
+| Debiased WSINDy + MSTLS | 100 | 100.0% | 1 ± 0 | 0.0121845 ± 0.00927 | 0.00114294 ± 0.000473 | 10.1 | — |
 
 ### Noise ratio 0.5
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 0.0% | 0.390667 ± 0.0657 | 0.982076 ± 0.126 | 0.0714498 ± 0.0187 | 11.1 | — |
+| Debiased WSINDy + MSTLS | 100 | 0.0% | 0.390667 ± 0.0657 | 0.982076 ± 0.126 | 0.0714498 ± 0.0187 | 11.1 | — |
 
 ### Noise ratio 0.75
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 0.0% | 0.371667 ± 0.0356 | 1 ± 0 | 0.0860582 ± 0.0293 | 9.52 | — |
+| Debiased WSINDy + MSTLS | 100 | 0.0% | 0.371667 ± 0.0356 | 1 ± 0 | 0.0860582 ± 0.0293 | 9.52 | — |
 
 ### Noise ratio 1
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + MSTLS | 100 | 0.0% | 0.37 ± 0.0333 | 1 ± 0 | 0.089269 ± 0.029 | 9.28 | — |
+| Debiased WSINDy + MSTLS | 100 | 0.0% | 0.37 ± 0.0333 | 1 ± 0 | 0.089269 ± 0.029 | 9.28 | — |
 

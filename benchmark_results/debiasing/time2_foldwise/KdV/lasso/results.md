@@ -34,29 +34,29 @@ Observation shape `(400, 601)`; library 43 terms; weak half-widths `(45, 80)`, s
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.5 ± 0 | 0.0141497 ± 0 | 0.0126812 ± 1.74e-18 | 0.0848 | u=9.987e-05 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.5 ± 0 | 0.0141497 ± 0 | 0.0126812 ± 1.74e-18 | 0.0848 | u=9.987e-05 |
 
 ### Noise ratio 0.2
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.662333 ± 0.0313 | 1.3462 ± 0.102 | 1.09786 ± 0.117 | 0.0854 | u=0.01077 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.662333 ± 0.0313 | 1.3462 ± 0.102 | 1.09786 ± 0.117 | 0.0854 | u=0.01077 |
 
 ### Noise ratio 0.5
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.656667 ± 0.0398 | 1.34893 ± 0.0496 | 1.1166 ± 0.106 | 0.0855 | u=0.009823 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.656667 ± 0.0398 | 1.34893 ± 0.0496 | 1.1166 ± 0.106 | 0.0855 | u=0.009823 |
 
 ### Noise ratio 0.75
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.632333 ± 0.0697 | 1.38459 ± 0.129 | 1.18492 ± 0.194 | 0.0866 | u=0.00981 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.632333 ± 0.0697 | 1.38459 ± 0.129 | 1.18492 ± 0.194 | 0.0866 | u=0.00981 |
 
 ### Noise ratio 1
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.618095 ± 0.0968 | 1.37355 ± 0.145 | 4.70232 ± 17.9 | 0.0865 | u=0.009795 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.618095 ± 0.0968 | 1.37355 ± 0.145 | 4.70232 ± 17.9 | 0.0865 | u=0.009795 |
 

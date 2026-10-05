@@ -34,29 +34,29 @@ Observation shape `(256, 256)`; library 43 terms; weak half-widths `(60, 60)`, s
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.5 ± 0 | 0.658965 ± 1.12e-16 | 638.54 ± 0 | 0.0241 | u=0.0166 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.5 ± 0 | 0.658965 ± 1.12e-16 | 638.54 ± 0 | 0.0241 | u=0.0166 |
 
 ### Noise ratio 0.2
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.5 ± 0 | 0.662164 ± 0.024 | 639.399 ± 22.5 | 0.025 | u=0.0182 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.5 ± 0 | 0.662164 ± 0.024 | 639.399 ± 22.5 | 0.025 | u=0.0182 |
 
 ### Noise ratio 0.5
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.498333 ± 0.0167 | 0.684961 ± 0.0616 | 651.399 ± 55.5 | 0.0248 | u=0.02627 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.498333 ± 0.0167 | 0.684961 ± 0.0616 | 651.399 ± 55.5 | 0.0248 | u=0.02627 |
 
 ### Noise ratio 0.75
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.473333 ± 0.102 | 0.695807 ± 0.101 | 648.556 ± 92.1 | 0.0254 | u=0.0273 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.473333 ± 0.102 | 0.695807 ± 0.101 | 648.556 ± 92.1 | 0.0254 | u=0.0273 |
 
 ### Noise ratio 1
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.485 ± 0.0753 | 0.709272 ± 0.113 | 654.127 ± 113 | 0.0255 | u=0.03736 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.485 ± 0.0753 | 0.709272 ± 0.113 | 654.127 ± 113 | 0.0255 | u=0.03736 |
 

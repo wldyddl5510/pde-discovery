@@ -16,7 +16,9 @@ BASELINES = [ROOT/path for path in ("benchmark_results/authors/results.md",
     "benchmark_results/filtered/results.md", "benchmark_results/consistency/raw/results.md",
     "benchmark_results/consistency/filtered/results.md")]
 METHOD_LABELS = {"wsindy": "WSINDy", "filtered-wsindy": "Filtered WSINDy",
-                 "debiased-wsindy": "Debiased WSINDy (time2)"}
+                 "debiased-wsindy": "Debiased WSINDy"}
+METHOD_ORDER = {"wsindy": 0, "filtered-wsindy": 1, "debiased-wsindy": 2}
+REGRESSION_ORDER = {"mstls": 0, "lasso": 1}
 DEBIASED_REPORTS = [ROOT/"benchmark_results/debiasing/IB"/regression/"results.md"
                     for regression in ("mstls", "lasso")]
 NOTE = """## LASSO penalty selection
@@ -143,9 +145,14 @@ def enrich(report, runs, common):
             lines.extend([f"### Noise ratio {ratio:g}", "",
                 "| Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |",
                 "| :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |"])
-            for row in summaries:
-                if row["name"] != name or row["noise_ratio"] != ratio:
-                    continue
+            table_rows = sorted(
+                (row for row in summaries if row["name"] == name and row["noise_ratio"] == ratio),
+                key=lambda row: (
+                    REGRESSION_ORDER[row.get("regression", own[1]["regression"] if own else "mstls")],
+                    METHOD_ORDER[row.get("method", "wsindy")],
+                ),
+            )
+            for row in table_rows:
                 regression = row.get("regression", own[1]["regression"] if own else "mstls")
                 method = row.get("method", "wsindy")
                 label = METHOD_LABELS[method]+" + "+regression.upper()

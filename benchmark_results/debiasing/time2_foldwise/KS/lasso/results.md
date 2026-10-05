@@ -34,29 +34,29 @@ Observation shape `(256, 301)`; library 43 terms; weak half-widths `(23, 22)`, s
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.333333 ± 1.12e-16 | 0.0319087 ± 6.97e-18 | 0.0261405 ± 0 | 0.0272 | u=0.0001482 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.333333 ± 1.12e-16 | 0.0319087 ± 6.97e-18 | 0.0261405 ± 0 | 0.0272 | u=0.0001482 |
 
 ### Noise ratio 0.2
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.437095 ± 0.0725 | 1 ± 0 | 0.883672 ± 0.00438 | 0.0289 | u=0.03323 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.437095 ± 0.0725 | 1 ± 0 | 0.883672 ± 0.00438 | 0.0289 | u=0.03323 |
 
 ### Noise ratio 0.5
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.162381 ± 0.00919 | 1 ± 0 | 1.04377 ± 0.00578 | 0.0293 | u=0.05776 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.162381 ± 0.00919 | 1 ± 0 | 1.04377 ± 0.00578 | 0.0293 | u=0.05776 |
 
 ### Noise ratio 0.75
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.164369 ± 0.0214 | 1 ± 0 | 1.03918 ± 0.0145 | 0.0289 | u=0.05611 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.164369 ± 0.0214 | 1 ± 0 | 1.03918 ± 0.0145 | 0.0289 | u=0.05611 |
 
 ### Noise ratio 1
 
 | Method | Trials | Exact | TPR | E_inf | E2 | Median seconds | lambda median |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Debiased WSINDy (time2) + LASSO | 100 | 0.0% | 0.171083 ± 0.0254 | 1 ± 0 | 1.0322 ± 0.00805 | 0.0292 | u=0.05518 |
+| Debiased WSINDy + LASSO | 100 | 0.0% | 0.171083 ± 0.0254 | 1 ± 0 | 1.0322 ± 0.00805 | 0.0292 | u=0.05518 |
 

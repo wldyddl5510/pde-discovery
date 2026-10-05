@@ -31,6 +31,7 @@ The existing file layout is retained:
   published settings with the archived 181-term RD library, and independent
   observation-noise instances.
 - `experiments.py`: identification trials, moving-average preprocessing, paired comparisons, and reports.
+- `eiv_study.py`: scalar Section 6 Gaussian polynomial correction, tolerance calibration, and conic regression.
 - `tests/`: quadrature, scaling identities, sparse selection, coupled equations,
   data conventions, and experiment checks.
 - `results.md`: index of generated benchmark reports.
@@ -302,6 +303,58 @@ Timings include noise
 estimation, pilot construction, weak construction and the entire regression
 path. The same measured pilot/weak construction cost is attributed to each
 regression; loading, noise generation and clean-data diagnostics are excluded.
+
+### Section 6: scalar conic sanity study
+
+`eiv_study.py` implements `min ||beta||_1 + lam*t` subject to
+`||y-(X-noise_bias) beta||_inf <= tau+mu*t` and `||beta||_2 <= t`.
+`conic_eiv(X, y, mu=..., tau=..., lam=..., noise_bias=...)` accepts explicit
+tolerances and an optional correction matrix. Its input X is already corrected
+when `noise_bias=None`. The scalar data entry point is:
+
+```python
+from eiv_study import fit_eiv
+result, system, calibration = fit_eiv(
+    observed_u, spatial_grid, time,
+    library_terms=terms, half_widths=half_widths, strides=strides,
+    test_degrees=test_degrees, lam=1., delta=.05, sigma2=None,
+)
+```
+
+This uses physical coordinates and coefficients (`rescale=False`), without
+RMS normalization, a pilot, splitting, penalty search, or support refitting.
+Clarabel solves the conic program; solver equilibration also defaults off.
+`sigma2=None` estimates variance using the existing sixth-difference estimator.
+The corrected powers obey `H_0=1`, `H_1=U`,
+`H_(j+1)=U*H_j-j*sigma2*H_(j-1)`. Known true variance gives Gaussian-unbiased
+polynomials; estimated variance gives a plug-in correction.
+
+Missing `mu` and `tau` use the specified delta-dependent formula, with
+`g2=max_k ||F_k||_op` and `g_inf=max_(k,i) ||F_k[i,:]||_2`.
+Optional `M`, `M1` supply true envelopes; defaults use max absolute raw U and
+max Euclidean raw space-time gradient from second-order finite differences
+(one-sided at grid boundaries). The declared uniform-cell geometry uses
+`Delta_z=prod(spacing)`, `|D|=number_of_samples*Delta_z`, and
+`h=norm(spacing,2)`. Test derivative extrema are calculated numerically from
+analytic one-dimensional derivatives; the gradient bound combines component
+suprema. These data-derived tolerances carry no proved confidence guarantee.
+
+The result retains the conic coefficients and t. An absolute physical-unit
+support tolerance (default `1e-7`) produces a separate diagnostic mask; it does
+not alter coefficients. If `tau >= ||y||_inf`, beta=t=0 is an analytically
+certified global optimum, recorded as `AnalyticZero`.
+
+Run the small study after installing `requirements.txt`:
+
+```sh
+python benchmark_results/eiv/run_sanity.py --lambda 1 --delta 0.05
+```
+
+It runs IB, KdV, KS, HKS and VBG at noise ratios 0, 0.2, 0.5, 0.75 and 1,
+with one trial each and variance estimated from observations. NLS/RD/NS are
+excluded. [Study instructions](benchmark_results/eiv/README.md) describe the
+saved trials and frozen sources. [Sanity results](benchmark_results/eiv/scalar_sanity/results.md)
+are separate from the existing 100-trial comparison tables.
 
 ## Method
 

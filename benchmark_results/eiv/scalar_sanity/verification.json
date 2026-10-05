@@ -1,0 +1,14 @@
+{
+  "state": "complete",
+  "cases": 25,
+  "source_hashes_verified": 6,
+  "protected_baseline_artifacts_unchanged": 200,
+  "all_variances_estimated": true,
+  "all_physical_scales_one": true,
+  "all_cases_certified_zero_optima": true,
+  "tau_response_ratio_min": 226.4690314947538,
+  "tau_response_ratio_max": 2874608.4571130266,
+  "minimum_quadrature_fraction_in_tau": 0.9999391253078791,
+  "tests_passed": 71,
+  "completed_at": "2026-10-05T18:38:11.736328+00:00"
+}
