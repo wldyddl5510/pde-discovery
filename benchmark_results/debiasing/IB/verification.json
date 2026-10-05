@@ -1,0 +1,62 @@
+{
+  "state": "complete",
+  "fits": 1000,
+  "paired_observations": 500,
+  "split": "time2",
+  "pilot_window": [
+    61,
+    61
+  ],
+  "protected_baseline_artifacts": 173,
+  "existing_result_rows_preserved": 160,
+  "snapshot_hashes_checked": 10,
+  "seeds_and_noise_match_all_four_IB_baselines": true,
+  "physical_coefficient_metrics_recomputed": true,
+  "lasso_physical_restoration_checked": true,
+  "all_lasso_candidates_pass_KKT": true,
+  "replayed_observations": [
+    {
+      "noise_ratio": 0.0,
+      "trial": 0
+    },
+    {
+      "noise_ratio": 0.0,
+      "trial": 99
+    },
+    {
+      "noise_ratio": 0.2,
+      "trial": 0
+    },
+    {
+      "noise_ratio": 0.2,
+      "trial": 99
+    },
+    {
+      "noise_ratio": 0.5,
+      "trial": 0
+    },
+    {
+      "noise_ratio": 0.5,
+      "trial": 99
+    },
+    {
+      "noise_ratio": 0.75,
+      "trial": 0
+    },
+    {
+      "noise_ratio": 0.75,
+      "trial": 99
+    },
+    {
+      "noise_ratio": 1.0,
+      "trial": 0
+    },
+    {
+      "noise_ratio": 1.0,
+      "trial": 99
+    }
+  ],
+  "replayed_mstls_support_refits_restore_physical_units": true,
+  "report_regeneration_idempotent": true,
+  "targeted_debiasing_tests_passed": 10
+}

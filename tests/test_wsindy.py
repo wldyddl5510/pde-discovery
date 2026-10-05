@@ -1,11 +1,32 @@
 """Independent checks of the paper's weak integrals and sparse selection."""
 import unittest
 import numpy as np
-from methods import (LibraryTerm, build_wsindy_system, mstls, polynomial_library,
-                     select_test_supports, test_function_weights, wsindy)
+from methods import (LibraryTerm, build_wsindy_system, lasso, mstls, polynomial_library,
+                     bump_function_weights, select_test_supports, test_function_weights, wsindy)
 
 
 class WeakIntegralTests(unittest.TestCase):
+    def test_bump_derivatives_and_eighth_order_integral_against_quadrature(self):
+        table = bump_function_weights(200, 8)
+        r = np.linspace(-1, 1, 401)[1:-1]
+        d, phi = 1-r*r, np.exp(-9/(1-r*r))
+        np.testing.assert_allclose(table[1, 1:-1], -18*r*phi/d**2, atol=1e-15)
+        np.testing.assert_allclose(table[2, 1:-1], phi*((-18*r/d**2)**2-18/d**2-72*r*r/d**3), atol=1e-14)
+        self.assertTrue(np.all(table[:, (0, -1)] == 0))
+        x, t = np.linspace(-1, 1, 513), np.linspace(0, 1, 129)
+        u = np.exp(1.3*x[:, None]+.7*t)
+        terms = tuple(LibraryTerm((1,), (q, 0)) for q in range(9))
+        system = build_wsindy_system(u, (x,), t, library_terms=terms,
+            half_widths=(200, 50), strides=(20, 10), rescale=False, test_function="bump")
+        nodes, weights = np.polynomial.legendre.leggauss(128)
+        integrals = []
+        for grid, rate, m, centers in zip((x, t), (1.3, .7), (200, 50), system.centers):
+            radius = m*(grid[1]-grid[0])
+            integrals.append(radius*(np.exp(-9/(1-nodes**2))*np.exp(rate*(centers[:, None]+radius*nodes)))@weights)
+        reference = (integrals[0][:, None]*integrals[1]).ravel()
+        np.testing.assert_allclose(system.G, np.column_stack([1.3**q*reference for q in range(9)]), rtol=2e-5, atol=1e-13)
+        np.testing.assert_allclose(system.b[:, 0], .7*reference, rtol=1e-10, atol=1e-15)
+
     def test_all_columns_against_continuous_quadrature(self):
         x, t = np.linspace(-1, 1, 161), np.linspace(0, 0.6, 121)
         a, b, c, d = 0.8, -0.6, 0.7, -0.4
@@ -98,6 +119,52 @@ class WeakIntegralTests(unittest.TestCase):
 
 
 class SparseSelectionTests(unittest.TestCase):
+    def test_lasso_matches_independent_soft_threshold_and_retains_shrinkage(self):
+        G = np.diag([1., 4., 20.])
+        truth = np.array([2., -.075, .0005])
+        result = lasso(G, G@truth, [.1])
+        # Orthogonal columns: shrink physical coefficients by alpha-scaled
+        # prediction amplitude / original column amplitude.
+        np.testing.assert_allclose(result.coefficients[:, 0], [1.8, -.025, 0], atol=1e-14)
+        self.assertLess(result.kkt_errors.max(), 1e-12)
+        self.assertEqual(result.coefficients[0, 0], result.scaled_coefficients[0, 0])
+
+    def test_lasso_is_invariant_to_diagonal_preconditioning_and_handles_zero_response(self):
+        rng = np.random.default_rng(21)
+        G = rng.normal(size=(70, 8)); G[:, -1] = 0
+        b = np.column_stack((G[:, 0]+.2*G[:, 2], np.zeros(70)))
+        scale = np.logspace(-4, 4, 8)
+        original = lasso(G, b)
+        changed = lasso(G*scale, b, coefficient_scales=np.broadcast_to(scale[:, None], (8, 2)))
+        np.testing.assert_allclose(original.coefficients, changed.coefficients, atol=1e-10)
+        np.testing.assert_allclose(original.losses, changed.losses, atol=1e-10)
+        np.testing.assert_array_equal(original.coefficients[:, 1], 0)
+        self.assertEqual(original.coefficients[-1, 0], 0)
+
+    def test_lasso_correlated_and_duplicate_columns_satisfy_kkt(self):
+        rng = np.random.default_rng(12)
+        G = rng.normal(size=(100, 12))
+        G[:, 1] = G[:, 0]; G[:, 3] = G[:, 2]+1e-5*rng.normal(size=100)
+        b = G[:, 0]-.2*G[:, 2]+.01*rng.normal(size=100)
+        result = lasso(G, b)
+        self.assertLessEqual(result.kkt_errors.max(), 1e-7)
+        theta = result.normalized_coefficients[:, 0]
+        Z = G/result.column_rms; y = b/result.response_rms[0]
+        alpha = result.threshold*result.alpha_max[0]
+        gradient = Z.T@(Z@theta-y)/len(y)
+        violation = np.where(theta != 0, np.abs(gradient+alpha*np.sign(theta)),
+            np.maximum(np.abs(gradient)-alpha, 0))
+        self.assertLess(violation.max()/result.alpha_max[0], 1e-7)
+
+    def test_consistency_absolute_threshold_ignores_relative_column_bounds(self):
+        G = np.diag([1., 1e6])
+        truth = np.array([.2, .03])
+        result = mstls(G, G@truth, [.01], selection_rule="absolute")
+        np.testing.assert_allclose(result.coefficients[:, 0], truth, atol=1e-14)
+        relative = mstls(G, G@truth, [.01])
+        self.assertEqual(relative.coefficients[0, 0], 0)
+        np.testing.assert_array_equal(mstls(G, G@truth, [1], selection_rule="absolute").coefficients, np.zeros((2, 1)))
+
     def test_physical_selection_is_invariant_to_diagonal_preconditioning(self):
         G, b = np.diag([1., 10.]), np.array([0.2, 0.3])
         scales = np.array([[10.], [0.01]])

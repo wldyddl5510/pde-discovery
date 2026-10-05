@@ -1,0 +1,8 @@
+{
+  "source_manifest": "benchmark_results/filtered_preflight/results.manifest.json",
+  "source_protocol_id": "e30a52d9ea509a3d7805ed7024a55b22c1bf4db19c5098ee3101249752f483fa",
+  "target_protocol_id": "b434e8e21f91b6cb725ad3eab9e19deebe4e49fd4162ffa21c30dfba92666d3e",
+  "reused_trials": 35,
+  "selection": "All 35 preflight trials at trial index 0; identical preprocessing and numerical sources; no outcome filtering.",
+  "converted_at": "2026-10-04T20:15:57.748436+00:00"
+}

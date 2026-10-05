@@ -1,0 +1,152 @@
+{
+  "state": "complete",
+  "fits": 8000,
+  "paired_instances": 4000,
+  "protected_baseline_files": 77,
+  "conditions": 80,
+  "trials_per_condition": 100,
+  "runs": [
+    {
+      "run": "original/raw",
+      "fits": 3000,
+      "protocol_id": "1a19607578e97dcb87108a2e77d6a1fc5b8564d8b7e5cd6b12309ab5bce83253"
+    },
+    {
+      "run": "original/filtered",
+      "fits": 3000,
+      "protocol_id": "60ad88ae0db7b0eecc7e9d44f2cc184a393d3311cb122ed10a5186824fc01f1b"
+    },
+    {
+      "run": "consistency/raw",
+      "fits": 1000,
+      "protocol_id": "b3710f72a20bb2bce229724a660a9b85d98569a09babcfd37c72754f1b9b4983"
+    },
+    {
+      "run": "consistency/filtered",
+      "fits": 1000,
+      "protocol_id": "7ba95b83456be8d940a5aab289c426da34e0889163d8840450d5ea8137f9f274"
+    }
+  ],
+  "selected_kkt_checks": [
+    {
+      "name": "RD",
+      "method": "wsindy",
+      "noise_ratio": 0.2,
+      "trial": 0,
+      "kkt_max": 6.554142139775894e-16
+    },
+    {
+      "name": "NS",
+      "method": "wsindy",
+      "noise_ratio": 0.2,
+      "trial": 0,
+      "kkt_max": 7.792197705556986e-16
+    },
+    {
+      "name": "NLS",
+      "method": "wsindy",
+      "noise_ratio": 0.2,
+      "trial": 0,
+      "kkt_max": 1.1663128458009864e-15
+    },
+    {
+      "name": "KS",
+      "method": "wsindy",
+      "noise_ratio": 0.2,
+      "trial": 0,
+      "kkt_max": 2.8262419676838144e-15
+    },
+    {
+      "name": "KdV",
+      "method": "wsindy",
+      "noise_ratio": 0.2,
+      "trial": 0,
+      "kkt_max": 6.931288347427233e-16
+    },
+    {
+      "name": "IB",
+      "method": "wsindy",
+      "noise_ratio": 0.2,
+      "trial": 0,
+      "kkt_max": 7.48734680581813e-16
+    },
+    {
+      "name": "RD",
+      "method": "filtered-wsindy",
+      "noise_ratio": 0.2,
+      "trial": 0,
+      "kkt_max": 6.155068576983945e-16
+    },
+    {
+      "name": "NS",
+      "method": "filtered-wsindy",
+      "noise_ratio": 0.2,
+      "trial": 0,
+      "kkt_max": 2.6288323665594344e-16
+    },
+    {
+      "name": "NLS",
+      "method": "filtered-wsindy",
+      "noise_ratio": 0.2,
+      "trial": 0,
+      "kkt_max": 4.0845640496461603e-16
+    },
+    {
+      "name": "KS",
+      "method": "filtered-wsindy",
+      "noise_ratio": 0.2,
+      "trial": 0,
+      "kkt_max": 6.447353333595554e-16
+    },
+    {
+      "name": "KdV",
+      "method": "filtered-wsindy",
+      "noise_ratio": 0.2,
+      "trial": 0,
+      "kkt_max": 1.2188962551619684e-16
+    },
+    {
+      "name": "IB",
+      "method": "filtered-wsindy",
+      "noise_ratio": 0.2,
+      "trial": 0,
+      "kkt_max": 1.4436756739428927e-16
+    },
+    {
+      "name": "HKS",
+      "method": "wsindy",
+      "noise_ratio": 0.2,
+      "trial": 0,
+      "kkt_max": 5.268056484669085e-16
+    },
+    {
+      "name": "VBG",
+      "method": "wsindy",
+      "noise_ratio": 0.2,
+      "trial": 0,
+      "kkt_max": 2.2335783855668946e-15
+    },
+    {
+      "name": "HKS",
+      "method": "filtered-wsindy",
+      "noise_ratio": 0.2,
+      "trial": 0,
+      "kkt_max": 1.902724389430151e-16
+    },
+    {
+      "name": "VBG",
+      "method": "filtered-wsindy",
+      "noise_ratio": 0.2,
+      "trial": 0,
+      "kkt_max": 1.9306876329457433e-15
+    }
+  ],
+  "metrics_recomputed": true,
+  "all_candidate_kkt_checked": true,
+  "paired_preprocessing_scaling_checked": true,
+  "source_hashes_verified": true,
+  "baseline_hashes_unchanged": true,
+  "execution_source": "Saved numerical snapshots; workspace development may differ",
+  "tests_passed": 44,
+  "tests_context": "Preflight of the saved numerical snapshot"
+}

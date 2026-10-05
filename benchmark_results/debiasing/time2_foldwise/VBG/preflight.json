@@ -1,0 +1,49 @@
+{
+  "state": "complete",
+  "name": "VBG",
+  "raw_baselines_reproduced": true,
+  "lhs_and_linear_columns_unchanged": true,
+  "physical_scaling_verified": true,
+  "pilot_info": {
+    "split": "time2",
+    "prior": 0.01,
+    "boundary": [
+      "wrap",
+      "reflect"
+    ],
+    "folds": [
+      {
+        "evaluation_parity": 0,
+        "training_parity": 1,
+        "estimated_noise_std": [
+          0.47771035200303746
+        ],
+        "rule_size": 37,
+        "window": [
+          37,
+          37
+        ],
+        "window_points": 1369,
+        "minimum_window_fraction": 0.4864864864864865
+      },
+      {
+        "evaluation_parity": 1,
+        "training_parity": 0,
+        "estimated_noise_std": [
+          0.47834399313459086
+        ],
+        "rule_size": 37,
+        "window": [
+          37,
+          37
+        ],
+        "window_points": 1369,
+        "minimum_window_fraction": 0.4864864864864865
+      }
+    ],
+    "window_selection": "Sixth differences on the opposite time-parity subgrid only"
+  },
+  "G_sha256": "bd4a7db167912422e63c93289d2bc1a630d40aabc1669f2eff1b86d2013274ac",
+  "b_sha256": "37159389e2a564e8fdd1860f1895cd91a0609b61747c481844174603efafdc1a",
+  "targeted_unit_tests": 12
+}

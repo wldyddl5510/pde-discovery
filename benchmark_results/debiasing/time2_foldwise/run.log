@@ -1,0 +1,546 @@
+IB: preflight passed; weak shape (784, 43), equations 1, windows [[61, 61], [61, 61]]
+IB: 2/1000 fits; noise=0
+IB: 20/1000 fits; noise=0
+IB: 40/1000 fits; noise=0
+IB: 60/1000 fits; noise=0
+IB: 80/1000 fits; noise=0
+IB: 100/1000 fits; noise=0
+IB: 120/1000 fits; noise=0
+IB: 140/1000 fits; noise=0
+IB: 160/1000 fits; noise=0
+IB: 180/1000 fits; noise=0
+IB: 200/1000 fits; noise=0
+IB: 220/1000 fits; noise=0.2
+IB: 240/1000 fits; noise=0.2
+IB: 260/1000 fits; noise=0.2
+IB: 280/1000 fits; noise=0.2
+IB: 300/1000 fits; noise=0.2
+IB: 320/1000 fits; noise=0.2
+IB: 340/1000 fits; noise=0.2
+IB: 360/1000 fits; noise=0.2
+IB: 380/1000 fits; noise=0.2
+IB: 400/1000 fits; noise=0.2
+IB: 420/1000 fits; noise=0.5
+IB: 440/1000 fits; noise=0.5
+IB: 460/1000 fits; noise=0.5
+IB: 480/1000 fits; noise=0.5
+IB: 500/1000 fits; noise=0.5
+IB: 520/1000 fits; noise=0.5
+IB: 540/1000 fits; noise=0.5
+IB: 560/1000 fits; noise=0.5
+IB: 580/1000 fits; noise=0.5
+IB: 600/1000 fits; noise=0.5
+IB: 620/1000 fits; noise=0.75
+IB: 640/1000 fits; noise=0.75
+IB: 660/1000 fits; noise=0.75
+IB: 680/1000 fits; noise=0.75
+IB: 700/1000 fits; noise=0.75
+IB: 720/1000 fits; noise=0.75
+IB: 740/1000 fits; noise=0.75
+IB: 760/1000 fits; noise=0.75
+IB: 780/1000 fits; noise=0.75
+IB: 800/1000 fits; noise=0.75
+IB: 820/1000 fits; noise=1
+IB: 840/1000 fits; noise=1
+IB: 860/1000 fits; noise=1
+IB: 880/1000 fits; noise=1
+IB: 900/1000 fits; noise=1
+IB: 920/1000 fits; noise=1
+IB: 940/1000 fits; noise=1
+IB: 960/1000 fits; noise=1
+IB: 980/1000 fits; noise=1
+IB: 1000/1000 fits; noise=1
+Traceback (most recent call last):
+  File "/Users/jiyoungpark/postdoc/ai4science/pde-discovery/benchmark_results/debiasing/time2_foldwise/source/run_suite.py", line 301, in <module>
+    if __name__=="__main__": main()
+                             ^^^^^^
+  File "/Users/jiyoungpark/postdoc/ai4science/pde-discovery/benchmark_results/debiasing/time2_foldwise/source/run_suite.py", line 291, in main
+    run_benchmark(args,name)
+  File "/Users/jiyoungpark/postdoc/ai4science/pde-discovery/benchmark_results/debiasing/time2_foldwise/source/run_suite.py", line 274, in run_benchmark
+    refresh(name,paths,records)
+  File "/Users/jiyoungpark/postdoc/ai4science/pde-discovery/benchmark_results/debiasing/time2_foldwise/source/run_suite.py", line 232, in refresh
+    from benchmark_results.lasso.penalty_levels import main as refresh_comparison
+ModuleNotFoundError: No module named 'benchmark_results'
+Penalty levels added to results.md: 170 summary rows
+Penalty levels added to benchmark_results/lasso/original/raw/results.md: 30 summary rows
+Penalty levels added to benchmark_results/lasso/original/filtered/results.md: 30 summary rows
+Penalty levels added to benchmark_results/lasso/consistency/raw/results.md: 10 summary rows
+Penalty levels added to benchmark_results/lasso/consistency/filtered/results.md: 10 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/IB/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/IB/lasso/results.md: 5 summary rows
+KdV: preflight passed; weak shape (1443, 43), equations 1, windows [[61, 61], [61, 61]]
+KdV: 2/1000 fits; noise=0
+KdV: 20/1000 fits; noise=0
+KdV: 40/1000 fits; noise=0
+KdV: 60/1000 fits; noise=0
+KdV: 80/1000 fits; noise=0
+KdV: 100/1000 fits; noise=0
+KdV: 120/1000 fits; noise=0
+KdV: 140/1000 fits; noise=0
+KdV: 160/1000 fits; noise=0
+KdV: 180/1000 fits; noise=0
+KdV: 200/1000 fits; noise=0
+KdV: 220/1000 fits; noise=0.2
+KdV: 240/1000 fits; noise=0.2
+KdV: 260/1000 fits; noise=0.2
+KdV: 280/1000 fits; noise=0.2
+KdV: 300/1000 fits; noise=0.2
+KdV: 320/1000 fits; noise=0.2
+KdV: 340/1000 fits; noise=0.2
+KdV: 360/1000 fits; noise=0.2
+KdV: 380/1000 fits; noise=0.2
+KdV: 400/1000 fits; noise=0.2
+KdV: 420/1000 fits; noise=0.5
+KdV: 440/1000 fits; noise=0.5
+KdV: 460/1000 fits; noise=0.5
+KdV: 480/1000 fits; noise=0.5
+KdV: 500/1000 fits; noise=0.5
+KdV: 520/1000 fits; noise=0.5
+KdV: 540/1000 fits; noise=0.5
+KdV: 560/1000 fits; noise=0.5
+KdV: 580/1000 fits; noise=0.5
+KdV: 600/1000 fits; noise=0.5
+KdV: 620/1000 fits; noise=0.75
+KdV: 640/1000 fits; noise=0.75
+KdV: 660/1000 fits; noise=0.75
+KdV: 680/1000 fits; noise=0.75
+KdV: 700/1000 fits; noise=0.75
+KdV: 720/1000 fits; noise=0.75
+KdV: 740/1000 fits; noise=0.75
+KdV: 760/1000 fits; noise=0.75
+KdV: 780/1000 fits; noise=0.75
+KdV: 800/1000 fits; noise=0.75
+KdV: 820/1000 fits; noise=1
+KdV: 840/1000 fits; noise=1
+KdV: 860/1000 fits; noise=1
+KdV: 880/1000 fits; noise=1
+KdV: 900/1000 fits; noise=1
+KdV: 920/1000 fits; noise=1
+KdV: 940/1000 fits; noise=1
+KdV: 960/1000 fits; noise=1
+KdV: 980/1000 fits; noise=1
+KdV: 1000/1000 fits; noise=1
+Penalty levels added to results.md: 180 summary rows
+Penalty levels added to benchmark_results/lasso/original/raw/results.md: 30 summary rows
+Penalty levels added to benchmark_results/lasso/original/filtered/results.md: 30 summary rows
+Penalty levels added to benchmark_results/lasso/consistency/raw/results.md: 10 summary rows
+Penalty levels added to benchmark_results/lasso/consistency/filtered/results.md: 10 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/IB/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/IB/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KdV/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KdV/lasso/results.md: 5 summary rows
+KdV: complete and verified; comparison updated
+KS: preflight passed; weak shape (1806, 43), equations 1, windows [[23, 23], [23, 23]]
+KS: 2/1000 fits; noise=0
+KS: 20/1000 fits; noise=0
+KS: 40/1000 fits; noise=0
+KS: 60/1000 fits; noise=0
+KS: 80/1000 fits; noise=0
+KS: 100/1000 fits; noise=0
+KS: 120/1000 fits; noise=0
+KS: 140/1000 fits; noise=0
+KS: 160/1000 fits; noise=0
+KS: 180/1000 fits; noise=0
+KS: 200/1000 fits; noise=0
+KS: 220/1000 fits; noise=0.2
+KS: 240/1000 fits; noise=0.2
+KS: 260/1000 fits; noise=0.2
+KS: 280/1000 fits; noise=0.2
+KS: 300/1000 fits; noise=0.2
+KS: 320/1000 fits; noise=0.2
+KS: 340/1000 fits; noise=0.2
+KS: 360/1000 fits; noise=0.2
+KS: 380/1000 fits; noise=0.2
+KS: 400/1000 fits; noise=0.2
+KS: 420/1000 fits; noise=0.5
+KS: 440/1000 fits; noise=0.5
+KS: 460/1000 fits; noise=0.5
+KS: 480/1000 fits; noise=0.5
+KS: 500/1000 fits; noise=0.5
+KS: 520/1000 fits; noise=0.5
+KS: 540/1000 fits; noise=0.5
+KS: 560/1000 fits; noise=0.5
+KS: 580/1000 fits; noise=0.5
+KS: 600/1000 fits; noise=0.5
+KS: 620/1000 fits; noise=0.75
+KS: 640/1000 fits; noise=0.75
+KS: 660/1000 fits; noise=0.75
+KS: 680/1000 fits; noise=0.75
+KS: 700/1000 fits; noise=0.75
+KS: 720/1000 fits; noise=0.75
+KS: 740/1000 fits; noise=0.75
+KS: 760/1000 fits; noise=0.75
+KS: 780/1000 fits; noise=0.75
+KS: 800/1000 fits; noise=0.75
+KS: 820/1000 fits; noise=1
+KS: 840/1000 fits; noise=1
+KS: 860/1000 fits; noise=1
+KS: 880/1000 fits; noise=1
+KS: 900/1000 fits; noise=1
+KS: 920/1000 fits; noise=1
+KS: 940/1000 fits; noise=1
+KS: 960/1000 fits; noise=1
+KS: 980/1000 fits; noise=1
+KS: 1000/1000 fits; noise=1
+Penalty levels added to results.md: 190 summary rows
+Penalty levels added to benchmark_results/lasso/original/raw/results.md: 30 summary rows
+Penalty levels added to benchmark_results/lasso/original/filtered/results.md: 30 summary rows
+Penalty levels added to benchmark_results/lasso/consistency/raw/results.md: 10 summary rows
+Penalty levels added to benchmark_results/lasso/consistency/filtered/results.md: 10 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/IB/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/IB/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KdV/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KdV/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KS/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KS/lasso/results.md: 5 summary rows
+KS: complete and verified; comparison updated
+NLS: preflight passed; weak shape (1804, 190), equations 2, windows [[23, 23], [23, 23]]
+NLS: 2/1000 fits; noise=0
+NLS: 20/1000 fits; noise=0
+NLS: 40/1000 fits; noise=0
+NLS: 60/1000 fits; noise=0
+NLS: 80/1000 fits; noise=0
+NLS: 100/1000 fits; noise=0
+NLS: 120/1000 fits; noise=0
+NLS: 140/1000 fits; noise=0
+NLS: 160/1000 fits; noise=0
+NLS: 180/1000 fits; noise=0
+NLS: 200/1000 fits; noise=0
+NLS: 220/1000 fits; noise=0.2
+NLS: 240/1000 fits; noise=0.2
+NLS: 260/1000 fits; noise=0.2
+NLS: 280/1000 fits; noise=0.2
+NLS: 300/1000 fits; noise=0.2
+NLS: 320/1000 fits; noise=0.2
+NLS: 340/1000 fits; noise=0.2
+NLS: 360/1000 fits; noise=0.2
+NLS: 380/1000 fits; noise=0.2
+NLS: 400/1000 fits; noise=0.2
+NLS: 420/1000 fits; noise=0.5
+NLS: 440/1000 fits; noise=0.5
+NLS: 460/1000 fits; noise=0.5
+NLS: 480/1000 fits; noise=0.5
+NLS: 500/1000 fits; noise=0.5
+NLS: 520/1000 fits; noise=0.5
+NLS: 540/1000 fits; noise=0.5
+NLS: 560/1000 fits; noise=0.5
+NLS: 580/1000 fits; noise=0.5
+NLS: 600/1000 fits; noise=0.5
+NLS: 620/1000 fits; noise=0.75
+NLS: 640/1000 fits; noise=0.75
+NLS: 660/1000 fits; noise=0.75
+NLS: 680/1000 fits; noise=0.75
+NLS: 700/1000 fits; noise=0.75
+NLS: 720/1000 fits; noise=0.75
+NLS: 740/1000 fits; noise=0.75
+NLS: 760/1000 fits; noise=0.75
+NLS: 780/1000 fits; noise=0.75
+NLS: 800/1000 fits; noise=0.75
+NLS: 820/1000 fits; noise=1
+NLS: 840/1000 fits; noise=1
+NLS: 860/1000 fits; noise=1
+NLS: 880/1000 fits; noise=1
+NLS: 900/1000 fits; noise=1
+NLS: 920/1000 fits; noise=1
+NLS: 940/1000 fits; noise=1
+NLS: 960/1000 fits; noise=1
+NLS: 980/1000 fits; noise=1
+NLS: 1000/1000 fits; noise=1
+Penalty levels added to results.md: 200 summary rows
+Penalty levels added to benchmark_results/lasso/original/raw/results.md: 30 summary rows
+Penalty levels added to benchmark_results/lasso/original/filtered/results.md: 30 summary rows
+Penalty levels added to benchmark_results/lasso/consistency/raw/results.md: 10 summary rows
+Penalty levels added to benchmark_results/lasso/consistency/filtered/results.md: 10 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/IB/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/IB/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KdV/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KdV/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KS/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KS/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/NLS/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/NLS/lasso/results.md: 5 summary rows
+NLS: complete and verified; comparison updated
+HKS: preflight passed; weak shape (900, 73), equations 1, windows [[27, 27], [27, 27]]
+HKS: 2/1000 fits; noise=0
+HKS: 20/1000 fits; noise=0
+HKS: 40/1000 fits; noise=0
+HKS: 60/1000 fits; noise=0
+HKS: 80/1000 fits; noise=0
+HKS: 100/1000 fits; noise=0
+HKS: 120/1000 fits; noise=0
+HKS: 140/1000 fits; noise=0
+HKS: 160/1000 fits; noise=0
+HKS: 180/1000 fits; noise=0
+HKS: 200/1000 fits; noise=0
+HKS: 220/1000 fits; noise=0.2
+HKS: 240/1000 fits; noise=0.2
+HKS: 260/1000 fits; noise=0.2
+HKS: 280/1000 fits; noise=0.2
+HKS: 300/1000 fits; noise=0.2
+HKS: 320/1000 fits; noise=0.2
+HKS: 340/1000 fits; noise=0.2
+HKS: 360/1000 fits; noise=0.2
+HKS: 380/1000 fits; noise=0.2
+HKS: 400/1000 fits; noise=0.2
+HKS: 420/1000 fits; noise=0.5
+HKS: 440/1000 fits; noise=0.5
+HKS: 460/1000 fits; noise=0.5
+HKS: 480/1000 fits; noise=0.5
+HKS: 500/1000 fits; noise=0.5
+HKS: 520/1000 fits; noise=0.5
+HKS: 540/1000 fits; noise=0.5
+HKS: 560/1000 fits; noise=0.5
+HKS: 580/1000 fits; noise=0.5
+HKS: 600/1000 fits; noise=0.5
+HKS: 620/1000 fits; noise=0.75
+HKS: 640/1000 fits; noise=0.75
+HKS: 660/1000 fits; noise=0.75
+HKS: 680/1000 fits; noise=0.75
+HKS: 700/1000 fits; noise=0.75
+HKS: 720/1000 fits; noise=0.75
+HKS: 740/1000 fits; noise=0.75
+HKS: 760/1000 fits; noise=0.75
+HKS: 780/1000 fits; noise=0.75
+HKS: 800/1000 fits; noise=0.75
+HKS: 820/1000 fits; noise=1
+HKS: 840/1000 fits; noise=1
+HKS: 860/1000 fits; noise=1
+HKS: 880/1000 fits; noise=1
+HKS: 900/1000 fits; noise=1
+HKS: 920/1000 fits; noise=1
+HKS: 940/1000 fits; noise=1
+HKS: 960/1000 fits; noise=1
+HKS: 980/1000 fits; noise=1
+HKS: 1000/1000 fits; noise=1
+Penalty levels added to results.md: 210 summary rows
+Penalty levels added to benchmark_results/lasso/original/raw/results.md: 30 summary rows
+Penalty levels added to benchmark_results/lasso/original/filtered/results.md: 30 summary rows
+Penalty levels added to benchmark_results/lasso/consistency/raw/results.md: 10 summary rows
+Penalty levels added to benchmark_results/lasso/consistency/filtered/results.md: 10 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/IB/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/IB/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KdV/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KdV/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KS/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KS/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/NLS/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/NLS/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/HKS/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/HKS/lasso/results.md: 5 summary rows
+HKS: complete and verified; comparison updated
+VBG: preflight passed; weak shape (992, 43), equations 1, windows [[37, 37], [37, 37]]
+VBG: 2/1000 fits; noise=0
+VBG: 20/1000 fits; noise=0
+VBG: 40/1000 fits; noise=0
+VBG: 60/1000 fits; noise=0
+VBG: 80/1000 fits; noise=0
+VBG: 100/1000 fits; noise=0
+VBG: 120/1000 fits; noise=0
+VBG: 140/1000 fits; noise=0
+VBG: 160/1000 fits; noise=0
+VBG: 180/1000 fits; noise=0
+VBG: 200/1000 fits; noise=0
+VBG: 220/1000 fits; noise=0.2
+VBG: 240/1000 fits; noise=0.2
+VBG: 260/1000 fits; noise=0.2
+VBG: 280/1000 fits; noise=0.2
+VBG: 300/1000 fits; noise=0.2
+VBG: 320/1000 fits; noise=0.2
+VBG: 340/1000 fits; noise=0.2
+VBG: 360/1000 fits; noise=0.2
+VBG: 380/1000 fits; noise=0.2
+VBG: 400/1000 fits; noise=0.2
+VBG: 420/1000 fits; noise=0.5
+VBG: 440/1000 fits; noise=0.5
+VBG: 460/1000 fits; noise=0.5
+VBG: 480/1000 fits; noise=0.5
+VBG: 500/1000 fits; noise=0.5
+VBG: 520/1000 fits; noise=0.5
+VBG: 540/1000 fits; noise=0.5
+VBG: 560/1000 fits; noise=0.5
+VBG: 580/1000 fits; noise=0.5
+VBG: 600/1000 fits; noise=0.5
+VBG: 620/1000 fits; noise=0.75
+VBG: 640/1000 fits; noise=0.75
+VBG: 660/1000 fits; noise=0.75
+VBG: 680/1000 fits; noise=0.75
+VBG: 700/1000 fits; noise=0.75
+VBG: 720/1000 fits; noise=0.75
+VBG: 740/1000 fits; noise=0.75
+VBG: 760/1000 fits; noise=0.75
+VBG: 780/1000 fits; noise=0.75
+VBG: 800/1000 fits; noise=0.75
+VBG: 820/1000 fits; noise=1
+VBG: 840/1000 fits; noise=1
+VBG: 860/1000 fits; noise=1
+VBG: 880/1000 fits; noise=1
+VBG: 900/1000 fits; noise=1
+VBG: 920/1000 fits; noise=1
+VBG: 940/1000 fits; noise=1
+VBG: 960/1000 fits; noise=1
+VBG: 980/1000 fits; noise=1
+VBG: 1000/1000 fits; noise=1
+Penalty levels added to results.md: 220 summary rows
+Penalty levels added to benchmark_results/lasso/original/raw/results.md: 30 summary rows
+Penalty levels added to benchmark_results/lasso/original/filtered/results.md: 30 summary rows
+Penalty levels added to benchmark_results/lasso/consistency/raw/results.md: 10 summary rows
+Penalty levels added to benchmark_results/lasso/consistency/filtered/results.md: 10 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/IB/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/IB/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KdV/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KdV/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KS/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KS/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/NLS/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/NLS/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/HKS/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/HKS/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/VBG/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/VBG/lasso/results.md: 5 summary rows
+VBG: complete and verified; comparison updated
+NS: preflight passed; weak shape (3872, 50), equations 1, windows [[9, 9, 9], [9, 9, 9]]
+NS: 2/1000 fits; noise=0
+NS: 20/1000 fits; noise=0
+NS: 40/1000 fits; noise=0
+NS: 60/1000 fits; noise=0
+NS: 80/1000 fits; noise=0
+NS: 100/1000 fits; noise=0
+NS: 120/1000 fits; noise=0
+NS: 140/1000 fits; noise=0
+NS: 160/1000 fits; noise=0
+NS: 180/1000 fits; noise=0
+NS: 200/1000 fits; noise=0
+NS: 220/1000 fits; noise=0.2
+NS: 240/1000 fits; noise=0.2
+NS: 260/1000 fits; noise=0.2
+NS: 280/1000 fits; noise=0.2
+NS: 300/1000 fits; noise=0.2
+NS: 320/1000 fits; noise=0.2
+NS: 340/1000 fits; noise=0.2
+NS: 360/1000 fits; noise=0.2
+NS: 380/1000 fits; noise=0.2
+NS: 400/1000 fits; noise=0.2
+NS: 420/1000 fits; noise=0.5
+NS: 440/1000 fits; noise=0.5
+NS: 460/1000 fits; noise=0.5
+NS: 480/1000 fits; noise=0.5
+NS: 500/1000 fits; noise=0.5
+NS: 520/1000 fits; noise=0.5
+NS: 540/1000 fits; noise=0.5
+NS: 560/1000 fits; noise=0.5
+NS: 580/1000 fits; noise=0.5
+NS: 600/1000 fits; noise=0.5
+NS: 620/1000 fits; noise=0.75
+NS: 640/1000 fits; noise=0.75
+NS: 660/1000 fits; noise=0.75
+NS: 680/1000 fits; noise=0.75
+NS: 700/1000 fits; noise=0.75
+NS: 720/1000 fits; noise=0.75
+NS: 740/1000 fits; noise=0.75
+NS: 760/1000 fits; noise=0.75
+NS: 780/1000 fits; noise=0.75
+NS: 800/1000 fits; noise=0.75
+NS: 820/1000 fits; noise=1
+NS: 840/1000 fits; noise=1
+NS: 860/1000 fits; noise=1
+NS: 880/1000 fits; noise=1
+NS: 900/1000 fits; noise=1
+NS: 920/1000 fits; noise=1
+NS: 940/1000 fits; noise=1
+NS: 960/1000 fits; noise=1
+NS: 980/1000 fits; noise=1
+NS: 1000/1000 fits; noise=1
+Penalty levels added to results.md: 230 summary rows
+Penalty levels added to benchmark_results/lasso/original/raw/results.md: 30 summary rows
+Penalty levels added to benchmark_results/lasso/original/filtered/results.md: 30 summary rows
+Penalty levels added to benchmark_results/lasso/consistency/raw/results.md: 10 summary rows
+Penalty levels added to benchmark_results/lasso/consistency/filtered/results.md: 10 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/IB/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/IB/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KdV/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KdV/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KS/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KS/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/NLS/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/NLS/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/NS/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/NS/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/HKS/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/HKS/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/VBG/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/VBG/lasso/results.md: 5 summary rows
+NS: complete and verified; comparison updated
+RD: preflight passed; weak shape (4860, 181), equations 2, windows [[7, 7, 7], [7, 7, 7]]
+RD: 2/1000 fits; noise=0
+RD: 20/1000 fits; noise=0
+RD: 40/1000 fits; noise=0
+RD: 60/1000 fits; noise=0
+RD: 80/1000 fits; noise=0
+RD: 100/1000 fits; noise=0
+RD: 120/1000 fits; noise=0
+RD: 140/1000 fits; noise=0
+RD: 160/1000 fits; noise=0
+RD: 180/1000 fits; noise=0
+RD: 200/1000 fits; noise=0
+RD: 220/1000 fits; noise=0.2
+RD: 240/1000 fits; noise=0.2
+RD: 260/1000 fits; noise=0.2
+RD: 280/1000 fits; noise=0.2
+RD: 300/1000 fits; noise=0.2
+RD: 320/1000 fits; noise=0.2
+RD: 340/1000 fits; noise=0.2
+RD: 360/1000 fits; noise=0.2
+RD: 380/1000 fits; noise=0.2
+RD: 400/1000 fits; noise=0.2
+RD: 420/1000 fits; noise=0.5
+RD: 440/1000 fits; noise=0.5
+RD: 460/1000 fits; noise=0.5
+RD: 480/1000 fits; noise=0.5
+RD: 500/1000 fits; noise=0.5
+RD: 520/1000 fits; noise=0.5
+RD: 540/1000 fits; noise=0.5
+RD: 560/1000 fits; noise=0.5
+RD: 580/1000 fits; noise=0.5
+RD: 600/1000 fits; noise=0.5
+RD: 620/1000 fits; noise=0.75
+RD: 640/1000 fits; noise=0.75
+RD: 660/1000 fits; noise=0.75
+RD: 680/1000 fits; noise=0.75
+RD: 700/1000 fits; noise=0.75
+RD: 720/1000 fits; noise=0.75
+RD: 740/1000 fits; noise=0.75
+RD: 760/1000 fits; noise=0.75
+RD: 780/1000 fits; noise=0.75
+RD: 800/1000 fits; noise=0.75
+RD: 820/1000 fits; noise=1
+RD: 840/1000 fits; noise=1
+RD: 860/1000 fits; noise=1
+RD: 880/1000 fits; noise=1
+RD: 900/1000 fits; noise=1
+RD: 920/1000 fits; noise=1
+RD: 940/1000 fits; noise=1
+RD: 960/1000 fits; noise=1
+RD: 980/1000 fits; noise=1
+RD: 1000/1000 fits; noise=1
+Penalty levels added to results.md: 240 summary rows
+Penalty levels added to benchmark_results/lasso/original/raw/results.md: 30 summary rows
+Penalty levels added to benchmark_results/lasso/original/filtered/results.md: 30 summary rows
+Penalty levels added to benchmark_results/lasso/consistency/raw/results.md: 10 summary rows
+Penalty levels added to benchmark_results/lasso/consistency/filtered/results.md: 10 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/IB/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/IB/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KdV/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KdV/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KS/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/KS/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/NLS/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/NLS/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/RD/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/RD/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/NS/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/NS/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/HKS/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/HKS/lasso/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/VBG/mstls/results.md: 5 summary rows
+Penalty levels added to benchmark_results/debiasing/time2_foldwise/VBG/lasso/results.md: 5 summary rows
+RD: complete and verified; comparison updated

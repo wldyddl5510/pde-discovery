@@ -1,0 +1,33 @@
+[
+  {
+    "name": "RD",
+    "noise_ratio": 0.0,
+    "trials": 30,
+    "exact_count": 0,
+    "exact_rate": 0.0,
+    "exact_ci95_low": 0.0,
+    "exact_ci95_high": 0.11351339317396876,
+    "subset_support_rate": 0.0,
+    "method": "wsindy",
+    "tpr_mean": 0.34999999999999987,
+    "tpr_sd": 1.1292025708167404e-16,
+    "tpr_median": 0.35,
+    "tpr_p90": 0.35,
+    "e_inf_mean": 0.015392263648029259,
+    "e_inf_sd": 0.0,
+    "e_inf_median": 0.015392263648029259,
+    "e_inf_p90": 0.015392263648029259,
+    "e2_mean": 0.013415818992557525,
+    "e2_sd": 5.2931370507034704e-18,
+    "e2_median": 0.01341581899255753,
+    "e2_p90": 0.01341581899255753,
+    "runtime_mean": 22.328997983244093,
+    "runtime_sd": 3.6615867731865315,
+    "runtime_median": 22.44547174993204,
+    "runtime_p90": 25.645055388193583,
+    "threshold_mean": 9.999999999999998e-05,
+    "threshold_sd": 2.7568422139080575e-20,
+    "threshold_median": 0.0001,
+    "threshold_p90": 0.0001
+  }
+]

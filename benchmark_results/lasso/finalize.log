@@ -1,0 +1,21 @@
+{
+  "state": "complete",
+  "fits": 8000,
+  "paired_instances": 4000,
+  "protected_baseline_files": 77,
+  "conditions": 80,
+  "trials_per_condition": 100,
+  "metrics_recomputed": true,
+  "all_candidate_kkt_checked": true,
+  "paired_preprocessing_scaling_checked": true,
+  "source_hashes_verified": true,
+  "baseline_hashes_unchanged": true,
+  "execution_source": "Saved numerical snapshots; workspace development may differ",
+  "tests_passed": 44,
+  "tests_context": "Preflight of the saved numerical snapshot"
+}
+LASSO plot labels refreshed: /Users/jiyoungpark/postdoc/ai4science/pde-discovery/benchmark_results/lasso/original/filtered/results.md
+LASSO plot labels refreshed: /Users/jiyoungpark/postdoc/ai4science/pde-discovery/benchmark_results/lasso/original/raw/results.md
+LASSO plot labels refreshed: /Users/jiyoungpark/postdoc/ai4science/pde-discovery/benchmark_results/lasso/consistency/filtered/results.md
+LASSO plot labels refreshed: /Users/jiyoungpark/postdoc/ai4science/pde-discovery/benchmark_results/lasso/consistency/raw/results.md
+All 8,000 LASSO fits, paired tables, plots and saved-result checks complete.

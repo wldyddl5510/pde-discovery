@@ -1,0 +1,4 @@
+RD noise=0 trial=1/100: TPR=0.35 E2=0.01342 lambda=0.0001 seconds=21
+RD noise=0 trial=20/100: TPR=0.35 E2=0.01342 lambda=0.0001 seconds=23
+RD noise=0 trial=40/100: TPR=0.35 E2=0.01342 lambda=0.0001 seconds=37.4
+RD noise=0 trial=60/100: TPR=0.35 E2=0.01342 lambda=0.0001 seconds=37.5

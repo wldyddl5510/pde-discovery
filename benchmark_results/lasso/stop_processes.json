@@ -1,0 +1,38 @@
+{
+  "39597": {
+    "ppid": 16113,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python benchmark_results/lasso/run_suite.py"
+  },
+  "39600": {
+    "ppid": 39597,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python /Users/jiyoungpark/postdoc/ai4science/pde-discovery/experiments.py --regression lasso --offline --resume --benchmarks RD NS NLS KS KdV IB --workers 2 --output benchmark_results/lasso/original/raw/results.md"
+  },
+  "39601": {
+    "ppid": 39597,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python /Users/jiyoungpark/postdoc/ai4science/pde-discovery/experiments.py --regression lasso --offline --resume --benchmarks RD NS NLS KS KdV IB --workers 2 --method filtered-wsindy --output benchmark_results/lasso/original/filtered/results.md"
+  },
+  "39615": {
+    "ppid": 39601,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.resource_tracker import main;main(8)"
+  },
+  "39616": {
+    "ppid": 39601,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=9, pipe_handle=17) --multiprocessing-fork"
+  },
+  "39617": {
+    "ppid": 39600,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.resource_tracker import main;main(8)"
+  },
+  "39618": {
+    "ppid": 39601,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=9, pipe_handle=19) --multiprocessing-fork"
+  },
+  "39619": {
+    "ppid": 39600,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=9, pipe_handle=17) --multiprocessing-fork"
+  },
+  "39620": {
+    "ppid": 39600,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=9, pipe_handle=19) --multiprocessing-fork"
+  }
+}

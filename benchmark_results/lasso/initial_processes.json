@@ -1,0 +1,97 @@
+[
+  {
+    "pid": 35817,
+    "ppid": 16113,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python benchmark_results/lasso/run_suite.py"
+  },
+  {
+    "pid": 35820,
+    "ppid": 35817,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python /Users/jiyoungpark/postdoc/ai4science/pde-discovery/experiments.py --regression lasso --offline --resume --benchmarks RD NS SG NLS KS KdV IB --workers 3 --output benchmark_results/lasso/original/raw/results.md"
+  },
+  {
+    "pid": 35821,
+    "ppid": 35817,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python /Users/jiyoungpark/postdoc/ai4science/pde-discovery/experiments.py --regression lasso --offline --resume --benchmarks RD NS SG NLS KS KdV IB --workers 3 --method filtered-wsindy --output benchmark_results/lasso/original/filtered/results.md"
+  },
+  {
+    "pid": 35833,
+    "ppid": 35821,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.resource_tracker import main;main(8)"
+  },
+  {
+    "pid": 35834,
+    "ppid": 35820,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.resource_tracker import main;main(8)"
+  },
+  {
+    "pid": 35835,
+    "ppid": 35821,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=9, pipe_handle=17) --multiprocessing-fork"
+  },
+  {
+    "pid": 35836,
+    "ppid": 35820,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=9, pipe_handle=17) --multiprocessing-fork"
+  },
+  {
+    "pid": 35837,
+    "ppid": 35821,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=9, pipe_handle=19) --multiprocessing-fork"
+  },
+  {
+    "pid": 35838,
+    "ppid": 35820,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=9, pipe_handle=19) --multiprocessing-fork"
+  },
+  {
+    "pid": 35839,
+    "ppid": 35821,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=9, pipe_handle=21) --multiprocessing-fork"
+  },
+  {
+    "pid": 35840,
+    "ppid": 35820,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=9, pipe_handle=21) --multiprocessing-fork"
+  },
+  {
+    "pid": 38252,
+    "ppid": 16113,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python experiments.py --regression lasso --offline --resume --benchmarks HKS VBG --workers 2 --output benchmark_results/lasso/consistency/raw/results.md"
+  },
+  {
+    "pid": 38253,
+    "ppid": 16113,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python experiments.py --regression lasso --method filtered-wsindy --offline --resume --benchmarks HKS VBG --workers 2 --output benchmark_results/lasso/consistency/filtered/results.md"
+  },
+  {
+    "pid": 38285,
+    "ppid": 38252,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.resource_tracker import main;main(8)"
+  },
+  {
+    "pid": 38286,
+    "ppid": 38253,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.resource_tracker import main;main(8)"
+  },
+  {
+    "pid": 38287,
+    "ppid": 38252,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=9, pipe_handle=17) --multiprocessing-fork"
+  },
+  {
+    "pid": 38288,
+    "ppid": 38253,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=9, pipe_handle=17) --multiprocessing-fork"
+  },
+  {
+    "pid": 38289,
+    "ppid": 38252,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=9, pipe_handle=19) --multiprocessing-fork"
+  },
+  {
+    "pid": 38290,
+    "ppid": 38253,
+    "command": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python -c from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=9, pipe_handle=19) --multiprocessing-fork"
+  }
+]

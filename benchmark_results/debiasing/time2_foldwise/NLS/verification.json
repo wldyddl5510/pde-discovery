@@ -1,0 +1,10 @@
+{
+  "state": "complete",
+  "fits": 1000,
+  "paired_observations": 500,
+  "raw_baselines_reproduced": true,
+  "metrics_recomputed": true,
+  "physical_units_verified": true,
+  "all_lasso_candidates_pass_KKT": true,
+  "time2_training_only_window": true
+}

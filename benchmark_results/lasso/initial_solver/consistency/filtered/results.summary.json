@@ -1,0 +1,33 @@
+[
+  {
+    "name": "HKS",
+    "noise_ratio": 0.0,
+    "trials": 100,
+    "exact_count": 0,
+    "exact_rate": 0.0,
+    "exact_ci95_low": 3.469446951953614e-18,
+    "exact_ci95_high": 0.03699349820698568,
+    "subset_support_rate": 0.0,
+    "method": "filtered-wsindy",
+    "tpr_mean": 0.375,
+    "tpr_sd": 0.0,
+    "tpr_median": 0.375,
+    "tpr_p90": 0.375,
+    "e_inf_mean": 1.0,
+    "e_inf_sd": 0.0,
+    "e_inf_median": 1.0,
+    "e_inf_p90": 1.0,
+    "e2_mean": 0.7561394905349327,
+    "e2_sd": 1.1158161231197418e-16,
+    "e2_median": 0.7561394905349326,
+    "e2_p90": 0.7561394905349326,
+    "runtime_mean": 0.16668175418977627,
+    "runtime_sd": 0.20411630026486308,
+    "runtime_median": 0.12009658297756687,
+    "runtime_p90": 0.20935152937890963,
+    "threshold_mean": 0.007220809018385471,
+    "threshold_sd": 0.0,
+    "threshold_median": 0.007220809018385471,
+    "threshold_p90": 0.007220809018385471
+  }
+]

@@ -1,0 +1,222 @@
+[
+  {
+    "name": "VBG",
+    "noise_ratio": 0.0,
+    "trials": 100,
+    "exact_count": 0,
+    "exact_rate": 0.0,
+    "exact_ci95_low": 3.469446951953614e-18,
+    "exact_ci95_high": 0.03699349820698568,
+    "subset_support_rate": 0.0,
+    "method": "debiased-wsindy",
+    "tpr_mean": 0.22222222222222224,
+    "tpr_sd": 2.7895403077993544e-17,
+    "tpr_median": 0.2222222222222222,
+    "tpr_p90": 0.2222222222222222,
+    "e_inf_mean": 1.0,
+    "e_inf_sd": 0.0,
+    "e_inf_median": 1.0,
+    "e_inf_p90": 1.0,
+    "e2_mean": 0.9369314676187865,
+    "e2_sd": 1.1158161231197418e-16,
+    "e2_median": 0.9369314676187864,
+    "e2_p90": 0.9369314676187864,
+    "runtime_mean": 0.09381686539622024,
+    "runtime_sd": 0.06049225567098442,
+    "runtime_median": 0.08142202097224072,
+    "runtime_p90": 0.08517209592973814,
+    "threshold_mean": 0.007220809018385471,
+    "threshold_sd": 0.0,
+    "threshold_median": 0.007220809018385471,
+    "threshold_p90": 0.007220809018385471,
+    "regression": "lasso",
+    "lasso_ratio_min": 0.007220809018385471,
+    "lasso_lambda_min": {
+      "u": 0.006523711522117558
+    },
+    "lasso_ratio_median": 0.007220809018385471,
+    "lasso_lambda_median": {
+      "u": 0.006523711522117558
+    },
+    "lasso_ratio_max": 0.007220809018385471,
+    "lasso_lambda_max": {
+      "u": 0.006523711522117558
+    }
+  },
+  {
+    "name": "VBG",
+    "noise_ratio": 0.2,
+    "trials": 100,
+    "exact_count": 0,
+    "exact_rate": 0.0,
+    "exact_ci95_low": 3.469446951953614e-18,
+    "exact_ci95_high": 0.03699349820698568,
+    "subset_support_rate": 0.0,
+    "method": "debiased-wsindy",
+    "tpr_mean": 0.22911111111111113,
+    "tpr_sd": 0.03153708695880317,
+    "tpr_median": 0.2222222222222222,
+    "tpr_p90": 0.2222222222222222,
+    "e_inf_mean": 1.0,
+    "e_inf_sd": 0.0,
+    "e_inf_median": 1.0,
+    "e_inf_p90": 1.0,
+    "e2_mean": 0.9257597565419909,
+    "e2_sd": 0.006412425991700291,
+    "e2_median": 0.9256614727468894,
+    "e2_p90": 0.9319352670116703,
+    "runtime_mean": 0.09699309790274128,
+    "runtime_sd": 0.03179032331679904,
+    "runtime_median": 0.09150477155344561,
+    "runtime_p90": 0.09954687136923895,
+    "threshold_mean": 0.01636926573730233,
+    "threshold_sd": 0.005005828574503014,
+    "threshold_median": 0.016681005372000592,
+    "threshold_p90": 0.022051307399030457,
+    "regression": "lasso",
+    "lasso_ratio_min": 0.0054622772176843425,
+    "lasso_lambda_min": {
+      "u": 0.004906703508067451
+    },
+    "lasso_ratio_median": 0.016681005372000592,
+    "lasso_lambda_median": {
+      "u": 0.014978595191661162
+    },
+    "lasso_ratio_max": 0.026560877829466867,
+    "lasso_lambda_max": {
+      "u": 0.02387834187809151
+    }
+  },
+  {
+    "name": "VBG",
+    "noise_ratio": 0.5,
+    "trials": 100,
+    "exact_count": 0,
+    "exact_rate": 0.0,
+    "exact_ci95_low": 3.469446951953614e-18,
+    "exact_ci95_high": 0.03699349820698568,
+    "subset_support_rate": 0.0,
+    "method": "debiased-wsindy",
+    "tpr_mean": 0.31549494949494944,
+    "tpr_sd": 0.024852030774192173,
+    "tpr_median": 0.3333333333333333,
+    "tpr_p90": 0.3333333333333333,
+    "e_inf_mean": 1.0,
+    "e_inf_sd": 0.0,
+    "e_inf_median": 1.0,
+    "e_inf_p90": 1.0,
+    "e2_mean": 0.9239457953731441,
+    "e2_sd": 0.007287450077390403,
+    "e2_median": 0.9230221473932343,
+    "e2_p90": 0.9347511417472602,
+    "runtime_mean": 0.09754894041921944,
+    "runtime_sd": 0.010487616294395251,
+    "runtime_median": 0.09379366639768705,
+    "runtime_p90": 0.10782114092726261,
+    "threshold_mean": 0.023992193690433473,
+    "threshold_sd": 0.00940397456811366,
+    "threshold_median": 0.024201282647943835,
+    "threshold_p90": 0.02915053062825179,
+    "regression": "lasso",
+    "lasso_ratio_min": 0.009545484566618348,
+    "lasso_lambda_min": {
+      "u": 0.008364789829778962
+    },
+    "lasso_ratio_median": 0.024201282647943835,
+    "lasso_lambda_median": {
+      "u": 0.021216168093666245
+    },
+    "lasso_ratio_max": 0.07390722033525783,
+    "lasso_lambda_max": {
+      "u": 0.06503965135059074
+    }
+  },
+  {
+    "name": "VBG",
+    "noise_ratio": 0.75,
+    "trials": 100,
+    "exact_count": 0,
+    "exact_rate": 0.0,
+    "exact_ci95_low": 3.469446951953614e-18,
+    "exact_ci95_high": 0.03699349820698568,
+    "subset_support_rate": 0.0,
+    "method": "debiased-wsindy",
+    "tpr_mean": 0.2954343434343434,
+    "tpr_sd": 0.028943761953398553,
+    "tpr_median": 0.3,
+    "tpr_p90": 0.3333333333333333,
+    "e_inf_mean": 1.0,
+    "e_inf_sd": 0.0,
+    "e_inf_median": 1.0,
+    "e_inf_p90": 1.0,
+    "e2_mean": 0.9332110571427263,
+    "e2_sd": 0.014982802553637785,
+    "e2_median": 0.9331218063158084,
+    "e2_p90": 0.9489888694908916,
+    "runtime_mean": 0.09044813962187619,
+    "runtime_sd": 0.0032283508313481163,
+    "runtime_median": 0.0904957500169985,
+    "runtime_p90": 0.09407989665633068,
+    "threshold_mean": 0.02264720522391295,
+    "threshold_sd": 0.016828949016346614,
+    "threshold_median": 0.024201282647943835,
+    "threshold_p90": 0.03511191734215135,
+    "regression": "lasso",
+    "lasso_ratio_min": 0.0041320124001153384,
+    "lasso_lambda_min": {
+      "u": 0.00356244145035883
+    },
+    "lasso_ratio_median": 0.024201282647943835,
+    "lasso_lambda_median": {
+      "u": 0.020927471705788264
+    },
+    "lasso_ratio_max": 0.1291549665014884,
+    "lasso_lambda_max": {
+      "u": 0.11226599474423245
+    }
+  },
+  {
+    "name": "VBG",
+    "noise_ratio": 1.0,
+    "trials": 100,
+    "exact_count": 0,
+    "exact_rate": 0.0,
+    "exact_ci95_low": 3.469446951953614e-18,
+    "exact_ci95_high": 0.03699349820698568,
+    "subset_support_rate": 0.0,
+    "method": "debiased-wsindy",
+    "tpr_mean": 0.2994816017316017,
+    "tpr_sd": 0.03771306099848115,
+    "tpr_median": 0.3,
+    "tpr_p90": 0.3333333333333333,
+    "e_inf_mean": 1.0,
+    "e_inf_sd": 0.0,
+    "e_inf_median": 1.0,
+    "e_inf_p90": 1.0,
+    "e2_mean": 0.9287072997577718,
+    "e2_sd": 0.014927976007310962,
+    "e2_median": 0.9285423817242339,
+    "e2_p90": 0.9485242083315665,
+    "runtime_mean": 0.09237632713397033,
+    "runtime_sd": 0.011967661199139293,
+    "runtime_median": 0.08940095786238089,
+    "runtime_p90": 0.09990177168510855,
+    "threshold_mean": 0.03626492283350489,
+    "threshold_sd": 0.021061337785264433,
+    "threshold_median": 0.0335522943600626,
+    "threshold_p90": 0.07390722033525783,
+    "regression": "lasso",
+    "lasso_ratio_min": 0.005994842503189409,
+    "lasso_lambda_min": {
+      "u": 0.005164992437541145
+    },
+    "lasso_ratio_median": 0.0335522943600626,
+    "lasso_lambda_median": {
+      "u": 0.028779048113392998
+    },
+    "lasso_ratio_max": 0.10722672220103242,
+    "lasso_lambda_max": {
+      "u": 0.09255171852742877
+    }
+  }
+]

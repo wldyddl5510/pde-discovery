@@ -1,0 +1,8 @@
+{
+  "state": "complete",
+  "completed": 8000,
+  "requested": 8000,
+  "updated_at": "2026-10-05T03:29:04.125207+00:00",
+  "error": null,
+  "execution_source": "Saved numerical snapshots"
+}

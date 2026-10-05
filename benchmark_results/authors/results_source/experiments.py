@@ -23,8 +23,8 @@ from simulation_generation import BENCHMARKS, DEFAULT_DATA_DIR, load_clean_bench
 
 PAPER_NOISE_RATIOS = tuple(float(k/40) for k in range(41))
 PAPER_TRIALS = 200
-BENCHMARK_NOISE_RATIOS = tuple(float(k/40) for k in (0, 2, 4, 8, 9, 12, 16, 20, 30, 40))
-BENCHMARK_TRIALS = 50
+BENCHMARK_NOISE_RATIOS = (0., 0.2, 0.5, 0.75, 1.)
+BENCHMARK_TRIALS = 100
 PROTOCOL_VERSION = 2
 
 
@@ -123,6 +123,47 @@ def run(args, on_result=None, *, completed=frozenset(), keep_records=True):
     return records
 
 
+def true_equation_lines(spec):
+    """Render the physical equations from the same truth used for scoring."""
+    names = tuple(r"\omega" if name == "omega" else name for name in spec.component_names)
+    axes = "xyz"[:len(spec.shape)-1]+"t"
+    equations = []
+    for component, truth in zip(spec.lhs_components, spec.true_coefficients):
+        rhs = ""
+        for term, coefficient in truth.items():
+            if not coefficient:
+                continue
+            if term.kind == "poly":
+                factors = [name if power == 1 else f"{name}^{{{power}}}"
+                           for name, power in zip(names, term.powers) if power]
+                expression = r"\,".join(factors) or "1"
+            else:
+                argument = names[term.component]
+                if term.frequency != 1:
+                    argument = f"{term.frequency}\\,{argument}"
+                expression = f"\\{term.kind}\\left({argument}\\right)"
+            suffix = "".join(axis*order for axis, order in zip(axes, term.derivative))
+            if suffix:
+                if term.kind != "poly" or sum(term.powers) != 1:
+                    expression = r"\left("+expression+r"\right)"
+                expression += "_{"+suffix+"}"
+            magnitude = abs(coefficient)
+            if magnitude != 1:
+                expression = f"{magnitude:g}\\,{expression}"
+            sign = (" - " if coefficient < 0 else " + ") if rhs else ("-" if coefficient < 0 else "")
+            rhs += sign+expression
+        lhs = names[component]+"_{"+"t"*spec.lhs_time_order+"}"
+        equations.append(lhs+r" &= "+rhs)
+    lines = ["**True equation (physical units):**", "", "$$", r"\begin{aligned}",
+             " \\\\\n".join(equations), r"\end{aligned}", "$$", ""]
+    if spec.name == "NS":
+        lines.extend([r"Here $\omega$ is vorticity and $(u,v)$ is the observed incompressible velocity "
+                      r"($u_x+v_y=0$). Only the vorticity equation is identified; "
+                      r"$-(\omega u)_x-(\omega v)_y=-u\omega_x-v\omega_y$. "
+                      r"The viscosity is $\nu=0.01$.", ""])
+    return lines
+
+
 def format_report(args, records):
     requested = len(args.benchmarks)*len(args.noise_ratios)*args.trials
     complete = len(records) == requested
@@ -163,7 +204,9 @@ def format_report(args, records):
     for name in args.benchmarks:
         spec = BENCHMARKS[name]
         first = next((record for record in records if record["name"] == name), None)
-        lines.extend([f"## {name}", "", f"Data shape: `{spec.shape}`, components `{spec.component_names}`; "
+        lines.extend([f"## {name}", ""])
+        lines.extend(true_equation_lines(spec))
+        lines.extend([f"Data shape: `{spec.shape}`, components `{spec.component_names}`; "
             f"G shape: `{tuple(first['G_shape']) if first else 'pending'}`. "
             f"`m={spec.half_widths}`, `s={spec.strides}`, `p={spec.degrees}`.", "",
             "| Noise ratio | Trials | Exact | TPR | E_inf | E2 | Median seconds |", "| ---: | ---: | ---: | ---: | ---: | ---: | ---: |"])

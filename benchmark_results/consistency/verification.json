@@ -1,0 +1,10 @@
+{
+  "completed_pairs": 1000,
+  "condition_counts": 100,
+  "source_snapshots_match": true,
+  "dataset_checksums_match": true,
+  "all_metrics_recomputed": true,
+  "original_baseline_unchanged": true,
+  "profiles": "physical bump / absolute STLS / 100 thresholds",
+  "tests_passed": 37
+}

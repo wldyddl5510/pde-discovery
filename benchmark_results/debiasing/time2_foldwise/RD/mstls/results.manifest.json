@@ -1,0 +1,3589 @@
+{
+  "version": 2,
+  "profile": "authors",
+  "root_seed": 0,
+  "noise_ratios": [
+    0.0,
+    0.2,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "trials": 100,
+  "benchmarks": {
+    "RD": {
+      "filename": "rxn_diff.mat",
+      "md5": "8c8f0d13e2ab6c9ae3ee13f3a5fb9747",
+      "shape": [
+        256,
+        256,
+        201
+      ],
+      "component_names": [
+        "u",
+        "v"
+      ],
+      "archive_component_order": null,
+      "lhs_components": [
+        0,
+        1
+      ],
+      "lhs_time_order": 1,
+      "half_widths": [
+        13,
+        13,
+        14
+      ],
+      "strides": [
+        13,
+        13,
+        12
+      ],
+      "test_degrees": [
+        13,
+        13,
+        12
+      ],
+      "terms": [
+        {
+          "powers": [
+            0,
+            0
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            1
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            1
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            1
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            1
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            1
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            1
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            1
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            1
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            1
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            2
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            2
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            2
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            2
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            2
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            2
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            2
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            2
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            2
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            3
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            3
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            3
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            3
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            3
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            3
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            3
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            3
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            3
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            4
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            4
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            4
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            4
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            4
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            4
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            4
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            4
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            4
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            5
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            5
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            5
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            5
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            5
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            5
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            5
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            5
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            0,
+            5
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            0
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            0
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            0
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            0
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            0
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            0
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            0
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            0
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            0
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            1
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            1
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            1
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            1
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            1
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            1
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            1
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            1
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            1
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            2
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            2
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            2
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            2
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            2
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            2
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            2
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            2
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            2
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            3
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            3
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            3
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            3
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            3
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            3
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            3
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            3
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            3
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            4
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            4
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            4
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            4
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            4
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            4
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            4
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            4
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1,
+            4
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            0
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            0
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            0
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            0
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            0
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            0
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            0
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            0
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            0
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            1
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            1
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            1
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            1
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            1
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            1
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            1
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            1
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            1
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            2
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            2
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            2
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            2
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            2
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            2
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            2
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            2
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            2
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            3
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            3
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            3
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            3
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            3
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            3
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            3
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            3
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2,
+            3
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            0
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            0
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            0
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            0
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            0
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            0
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            0
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            0
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            0
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            1
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            1
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            1
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            1
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            1
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            1
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            1
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            1
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            1
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            2
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            2
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            2
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            2
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            2
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            2
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            2
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            2
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3,
+            2
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4,
+            0
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4,
+            0
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4,
+            0
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4,
+            0
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4,
+            0
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4,
+            0
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4,
+            0
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4,
+            0
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4,
+            0
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4,
+            1
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4,
+            1
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4,
+            1
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4,
+            1
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4,
+            1
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4,
+            1
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4,
+            1
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4,
+            1
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4,
+            1
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            5,
+            0
+          ],
+          "derivative": [
+            0,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            5,
+            0
+          ],
+          "derivative": [
+            1,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            5,
+            0
+          ],
+          "derivative": [
+            2,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            5,
+            0
+          ],
+          "derivative": [
+            3,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            5,
+            0
+          ],
+          "derivative": [
+            4,
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            5,
+            0
+          ],
+          "derivative": [
+            0,
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            5,
+            0
+          ],
+          "derivative": [
+            0,
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            5,
+            0
+          ],
+          "derivative": [
+            0,
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            5,
+            0
+          ],
+          "derivative": [
+            0,
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        }
+      ],
+      "term_labels": [
+        "1",
+        "v",
+        "D(1, 0, 0)(v)",
+        "D(2, 0, 0)(v)",
+        "D(3, 0, 0)(v)",
+        "D(4, 0, 0)(v)",
+        "D(0, 1, 0)(v)",
+        "D(0, 2, 0)(v)",
+        "D(0, 3, 0)(v)",
+        "D(0, 4, 0)(v)",
+        "v^2",
+        "D(1, 0, 0)(v^2)",
+        "D(2, 0, 0)(v^2)",
+        "D(3, 0, 0)(v^2)",
+        "D(4, 0, 0)(v^2)",
+        "D(0, 1, 0)(v^2)",
+        "D(0, 2, 0)(v^2)",
+        "D(0, 3, 0)(v^2)",
+        "D(0, 4, 0)(v^2)",
+        "v^3",
+        "D(1, 0, 0)(v^3)",
+        "D(2, 0, 0)(v^3)",
+        "D(3, 0, 0)(v^3)",
+        "D(4, 0, 0)(v^3)",
+        "D(0, 1, 0)(v^3)",
+        "D(0, 2, 0)(v^3)",
+        "D(0, 3, 0)(v^3)",
+        "D(0, 4, 0)(v^3)",
+        "v^4",
+        "D(1, 0, 0)(v^4)",
+        "D(2, 0, 0)(v^4)",
+        "D(3, 0, 0)(v^4)",
+        "D(4, 0, 0)(v^4)",
+        "D(0, 1, 0)(v^4)",
+        "D(0, 2, 0)(v^4)",
+        "D(0, 3, 0)(v^4)",
+        "D(0, 4, 0)(v^4)",
+        "v^5",
+        "D(1, 0, 0)(v^5)",
+        "D(2, 0, 0)(v^5)",
+        "D(3, 0, 0)(v^5)",
+        "D(4, 0, 0)(v^5)",
+        "D(0, 1, 0)(v^5)",
+        "D(0, 2, 0)(v^5)",
+        "D(0, 3, 0)(v^5)",
+        "D(0, 4, 0)(v^5)",
+        "u",
+        "D(1, 0, 0)(u)",
+        "D(2, 0, 0)(u)",
+        "D(3, 0, 0)(u)",
+        "D(4, 0, 0)(u)",
+        "D(0, 1, 0)(u)",
+        "D(0, 2, 0)(u)",
+        "D(0, 3, 0)(u)",
+        "D(0, 4, 0)(u)",
+        "u*v",
+        "D(1, 0, 0)(u*v)",
+        "D(2, 0, 0)(u*v)",
+        "D(3, 0, 0)(u*v)",
+        "D(4, 0, 0)(u*v)",
+        "D(0, 1, 0)(u*v)",
+        "D(0, 2, 0)(u*v)",
+        "D(0, 3, 0)(u*v)",
+        "D(0, 4, 0)(u*v)",
+        "u*v^2",
+        "D(1, 0, 0)(u*v^2)",
+        "D(2, 0, 0)(u*v^2)",
+        "D(3, 0, 0)(u*v^2)",
+        "D(4, 0, 0)(u*v^2)",
+        "D(0, 1, 0)(u*v^2)",
+        "D(0, 2, 0)(u*v^2)",
+        "D(0, 3, 0)(u*v^2)",
+        "D(0, 4, 0)(u*v^2)",
+        "u*v^3",
+        "D(1, 0, 0)(u*v^3)",
+        "D(2, 0, 0)(u*v^3)",
+        "D(3, 0, 0)(u*v^3)",
+        "D(4, 0, 0)(u*v^3)",
+        "D(0, 1, 0)(u*v^3)",
+        "D(0, 2, 0)(u*v^3)",
+        "D(0, 3, 0)(u*v^3)",
+        "D(0, 4, 0)(u*v^3)",
+        "u*v^4",
+        "D(1, 0, 0)(u*v^4)",
+        "D(2, 0, 0)(u*v^4)",
+        "D(3, 0, 0)(u*v^4)",
+        "D(4, 0, 0)(u*v^4)",
+        "D(0, 1, 0)(u*v^4)",
+        "D(0, 2, 0)(u*v^4)",
+        "D(0, 3, 0)(u*v^4)",
+        "D(0, 4, 0)(u*v^4)",
+        "u^2",
+        "D(1, 0, 0)(u^2)",
+        "D(2, 0, 0)(u^2)",
+        "D(3, 0, 0)(u^2)",
+        "D(4, 0, 0)(u^2)",
+        "D(0, 1, 0)(u^2)",
+        "D(0, 2, 0)(u^2)",
+        "D(0, 3, 0)(u^2)",
+        "D(0, 4, 0)(u^2)",
+        "u^2*v",
+        "D(1, 0, 0)(u^2*v)",
+        "D(2, 0, 0)(u^2*v)",
+        "D(3, 0, 0)(u^2*v)",
+        "D(4, 0, 0)(u^2*v)",
+        "D(0, 1, 0)(u^2*v)",
+        "D(0, 2, 0)(u^2*v)",
+        "D(0, 3, 0)(u^2*v)",
+        "D(0, 4, 0)(u^2*v)",
+        "u^2*v^2",
+        "D(1, 0, 0)(u^2*v^2)",
+        "D(2, 0, 0)(u^2*v^2)",
+        "D(3, 0, 0)(u^2*v^2)",
+        "D(4, 0, 0)(u^2*v^2)",
+        "D(0, 1, 0)(u^2*v^2)",
+        "D(0, 2, 0)(u^2*v^2)",
+        "D(0, 3, 0)(u^2*v^2)",
+        "D(0, 4, 0)(u^2*v^2)",
+        "u^2*v^3",
+        "D(1, 0, 0)(u^2*v^3)",
+        "D(2, 0, 0)(u^2*v^3)",
+        "D(3, 0, 0)(u^2*v^3)",
+        "D(4, 0, 0)(u^2*v^3)",
+        "D(0, 1, 0)(u^2*v^3)",
+        "D(0, 2, 0)(u^2*v^3)",
+        "D(0, 3, 0)(u^2*v^3)",
+        "D(0, 4, 0)(u^2*v^3)",
+        "u^3",
+        "D(1, 0, 0)(u^3)",
+        "D(2, 0, 0)(u^3)",
+        "D(3, 0, 0)(u^3)",
+        "D(4, 0, 0)(u^3)",
+        "D(0, 1, 0)(u^3)",
+        "D(0, 2, 0)(u^3)",
+        "D(0, 3, 0)(u^3)",
+        "D(0, 4, 0)(u^3)",
+        "u^3*v",
+        "D(1, 0, 0)(u^3*v)",
+        "D(2, 0, 0)(u^3*v)",
+        "D(3, 0, 0)(u^3*v)",
+        "D(4, 0, 0)(u^3*v)",
+        "D(0, 1, 0)(u^3*v)",
+        "D(0, 2, 0)(u^3*v)",
+        "D(0, 3, 0)(u^3*v)",
+        "D(0, 4, 0)(u^3*v)",
+        "u^3*v^2",
+        "D(1, 0, 0)(u^3*v^2)",
+        "D(2, 0, 0)(u^3*v^2)",
+        "D(3, 0, 0)(u^3*v^2)",
+        "D(4, 0, 0)(u^3*v^2)",
+        "D(0, 1, 0)(u^3*v^2)",
+        "D(0, 2, 0)(u^3*v^2)",
+        "D(0, 3, 0)(u^3*v^2)",
+        "D(0, 4, 0)(u^3*v^2)",
+        "u^4",
+        "D(1, 0, 0)(u^4)",
+        "D(2, 0, 0)(u^4)",
+        "D(3, 0, 0)(u^4)",
+        "D(4, 0, 0)(u^4)",
+        "D(0, 1, 0)(u^4)",
+        "D(0, 2, 0)(u^4)",
+        "D(0, 3, 0)(u^4)",
+        "D(0, 4, 0)(u^4)",
+        "u^4*v",
+        "D(1, 0, 0)(u^4*v)",
+        "D(2, 0, 0)(u^4*v)",
+        "D(3, 0, 0)(u^4*v)",
+        "D(4, 0, 0)(u^4*v)",
+        "D(0, 1, 0)(u^4*v)",
+        "D(0, 2, 0)(u^4*v)",
+        "D(0, 3, 0)(u^4*v)",
+        "D(0, 4, 0)(u^4*v)",
+        "u^5",
+        "D(1, 0, 0)(u^5)",
+        "D(2, 0, 0)(u^5)",
+        "D(3, 0, 0)(u^5)",
+        "D(4, 0, 0)(u^5)",
+        "D(0, 1, 0)(u^5)",
+        "D(0, 2, 0)(u^5)",
+        "D(0, 3, 0)(u^5)",
+        "D(0, 4, 0)(u^5)"
+      ],
+      "true_coefficients": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.1
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.1
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1.0,
+          -1.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.1,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.1,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          -1.0,
+          -1.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1.0,
+          -1.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          -1.0,
+          -1.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ]
+    }
+  },
+  "rng": "numpy.random.default_rng / PCG64; trial_seed as stored in experiments.py",
+  "noise": "Independent Gaussian noise per point/component, std = ratio * clean component RMS",
+  "dtype": "float64",
+  "thresholds": [
+    0.0001,
+    0.00012067926406393288,
+    0.00014563484775012445,
+    0.00017575106248547912,
+    0.00021209508879201905,
+    0.0002559547922699536,
+    0.00030888435964774815,
+    0.0003727593720314938,
+    0.0004498432668969444,
+    0.0005428675439323859,
+    0.0006551285568595509,
+    0.0007906043210907702,
+    0.0009540954763499944,
+    0.0011513953993264468,
+    0.0013894954943731374,
+    0.0016768329368110067,
+    0.0020235896477251557,
+    0.0024420530945486497,
+    0.0029470517025518097,
+    0.0035564803062231283,
+    0.004291934260128779,
+    0.005179474679231213,
+    0.0062505519252739694,
+    0.007543120063354615,
+    0.009102981779915217,
+    0.010985411419875584,
+    0.013257113655901081,
+    0.015998587196060572,
+    0.019306977288832496,
+    0.023299518105153717,
+    0.02811768697974228,
+    0.033932217718953266,
+    0.040949150623804234,
+    0.04941713361323833,
+    0.05963623316594643,
+    0.07196856730011514,
+    0.08685113737513521,
+    0.10481131341546852,
+    0.12648552168552957,
+    0.15264179671752318,
+    0.18420699693267145,
+    0.22229964825261933,
+    0.2682695795279725,
+    0.32374575428176433,
+    0.3906939937054613,
+    0.47148663634573895,
+    0.5689866029018293,
+    0.6866488450042998,
+    0.8286427728546842,
+    1.0
+  ],
+  "ls_solver": "SciPy GELSD",
+  "state_scale_rule": "authors",
+  "threshold_units": "physical",
+  "allow_empty": false,
+  "authors_commit": "d9296be4c17c5e0b4df14472f4cd8276a8ae4eed",
+  "python": "3.11.16 (main, Aug 27 2026, 14:37:43) [Clang 20.1.8 ]",
+  "numpy": "2.4.6",
+  "scipy": "1.17.1",
+  "platform": "macOS-15.7.3-arm64-arm-64bit",
+  "source_sha256": {
+    "methods.py": "df2f577d301e8ca82c309d625f31e5cbaff8d553d408ce59e749ddeb1779756f",
+    "simulation_generation.py": "5aaaa3d5832eb39d057c8211bf0b1b0fb2acdb572478f39ba11f40d160986310",
+    "experiments.py": "21cfa09b0b8ee4cdd9fc8e6008fd2a2b546d59ebc64c8c327950a97d7fd4a7c5",
+    "debiasing_study.py": "b71f6a0479fe4dcae00c48115a6c5355a63bddcb14e015dbcede71d2c974f614",
+    "run_suite.py": "b8c28f0f31039d24050f3207f8b1afb77c3420182d22906c96cf9f33852f13de"
+  },
+  "method": "debiased-wsindy",
+  "regression": "mstls",
+  "protocol_id": "2470eca6e0f0c20f742f2a29e589d9a5d2a5d779ff9c0a768575b72e29148599",
+  "workers": 4,
+  "thread_limits": {
+    "VECLIB_MAXIMUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1"
+  },
+  "preprocessing": {
+    "version": 2,
+    "split": "time2",
+    "prior": 0.01,
+    "noise_estimation": "Sixth differences on opposite parity time subgrid only; max across components",
+    "window": "debiasing_study.rule_size, rounded up to odd >= 3, capped by 2m+1 per axis",
+    "boundary": [
+      "wrap",
+      "wrap",
+      "reflect"
+    ],
+    "description": "Section 5 polynomial linearization `f(pilot) + grad(f)(pilot) dot (U-pilot)`, with raw U on the LHS and in linear columns. Split is always time2. For each evaluation time parity, both the noise estimate and the pilot use only the opposite parity. Sixth differences estimate noise on that training time subgrid; the largest estimate across components selects a common box window using the study's volume rule, prior 0.01, rounded up to odd and at least 3. Spatial extension is periodic; time is reflected. All original weak rows, library terms and benchmark regression/scaling settings are retained. Physical coefficients are restored before scoring. No clean error or true support selects the window. This pooled cross-fit benchmark does not assert the single-pilot conditional Gaussian theorem for the pooled regression. Ratios 0, 0.2, 0.5, 0.75, 1; 100 paired trials each.",
+    "pilot_selection": "Training fold only",
+    "time_boundary_rows": "all"
+  }
+}

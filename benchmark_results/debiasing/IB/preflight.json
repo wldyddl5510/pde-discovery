@@ -1,0 +1,45 @@
+{
+  "state": "complete",
+  "checks": [
+    {
+      "noise_ratio": 0.0,
+      "pilot_size": 61,
+      "raw_mstls_and_lasso_match_saved": true,
+      "raw_lhs_and_linear_columns_retained": true,
+      "other_parity_average_verified": true,
+      "own_fold_perturbation_has_no_effect": true
+    },
+    {
+      "noise_ratio": 0.2,
+      "pilot_size": 61,
+      "raw_mstls_and_lasso_match_saved": true,
+      "raw_lhs_and_linear_columns_retained": true,
+      "other_parity_average_verified": true,
+      "own_fold_perturbation_has_no_effect": true
+    },
+    {
+      "noise_ratio": 0.5,
+      "pilot_size": 61,
+      "raw_mstls_and_lasso_match_saved": true,
+      "raw_lhs_and_linear_columns_retained": true,
+      "other_parity_average_verified": true,
+      "own_fold_perturbation_has_no_effect": true
+    },
+    {
+      "noise_ratio": 0.75,
+      "pilot_size": 61,
+      "raw_mstls_and_lasso_match_saved": true,
+      "raw_lhs_and_linear_columns_retained": true,
+      "other_parity_average_verified": true,
+      "own_fold_perturbation_has_no_effect": true
+    },
+    {
+      "noise_ratio": 1.0,
+      "pilot_size": 61,
+      "raw_mstls_and_lasso_match_saved": true,
+      "raw_lhs_and_linear_columns_retained": true,
+      "other_parity_average_verified": true,
+      "own_fold_perturbation_has_no_effect": true
+    }
+  ]
+}

@@ -4,17 +4,12 @@
   "root_seed": 0,
   "noise_ratios": [
     0.0,
-    0.05,
-    0.1,
     0.2,
-    0.225,
-    0.3,
-    0.4,
     0.5,
     0.75,
     1.0
   ],
-  "trials": 50,
+  "trials": 100,
   "benchmarks": {
     "KS": {
       "filename": "KS.mat",
@@ -11458,9 +11453,9 @@
   "source_sha256": {
     "methods.py": "f7bf4e29bd8865682137b440ae76fd14cddb6a3f8b1aadde6638e301b78ed23d",
     "simulation_generation.py": "356307761c40c1caacf94d7ed83f3b6a84471790bf146fc808d8a97c0da6a95f",
-    "experiments.py": "13ca1891582025ff05d2cefd654b53eaacd629b57efa6cd03ca145458860ad39"
+    "experiments.py": "2734bcd56970ee1ed90589c53b0f78db795e6e1b9f31d3f3c1c78889b52382d8"
   },
-  "protocol_id": "7d5d1cc3e2c446ac595617df1cdbdd79da96904486947201db63011bd4fcedd8",
+  "protocol_id": "04e672ebbe6ca627f3c9c0fb6a42a3488ec399dd545952df27dff4c17186a3e5",
   "workers": 3,
   "thread_limits": {
     "VECLIB_MAXIMUM_THREADS": "1",

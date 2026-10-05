@@ -1,0 +1,13 @@
+{
+  "benchmark_results/authors/results.manifest.json": "a194df3b7f52401aeb00e015b5e623bacb0966c4fcff902562590bdc57afa5c9",
+  "benchmark_results/authors/results.status.json": "ffa870ff6c346aa57a8d8c44cea970809797c04f56085a73f0d6461f99e80823",
+  "benchmark_results/authors/results.md": "95ec7115d612c090f6d500701a279c91b7ec2d032f2c2432641c0ac46ff52291",
+  "benchmark_results/authors/results.summary.json": "0d6ad396cbf18c51d41a7525741ab4bf604fcf03795e0b41fbcfba6cf0462133",
+  "benchmark_results/authors/results_trials/IB.jsonl": "ac77bfc0dee75118dfabe1a0c5db7206218b6bca651af4078c2b6d33ce7c0d8d",
+  "benchmark_results/authors/results_trials/KS.jsonl": "09938796ae4ac4294ecd916dd77cfdb16f0e9e4800acde83a203119bd55b0f21",
+  "benchmark_results/authors/results_trials/KdV.jsonl": "80930132cd55b95da15bd545bd01796c0cca3695eb09a05da4c6266d82ed54c6",
+  "benchmark_results/authors/results_trials/NLS.jsonl": "923b03e6b7566a3080f951cc59abe6e601bfdfafd5499fc08a7752a4bc80fb19",
+  "benchmark_results/authors/results_trials/NS.jsonl": "10c60e2d1fbe395c9863ec153a5587f56fe55df12a72e31ac320b644fcbd3678",
+  "benchmark_results/authors/results_trials/RD.jsonl": "9706c9af7c1fd3629933e118af4c620f8fac727b5f91676413d8f0a276c52fab",
+  "benchmark_results/authors/results_trials/SG.jsonl": "45e67cc3b3001423dfe20c613df4555593794e71a856562ba1f7281e46df88c4"
+}

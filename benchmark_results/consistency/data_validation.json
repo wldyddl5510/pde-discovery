@@ -1,0 +1,27 @@
+{
+  "HKS": {
+    "coarse_spatial_points": 512,
+    "fine_spatial_points": 1024,
+    "compared_observation_shape": [
+      256,
+      257
+    ],
+    "relative_difference": 8.120968599263566e-12,
+    "maximum_difference": 1.021485118712917e-10
+  },
+  "VBG": {
+    "coarse_spatial_points": 1024,
+    "fine_spatial_points": 2048,
+    "compared_observation_shape": [
+      512,
+      451
+    ],
+    "relative_difference": 2.633009760265093e-16,
+    "maximum_difference": 3.3306690738754696e-15
+  },
+  "source_sha256": {
+    "methods.py": "3b83b1e22a7361578aa83c63749200a74c8f9208c88f3ba7e17ef7ef555a0cb8",
+    "simulation_generation.py": "382a73d9a127339eb6cd803ef3cb205c2e41ccc9b18440683425b5c5caceffa5",
+    "experiments.py": "ff8ddb5449b2bad97e517ae3702cb186fc481338f8fafe88d80e059b24ca2b99"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "state": "interrupted",
+  "completed": 230,
+  "requested": 1000,
+  "pid": 38252,
+  "updated_at": "2026-10-05T01:30:24.534231+00:00",
+  "error": "Restarted with direct active-set polishing before coordinate descent; original records and source preserved."
+}

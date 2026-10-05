@@ -1,0 +1,18 @@
+{
+  "reports_checked": 5,
+  "report_rows_unchanged": 240,
+  "lasso_penalty_rows_checked": 80,
+  "protected_files_unchanged": 97,
+  "fits": 8000,
+  "state": "complete",
+  "report_regeneration_idempotent": true,
+  "hierarchy": "experiment > noise level > comparison table",
+  "noise_levels_per_experiment": 5,
+  "tables_by_report": {
+    "results.md": 40,
+    "benchmark_results/lasso/original/filtered/results.md": 30,
+    "benchmark_results/lasso/original/raw/results.md": 30,
+    "benchmark_results/lasso/consistency/filtered/results.md": 10,
+    "benchmark_results/lasso/consistency/raw/results.md": 10
+  }
+}

@@ -1,0 +1,722 @@
+[
+  {
+    "name": "IB",
+    "method": "wsindy",
+    "noise_ratio": 0.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.3064636705333786e-16,
+    "solver_seconds": 0.2910343750845641,
+    "solver_messages": 0
+  },
+  {
+    "name": "IB",
+    "method": "wsindy",
+    "noise_ratio": 0.2,
+    "weak_matches_saved_source": true,
+    "kkt_max": 5.820598299479486e-16,
+    "solver_seconds": 0.003564000013284385,
+    "solver_messages": 0
+  },
+  {
+    "name": "IB",
+    "method": "wsindy",
+    "noise_ratio": 0.5,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.1144557814382817e-15,
+    "solver_seconds": 0.0033593750558793545,
+    "solver_messages": 0
+  },
+  {
+    "name": "IB",
+    "method": "wsindy",
+    "noise_ratio": 0.75,
+    "weak_matches_saved_source": null,
+    "kkt_max": 9.218420873403423e-08,
+    "solver_seconds": 0.00448958296328783,
+    "solver_messages": 0
+  },
+  {
+    "name": "IB",
+    "method": "wsindy",
+    "noise_ratio": 1.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 2.5674208312290505e-15,
+    "solver_seconds": 0.004876208957284689,
+    "solver_messages": 1
+  },
+  {
+    "name": "IB",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.0740373267262112e-15,
+    "solver_seconds": 0.004047124995850027,
+    "solver_messages": 0
+  },
+  {
+    "name": "IB",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.2,
+    "weak_matches_saved_source": true,
+    "kkt_max": 5.189296558408433e-16,
+    "solver_seconds": 0.004334916942752898,
+    "solver_messages": 0
+  },
+  {
+    "name": "IB",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.5,
+    "weak_matches_saved_source": null,
+    "kkt_max": 7.986581144616125e-16,
+    "solver_seconds": 0.004053666023537517,
+    "solver_messages": 1
+  },
+  {
+    "name": "IB",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.75,
+    "weak_matches_saved_source": null,
+    "kkt_max": 4.3976271441991896e-15,
+    "solver_seconds": 0.0045487500028684735,
+    "solver_messages": 1
+  },
+  {
+    "name": "IB",
+    "method": "filtered-wsindy",
+    "noise_ratio": 1.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.0098055670290395e-15,
+    "solver_seconds": 0.004229124984703958,
+    "solver_messages": 1
+  },
+  {
+    "name": "KdV",
+    "method": "wsindy",
+    "noise_ratio": 0.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 3.990762190173762e-16,
+    "solver_seconds": 0.004002708941698074,
+    "solver_messages": 0
+  },
+  {
+    "name": "KdV",
+    "method": "wsindy",
+    "noise_ratio": 0.2,
+    "weak_matches_saved_source": true,
+    "kkt_max": 2.8402647739457455e-16,
+    "solver_seconds": 0.004501541960053146,
+    "solver_messages": 0
+  },
+  {
+    "name": "KdV",
+    "method": "wsindy",
+    "noise_ratio": 0.5,
+    "weak_matches_saved_source": null,
+    "kkt_max": 3.964545062982837e-16,
+    "solver_seconds": 0.004486958030611277,
+    "solver_messages": 0
+  },
+  {
+    "name": "KdV",
+    "method": "wsindy",
+    "noise_ratio": 0.75,
+    "weak_matches_saved_source": null,
+    "kkt_max": 6.040479552926319e-16,
+    "solver_seconds": 0.004497750080190599,
+    "solver_messages": 0
+  },
+  {
+    "name": "KdV",
+    "method": "wsindy",
+    "noise_ratio": 1.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 6.879597651109931e-16,
+    "solver_seconds": 0.004999042022973299,
+    "solver_messages": 0
+  },
+  {
+    "name": "KdV",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 3.990762190173762e-16,
+    "solver_seconds": 0.003973375074565411,
+    "solver_messages": 0
+  },
+  {
+    "name": "KdV",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.2,
+    "weak_matches_saved_source": true,
+    "kkt_max": 7.808885983753858e-15,
+    "solver_seconds": 0.006932042073458433,
+    "solver_messages": 1
+  },
+  {
+    "name": "KdV",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.5,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.2269415958617241e-14,
+    "solver_seconds": 0.007117250002920628,
+    "solver_messages": 1
+  },
+  {
+    "name": "KdV",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.75,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.2437847677755968e-14,
+    "solver_seconds": 0.006609834032133222,
+    "solver_messages": 1
+  },
+  {
+    "name": "KdV",
+    "method": "filtered-wsindy",
+    "noise_ratio": 1.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.173216518299777e-14,
+    "solver_seconds": 0.007089791004545987,
+    "solver_messages": 1
+  },
+  {
+    "name": "KS",
+    "method": "wsindy",
+    "noise_ratio": 0.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 2.7483096258045663e-15,
+    "solver_seconds": 0.005134457955136895,
+    "solver_messages": 1
+  },
+  {
+    "name": "KS",
+    "method": "wsindy",
+    "noise_ratio": 0.2,
+    "weak_matches_saved_source": true,
+    "kkt_max": 6.452335289785481e-15,
+    "solver_seconds": 0.006445458973757923,
+    "solver_messages": 1
+  },
+  {
+    "name": "KS",
+    "method": "wsindy",
+    "noise_ratio": 0.5,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.5150892196079154e-08,
+    "solver_seconds": 0.006068042013794184,
+    "solver_messages": 0
+  },
+  {
+    "name": "KS",
+    "method": "wsindy",
+    "noise_ratio": 0.75,
+    "weak_matches_saved_source": null,
+    "kkt_max": 3.885953600440346e-15,
+    "solver_seconds": 0.0068533329758793116,
+    "solver_messages": 0
+  },
+  {
+    "name": "KS",
+    "method": "wsindy",
+    "noise_ratio": 1.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 8.206184870137392e-15,
+    "solver_seconds": 0.007188042043708265,
+    "solver_messages": 0
+  },
+  {
+    "name": "KS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 2.7483096258045663e-15,
+    "solver_seconds": 0.005067999940365553,
+    "solver_messages": 1
+  },
+  {
+    "name": "KS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.2,
+    "weak_matches_saved_source": true,
+    "kkt_max": 2.602495007947939e-14,
+    "solver_seconds": 0.008027790929190814,
+    "solver_messages": 1
+  },
+  {
+    "name": "KS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.5,
+    "weak_matches_saved_source": null,
+    "kkt_max": 7.97919422876287e-15,
+    "solver_seconds": 0.007670499966479838,
+    "solver_messages": 1
+  },
+  {
+    "name": "KS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.75,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.4186175334968112e-14,
+    "solver_seconds": 0.007760582957416773,
+    "solver_messages": 1
+  },
+  {
+    "name": "KS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 1.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 4.871549450478814e-15,
+    "solver_seconds": 0.007516541983932257,
+    "solver_messages": 0
+  },
+  {
+    "name": "NLS",
+    "method": "wsindy",
+    "noise_ratio": 0.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 5.711238701694042e-16,
+    "solver_seconds": 0.028679125010967255,
+    "solver_messages": 0
+  },
+  {
+    "name": "NLS",
+    "method": "wsindy",
+    "noise_ratio": 0.2,
+    "weak_matches_saved_source": true,
+    "kkt_max": 2.5051537362146926e-15,
+    "solver_seconds": 0.04100045806262642,
+    "solver_messages": 1
+  },
+  {
+    "name": "NLS",
+    "method": "wsindy",
+    "noise_ratio": 0.5,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.9277934125065944e-15,
+    "solver_seconds": 0.04793545906431973,
+    "solver_messages": 2
+  },
+  {
+    "name": "NLS",
+    "method": "wsindy",
+    "noise_ratio": 0.75,
+    "weak_matches_saved_source": null,
+    "kkt_max": 6.8505954700040285e-15,
+    "solver_seconds": 0.054941958049312234,
+    "solver_messages": 1
+  },
+  {
+    "name": "NLS",
+    "method": "wsindy",
+    "noise_ratio": 1.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 7.682051476640494e-15,
+    "solver_seconds": 0.05767883395310491,
+    "solver_messages": 2
+  },
+  {
+    "name": "NLS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 5.711238701694042e-16,
+    "solver_seconds": 0.02820791699923575,
+    "solver_messages": 0
+  },
+  {
+    "name": "NLS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.2,
+    "weak_matches_saved_source": true,
+    "kkt_max": 1.411220992759701e-15,
+    "solver_seconds": 0.041422874899581075,
+    "solver_messages": 0
+  },
+  {
+    "name": "NLS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.5,
+    "weak_matches_saved_source": null,
+    "kkt_max": 6.647820557051046e-08,
+    "solver_seconds": 0.05715462495572865,
+    "solver_messages": 1
+  },
+  {
+    "name": "NLS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.75,
+    "weak_matches_saved_source": null,
+    "kkt_max": 4.003444299631241e-15,
+    "solver_seconds": 0.05747687502298504,
+    "solver_messages": 2
+  },
+  {
+    "name": "NLS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 1.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 3.917020467678788e-08,
+    "solver_seconds": 0.059750499902293086,
+    "solver_messages": 1
+  },
+  {
+    "name": "RD",
+    "method": "wsindy",
+    "noise_ratio": 0.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 9.036168279790571e-16,
+    "solver_seconds": 0.06603987491689622,
+    "solver_messages": 0
+  },
+  {
+    "name": "RD",
+    "method": "wsindy",
+    "noise_ratio": 0.2,
+    "weak_matches_saved_source": true,
+    "kkt_max": 2.4279128299620995e-15,
+    "solver_seconds": 0.09217874996829778,
+    "solver_messages": 1
+  },
+  {
+    "name": "RD",
+    "method": "wsindy",
+    "noise_ratio": 0.5,
+    "weak_matches_saved_source": null,
+    "kkt_max": 4.5325510272195285e-15,
+    "solver_seconds": 0.10092704195994884,
+    "solver_messages": 2
+  },
+  {
+    "name": "RD",
+    "method": "wsindy",
+    "noise_ratio": 0.75,
+    "weak_matches_saved_source": null,
+    "kkt_max": 3.689546205782333e-15,
+    "solver_seconds": 0.11066058301366866,
+    "solver_messages": 2
+  },
+  {
+    "name": "RD",
+    "method": "wsindy",
+    "noise_ratio": 1.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 4.1458537931770105e-15,
+    "solver_seconds": 0.10137037502136081,
+    "solver_messages": 0
+  },
+  {
+    "name": "RD",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 9.036168279790571e-16,
+    "solver_seconds": 0.06871729204431176,
+    "solver_messages": 0
+  },
+  {
+    "name": "RD",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.2,
+    "weak_matches_saved_source": true,
+    "kkt_max": 3.600946317941254e-15,
+    "solver_seconds": 0.08917220798321068,
+    "solver_messages": 1
+  },
+  {
+    "name": "RD",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.5,
+    "weak_matches_saved_source": null,
+    "kkt_max": 6.008325606537626e-15,
+    "solver_seconds": 0.10218645795248449,
+    "solver_messages": 2
+  },
+  {
+    "name": "RD",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.75,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.9855173991529764e-15,
+    "solver_seconds": 0.0940399169921875,
+    "solver_messages": 1
+  },
+  {
+    "name": "RD",
+    "method": "filtered-wsindy",
+    "noise_ratio": 1.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 6.079565232773848e-15,
+    "solver_seconds": 0.10660883400123566,
+    "solver_messages": 2
+  },
+  {
+    "name": "NS",
+    "method": "wsindy",
+    "noise_ratio": 0.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 2.2239867061158637e-16,
+    "solver_seconds": 0.009451874997466803,
+    "solver_messages": 0
+  },
+  {
+    "name": "NS",
+    "method": "wsindy",
+    "noise_ratio": 0.2,
+    "weak_matches_saved_source": true,
+    "kkt_max": 8.451619546059185e-16,
+    "solver_seconds": 0.0103452920448035,
+    "solver_messages": 0
+  },
+  {
+    "name": "NS",
+    "method": "wsindy",
+    "noise_ratio": 0.5,
+    "weak_matches_saved_source": null,
+    "kkt_max": 5.572544709230309e-16,
+    "solver_seconds": 0.010624874965287745,
+    "solver_messages": 0
+  },
+  {
+    "name": "NS",
+    "method": "wsindy",
+    "noise_ratio": 0.75,
+    "weak_matches_saved_source": null,
+    "kkt_max": 8.576008745078681e-16,
+    "solver_seconds": 0.011466791969724,
+    "solver_messages": 1
+  },
+  {
+    "name": "NS",
+    "method": "wsindy",
+    "noise_ratio": 1.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 8.941796399645288e-16,
+    "solver_seconds": 0.011520917061716318,
+    "solver_messages": 0
+  },
+  {
+    "name": "NS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 2.2239867061158637e-16,
+    "solver_seconds": 0.009683958953246474,
+    "solver_messages": 0
+  },
+  {
+    "name": "NS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.2,
+    "weak_matches_saved_source": true,
+    "kkt_max": 7.273936296872673e-16,
+    "solver_seconds": 0.010334209073334932,
+    "solver_messages": 0
+  },
+  {
+    "name": "NS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.5,
+    "weak_matches_saved_source": null,
+    "kkt_max": 6.418497751907376e-15,
+    "solver_seconds": 0.011827333946712315,
+    "solver_messages": 1
+  },
+  {
+    "name": "NS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.75,
+    "weak_matches_saved_source": null,
+    "kkt_max": 9.566215167162005e-16,
+    "solver_seconds": 0.011148041929118335,
+    "solver_messages": 0
+  },
+  {
+    "name": "NS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 1.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 7.768583125519325e-16,
+    "solver_seconds": 0.011635125032626092,
+    "solver_messages": 0
+  },
+  {
+    "name": "HKS",
+    "method": "wsindy",
+    "noise_ratio": 0.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.0260081278828524e-15,
+    "solver_seconds": 0.005296291899867356,
+    "solver_messages": 0
+  },
+  {
+    "name": "HKS",
+    "method": "wsindy",
+    "noise_ratio": 0.2,
+    "weak_matches_saved_source": true,
+    "kkt_max": 1.2787700572641445e-15,
+    "solver_seconds": 0.007653375039808452,
+    "solver_messages": 1
+  },
+  {
+    "name": "HKS",
+    "method": "wsindy",
+    "noise_ratio": 0.5,
+    "weak_matches_saved_source": null,
+    "kkt_max": 4.163490528119153e-08,
+    "solver_seconds": 0.009808792034164071,
+    "solver_messages": 1
+  },
+  {
+    "name": "HKS",
+    "method": "wsindy",
+    "noise_ratio": 0.75,
+    "weak_matches_saved_source": null,
+    "kkt_max": 2.7132471939406416e-15,
+    "solver_seconds": 0.008675790973939002,
+    "solver_messages": 1
+  },
+  {
+    "name": "HKS",
+    "method": "wsindy",
+    "noise_ratio": 1.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 7.955096077960455e-15,
+    "solver_seconds": 0.01185108395293355,
+    "solver_messages": 1
+  },
+  {
+    "name": "HKS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.0260081278828524e-15,
+    "solver_seconds": 0.005267333006486297,
+    "solver_messages": 0
+  },
+  {
+    "name": "HKS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.2,
+    "weak_matches_saved_source": true,
+    "kkt_max": 3.5035156337674425e-14,
+    "solver_seconds": 0.012090374948456883,
+    "solver_messages": 1
+  },
+  {
+    "name": "HKS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.5,
+    "weak_matches_saved_source": null,
+    "kkt_max": 7.856869151065719e-15,
+    "solver_seconds": 0.012263583019375801,
+    "solver_messages": 1
+  },
+  {
+    "name": "HKS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.75,
+    "weak_matches_saved_source": null,
+    "kkt_max": 8.32611880991753e-15,
+    "solver_seconds": 0.010719707934185863,
+    "solver_messages": 1
+  },
+  {
+    "name": "HKS",
+    "method": "filtered-wsindy",
+    "noise_ratio": 1.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 2.164504283928298e-14,
+    "solver_seconds": 0.013318542041815817,
+    "solver_messages": 1
+  },
+  {
+    "name": "VBG",
+    "method": "wsindy",
+    "noise_ratio": 0.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.1889509245283803e-15,
+    "solver_seconds": 0.004030708922073245,
+    "solver_messages": 0
+  },
+  {
+    "name": "VBG",
+    "method": "wsindy",
+    "noise_ratio": 0.2,
+    "weak_matches_saved_source": true,
+    "kkt_max": 4.447471321046033e-15,
+    "solver_seconds": 0.004688041051849723,
+    "solver_messages": 1
+  },
+  {
+    "name": "VBG",
+    "method": "wsindy",
+    "noise_ratio": 0.5,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.3806172607585874e-15,
+    "solver_seconds": 0.005954999942332506,
+    "solver_messages": 1
+  },
+  {
+    "name": "VBG",
+    "method": "wsindy",
+    "noise_ratio": 0.75,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.598529929590625e-15,
+    "solver_seconds": 0.005670041078701615,
+    "solver_messages": 1
+  },
+  {
+    "name": "VBG",
+    "method": "wsindy",
+    "noise_ratio": 1.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.381608168997075e-15,
+    "solver_seconds": 0.005238333018496633,
+    "solver_messages": 1
+  },
+  {
+    "name": "VBG",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.1889509245283803e-15,
+    "solver_seconds": 0.004145707935094833,
+    "solver_messages": 0
+  },
+  {
+    "name": "VBG",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.2,
+    "weak_matches_saved_source": true,
+    "kkt_max": 1.600051219274343e-15,
+    "solver_seconds": 0.005004959064535797,
+    "solver_messages": 1
+  },
+  {
+    "name": "VBG",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.5,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.0760324722174864e-15,
+    "solver_seconds": 0.0049732920015230775,
+    "solver_messages": 1
+  },
+  {
+    "name": "VBG",
+    "method": "filtered-wsindy",
+    "noise_ratio": 0.75,
+    "weak_matches_saved_source": null,
+    "kkt_max": 4.9220737922742915e-15,
+    "solver_seconds": 0.006043459055945277,
+    "solver_messages": 1
+  },
+  {
+    "name": "VBG",
+    "method": "filtered-wsindy",
+    "noise_ratio": 1.0,
+    "weak_matches_saved_source": null,
+    "kkt_max": 1.869980476121645e-15,
+    "solver_seconds": 0.006071625044569373,
+    "solver_messages": 1
+  }
+]

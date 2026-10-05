@@ -1,0 +1,24 @@
+{
+  "state": "complete",
+  "completed_benchmarks": [
+    "IB",
+    "KdV",
+    "KS",
+    "NLS",
+    "HKS",
+    "VBG",
+    "NS",
+    "RD"
+  ],
+  "requested_benchmarks": [
+    "IB",
+    "KdV",
+    "KS",
+    "NLS",
+    "HKS",
+    "VBG",
+    "NS",
+    "RD"
+  ],
+  "completed_fits": 8000
+}

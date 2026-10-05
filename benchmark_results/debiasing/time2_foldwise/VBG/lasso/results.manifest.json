@@ -1,0 +1,1048 @@
+{
+  "version": 2,
+  "profile": "consistency",
+  "root_seed": 0,
+  "noise_ratios": [
+    0.0,
+    0.2,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "trials": 100,
+  "benchmarks": {
+    "VBG": {
+      "filename": "viscous_burgers_growth.npz",
+      "md5": "1c7466d7eb1fc7d5f82c137c6e97045a",
+      "shape": [
+        512,
+        451
+      ],
+      "component_names": [
+        "u"
+      ],
+      "archive_component_order": null,
+      "lhs_components": [
+        0
+      ],
+      "lhs_time_order": 1,
+      "half_widths": [
+        64,
+        56
+      ],
+      "strides": [
+        12,
+        11
+      ],
+      "test_degrees": [
+        0,
+        0
+      ],
+      "terms": [
+        {
+          "powers": [
+            0
+          ],
+          "derivative": [
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1
+          ],
+          "derivative": [
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1
+          ],
+          "derivative": [
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1
+          ],
+          "derivative": [
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1
+          ],
+          "derivative": [
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1
+          ],
+          "derivative": [
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1
+          ],
+          "derivative": [
+            5,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            1
+          ],
+          "derivative": [
+            6,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2
+          ],
+          "derivative": [
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2
+          ],
+          "derivative": [
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2
+          ],
+          "derivative": [
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2
+          ],
+          "derivative": [
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2
+          ],
+          "derivative": [
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2
+          ],
+          "derivative": [
+            5,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            2
+          ],
+          "derivative": [
+            6,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3
+          ],
+          "derivative": [
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3
+          ],
+          "derivative": [
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3
+          ],
+          "derivative": [
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3
+          ],
+          "derivative": [
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3
+          ],
+          "derivative": [
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3
+          ],
+          "derivative": [
+            5,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            3
+          ],
+          "derivative": [
+            6,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4
+          ],
+          "derivative": [
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4
+          ],
+          "derivative": [
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4
+          ],
+          "derivative": [
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4
+          ],
+          "derivative": [
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4
+          ],
+          "derivative": [
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4
+          ],
+          "derivative": [
+            5,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            4
+          ],
+          "derivative": [
+            6,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            5
+          ],
+          "derivative": [
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            5
+          ],
+          "derivative": [
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            5
+          ],
+          "derivative": [
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            5
+          ],
+          "derivative": [
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            5
+          ],
+          "derivative": [
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            5
+          ],
+          "derivative": [
+            5,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            5
+          ],
+          "derivative": [
+            6,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            6
+          ],
+          "derivative": [
+            0,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            6
+          ],
+          "derivative": [
+            1,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            6
+          ],
+          "derivative": [
+            2,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            6
+          ],
+          "derivative": [
+            3,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            6
+          ],
+          "derivative": [
+            4,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            6
+          ],
+          "derivative": [
+            5,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        },
+        {
+          "powers": [
+            6
+          ],
+          "derivative": [
+            6,
+            0
+          ],
+          "kind": "poly",
+          "component": 0,
+          "frequency": 1
+        }
+      ],
+      "term_labels": [
+        "1",
+        "u",
+        "D(1, 0)(u)",
+        "D(2, 0)(u)",
+        "D(3, 0)(u)",
+        "D(4, 0)(u)",
+        "D(5, 0)(u)",
+        "D(6, 0)(u)",
+        "u^2",
+        "D(1, 0)(u^2)",
+        "D(2, 0)(u^2)",
+        "D(3, 0)(u^2)",
+        "D(4, 0)(u^2)",
+        "D(5, 0)(u^2)",
+        "D(6, 0)(u^2)",
+        "u^3",
+        "D(1, 0)(u^3)",
+        "D(2, 0)(u^3)",
+        "D(3, 0)(u^3)",
+        "D(4, 0)(u^3)",
+        "D(5, 0)(u^3)",
+        "D(6, 0)(u^3)",
+        "u^4",
+        "D(1, 0)(u^4)",
+        "D(2, 0)(u^4)",
+        "D(3, 0)(u^4)",
+        "D(4, 0)(u^4)",
+        "D(5, 0)(u^4)",
+        "D(6, 0)(u^4)",
+        "u^5",
+        "D(1, 0)(u^5)",
+        "D(2, 0)(u^5)",
+        "D(3, 0)(u^5)",
+        "D(4, 0)(u^5)",
+        "D(5, 0)(u^5)",
+        "D(6, 0)(u^5)",
+        "u^6",
+        "D(1, 0)(u^6)",
+        "D(2, 0)(u^6)",
+        "D(3, 0)(u^6)",
+        "D(4, 0)(u^6)",
+        "D(5, 0)(u^6)",
+        "D(6, 0)(u^6)"
+      ],
+      "true_coefficients": [
+        [
+          1.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.01
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          2.0
+        ],
+        [
+          -0.5
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          -1.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ],
+        [
+          0.0
+        ]
+      ],
+      "suite": "consistency",
+      "noise_rule": "centered_std",
+      "test_function": "bump",
+      "generation": {
+        "arrays_sha256": "11dca14404f2c11454d925b8e6cc83fe5b0b6efe0a9b1c32cfd959c29cdb2fea",
+        "config": {
+          "base_steps_per_saved_interval": 4,
+          "boundary_condition": "periodic",
+          "fine_shape": [
+            2048,
+            1801
+          ],
+          "initial_condition": "2*sin(pi*x)",
+          "name": "VBG",
+          "noise_rule": "Gaussian std = noise ratio * clean centered sample std (ddof=1)",
+          "observation_shape": [
+            512,
+            451
+          ],
+          "provenance": "Declared resimulation, not the authors' original trajectory",
+          "retained_steps_per_saved_interval": 8,
+          "solver": "Fourier spectral ETDRK4; nonlinearities evaluated on a 2x padded grid",
+          "source": "https://arxiv.org/html/2211.16000v1",
+          "subsample": [
+            4,
+            4
+          ],
+          "temporal_refinement_relative_tolerance": 2e-05,
+          "time_interval": [
+            0.0,
+            1.5
+          ],
+          "version": 1,
+          "x_interval": [
+            -1.0,
+            1.0
+          ]
+        },
+        "temporal_refinement_max_difference": 1.250818448816915e-08,
+        "temporal_refinement_relative_difference": 2.5683162394515616e-10
+      }
+    }
+  },
+  "rng": "numpy.random.default_rng / PCG64; trial_seed as stored in experiments.py",
+  "noise": "Independent Gaussian per point; std = ratio * centered clean sample std (ddof=1)",
+  "dtype": "float64",
+  "thresholds": [
+    0.0001,
+    0.00010974987654930556,
+    0.00012045035402587823,
+    0.00013219411484660288,
+    0.000145082877849594,
+    0.00015922827933410923,
+    0.0001747528400007683,
+    0.00019179102616724886,
+    0.00021049041445120198,
+    0.00023101297000831605,
+    0.00025353644939701115,
+    0.0002782559402207126,
+    0.0003053855508833416,
+    0.0003351602650938841,
+    0.0003678379771828634,
+    0.0004037017258596554,
+    0.0004430621457583882,
+    0.00048626015800653534,
+    0.0005336699231206312,
+    0.0005857020818056667,
+    0.0006428073117284319,
+    0.0007054802310718645,
+    0.000774263682681127,
+    0.0008497534359086447,
+    0.0009326033468832199,
+    0.001023531021899027,
+    0.0011233240329780276,
+    0.0012328467394420659,
+    0.0013530477745798076,
+    0.001484968262254465,
+    0.0016297508346206436,
+    0.001788649529057435,
+    0.0019630406500402726,
+    0.0021544346900318843,
+    0.002364489412645407,
+    0.002595024211399737,
+    0.002848035868435802,
+    0.0031257158496882354,
+    0.003430469286314919,
+    0.0037649358067924714,
+    0.0041320124001153384,
+    0.004534878508128582,
+    0.004977023564332114,
+    0.0054622772176843425,
+    0.005994842503189409,
+    0.006579332246575682,
+    0.007220809018385471,
+    0.007924828983539177,
+    0.008697490026177835,
+    0.009545484566618348,
+    0.010476157527896652,
+    0.011497569953977368,
+    0.012618568830660211,
+    0.013848863713938732,
+    0.015199110829529346,
+    0.016681005372000592,
+    0.018307382802953697,
+    0.02009233002565048,
+    0.022051307399030457,
+    0.024201282647943835,
+    0.026560877829466867,
+    0.02915053062825179,
+    0.03199267137797385,
+    0.03511191734215135,
+    0.03853528593710531,
+    0.04229242874389499,
+    0.04641588833612782,
+    0.0509413801481638,
+    0.055908101825122285,
+    0.061359072734131756,
+    0.06734150657750829,
+    0.07390722033525783,
+    0.08111308307896872,
+    0.08902150854450393,
+    0.09770099572992257,
+    0.10722672220103242,
+    0.1176811952434999,
+    0.1291549665014884,
+    0.14174741629268062,
+    0.15556761439304723,
+    0.1707352647470692,
+    0.1873817422860385,
+    0.20565123083486536,
+    0.22570197196339215,
+    0.24770763559917114,
+    0.2718588242732943,
+    0.298364724028334,
+    0.3274549162877732,
+    0.3593813663804629,
+    0.394420605943766,
+    0.43287612810830617,
+    0.4750810162102798,
+    0.521400828799969,
+    0.572236765935022,
+    0.6280291441834259,
+    0.6892612104349702,
+    0.7564633275546291,
+    0.8302175681319752,
+    0.9111627561154896,
+    1.0
+  ],
+  "ls_solver": "SciPy GELSD",
+  "state_scale_rule": "none",
+  "threshold_units": "ratio of alpha_max",
+  "allow_empty": true,
+  "python": "3.11.16 (main, Aug 27 2026, 14:37:43) [Clang 20.1.8 ]",
+  "numpy": "2.4.6",
+  "scipy": "1.17.1",
+  "platform": "macOS-15.7.3-arm64-arm-64bit",
+  "source_sha256": {
+    "methods.py": "df2f577d301e8ca82c309d625f31e5cbaff8d553d408ce59e749ddeb1779756f",
+    "simulation_generation.py": "5aaaa3d5832eb39d057c8211bf0b1b0fb2acdb572478f39ba11f40d160986310",
+    "experiments.py": "21cfa09b0b8ee4cdd9fc8e6008fd2a2b546d59ebc64c8c327950a97d7fd4a7c5",
+    "debiasing_study.py": "b71f6a0479fe4dcae00c48115a6c5355a63bddcb14e015dbcede71d2c974f614",
+    "run_suite.py": "b8c28f0f31039d24050f3207f8b1afb77c3420182d22906c96cf9f33852f13de"
+  },
+  "method": "debiased-wsindy",
+  "regression": "lasso",
+  "selection_rule": "LASSO penalized path / WSINDy projection-support loss",
+  "test_function": "C-infinity bump",
+  "source_paper": "arXiv:2211.16000v1",
+  "provenance": "Declared resimulation; IC/BC/grids/strides selected here",
+  "lasso": {
+    "objective": "||Z theta-y||_2^2/(2*K) + alpha*||theta||_1 per equation",
+    "normalization": "Z=G/column_RMS, y=b/response_RMS; no centering, no extra intercept",
+    "alpha": "ratio*max(abs(Z.T@y))/K per equation",
+    "alpha_ratios": [
+      0.0001,
+      0.00010974987654930556,
+      0.00012045035402587823,
+      0.00013219411484660288,
+      0.000145082877849594,
+      0.00015922827933410923,
+      0.0001747528400007683,
+      0.00019179102616724886,
+      0.00021049041445120198,
+      0.00023101297000831605,
+      0.00025353644939701115,
+      0.0002782559402207126,
+      0.0003053855508833416,
+      0.0003351602650938841,
+      0.0003678379771828634,
+      0.0004037017258596554,
+      0.0004430621457583882,
+      0.00048626015800653534,
+      0.0005336699231206312,
+      0.0005857020818056667,
+      0.0006428073117284319,
+      0.0007054802310718645,
+      0.000774263682681127,
+      0.0008497534359086447,
+      0.0009326033468832199,
+      0.001023531021899027,
+      0.0011233240329780276,
+      0.0012328467394420659,
+      0.0013530477745798076,
+      0.001484968262254465,
+      0.0016297508346206436,
+      0.001788649529057435,
+      0.0019630406500402726,
+      0.0021544346900318843,
+      0.002364489412645407,
+      0.002595024211399737,
+      0.002848035868435802,
+      0.0031257158496882354,
+      0.003430469286314919,
+      0.0037649358067924714,
+      0.0041320124001153384,
+      0.004534878508128582,
+      0.004977023564332114,
+      0.0054622772176843425,
+      0.005994842503189409,
+      0.006579332246575682,
+      0.007220809018385471,
+      0.007924828983539177,
+      0.008697490026177835,
+      0.009545484566618348,
+      0.010476157527896652,
+      0.011497569953977368,
+      0.012618568830660211,
+      0.013848863713938732,
+      0.015199110829529346,
+      0.016681005372000592,
+      0.018307382802953697,
+      0.02009233002565048,
+      0.022051307399030457,
+      0.024201282647943835,
+      0.026560877829466867,
+      0.02915053062825179,
+      0.03199267137797385,
+      0.03511191734215135,
+      0.03853528593710531,
+      0.04229242874389499,
+      0.04641588833612782,
+      0.0509413801481638,
+      0.055908101825122285,
+      0.061359072734131756,
+      0.06734150657750829,
+      0.07390722033525783,
+      0.08111308307896872,
+      0.08902150854450393,
+      0.09770099572992257,
+      0.10722672220103242,
+      0.1176811952434999,
+      0.1291549665014884,
+      0.14174741629268062,
+      0.15556761439304723,
+      0.1707352647470692,
+      0.1873817422860385,
+      0.20565123083486536,
+      0.22570197196339215,
+      0.24770763559917114,
+      0.2718588242732943,
+      0.298364724028334,
+      0.3274549162877732,
+      0.3593813663804629,
+      0.394420605943766,
+      0.43287612810830617,
+      0.4750810162102798,
+      0.521400828799969,
+      0.572236765935022,
+      0.6280291441834259,
+      0.6892612104349702,
+      0.7564633275546291,
+      0.8302175681319752,
+      0.9111627561154896,
+      1.0
+    ],
+    "selection": "matrix-2-norm OLS projection difference / OLS projection norm + nonzero fraction; smallest ratio breaks ties",
+    "coefficients": "Penalized coefficients, restored to physical units; no OLS support refit",
+    "support": "Exact solver zeros; no coefficient cutoff",
+    "solver": "scikit-learn LARS Gram path; primal active-set polishing first, then coordinate descent fallback and final polishing if KKT error exceeds 1e-7*alpha_max",
+    "active_set": {
+      "initial_max_steps": 200,
+      "final_max_steps": 2000,
+      "kkt_tolerance": 1e-09
+    },
+    "validation": "Every candidate must satisfy max coordinate KKT violation / alpha_max <= 1e-7",
+    "coordinate_descent": {
+      "tol": 1e-09,
+      "max_iter": 200000
+    },
+    "inputs": "Weak G and b only; no true coefficients, support or clean observations"
+  },
+  "sklearn": "1.7.2",
+  "protocol_id": "24854205883354940c11d07356ed16844eb5462e1e18deb912cfe120d53b007c",
+  "workers": 4,
+  "thread_limits": {
+    "VECLIB_MAXIMUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1"
+  },
+  "preprocessing": {
+    "version": 2,
+    "split": "time2",
+    "prior": 0.01,
+    "noise_estimation": "Sixth differences on opposite parity time subgrid only; max across components",
+    "window": "debiasing_study.rule_size, rounded up to odd >= 3, capped by 2m+1 per axis",
+    "boundary": [
+      "wrap",
+      "reflect"
+    ],
+    "description": "Section 5 polynomial linearization `f(pilot) + grad(f)(pilot) dot (U-pilot)`, with raw U on the LHS and in linear columns. Split is always time2. For each evaluation time parity, both the noise estimate and the pilot use only the opposite parity. Sixth differences estimate noise on that training time subgrid; the largest estimate across components selects a common box window using the study's volume rule, prior 0.01, rounded up to odd and at least 3. Spatial extension is periodic; time is reflected. All original weak rows, library terms and benchmark regression/scaling settings are retained. Physical coefficients are restored before scoring. No clean error or true support selects the window. This pooled cross-fit benchmark does not assert the single-pilot conditional Gaussian theorem for the pooled regression. Ratios 0, 0.2, 0.5, 0.75, 1; 100 paired trials each.",
+    "pilot_selection": "Training fold only",
+    "time_boundary_rows": "all"
+  }
+}

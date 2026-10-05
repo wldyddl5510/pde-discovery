@@ -1,0 +1,17 @@
+{
+  "active_benchmarks": [
+    "IB",
+    "KdV",
+    "KS",
+    "NLS",
+    "RD",
+    "NS",
+    "HKS",
+    "VBG"
+  ],
+  "excluded": "SG: sine/cosine dictionary",
+  "retained_preflight_checks": 80,
+  "selection": "User-requested polynomial dictionary scope; independent of recovery results",
+  "seed_indices_preserved": true,
+  "tests_passed": 44
+}
