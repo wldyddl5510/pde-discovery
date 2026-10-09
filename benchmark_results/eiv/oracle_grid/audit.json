@@ -1,0 +1,221 @@
+{
+  "all_candidate_traces_checked": true,
+  "all_eligible_coefficients_and_constraints_recomputed": true,
+  "cases": [
+    {
+      "all_checks_passed": true,
+      "candidates": 144,
+      "eligible": 0,
+      "name": "HKS",
+      "noise_ratio": 0.2,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 144,
+      "eligible": 0,
+      "name": "HKS",
+      "noise_ratio": 0.5,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 144,
+      "eligible": 0,
+      "name": "HKS",
+      "noise_ratio": 0.75,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 144,
+      "eligible": 0,
+      "name": "HKS",
+      "noise_ratio": 0.0,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 144,
+      "eligible": 0,
+      "name": "HKS",
+      "noise_ratio": 1.0,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 144,
+      "eligible": 0,
+      "name": "IB",
+      "noise_ratio": 0.2,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 144,
+      "eligible": 0,
+      "name": "IB",
+      "noise_ratio": 0.5,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 144,
+      "eligible": 0,
+      "name": "IB",
+      "noise_ratio": 0.75,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 144,
+      "eligible": 0,
+      "name": "IB",
+      "noise_ratio": 0.0,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 144,
+      "eligible": 0,
+      "name": "IB",
+      "noise_ratio": 1.0,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 184,
+      "eligible": 112,
+      "name": "KS",
+      "noise_ratio": 0.2,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 184,
+      "eligible": 134,
+      "name": "KS",
+      "noise_ratio": 0.5,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 184,
+      "eligible": 125,
+      "name": "KS",
+      "noise_ratio": 0.75,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 189,
+      "eligible": 62,
+      "name": "KS",
+      "noise_ratio": 0.0,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 184,
+      "eligible": 127,
+      "name": "KS",
+      "noise_ratio": 1.0,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 189,
+      "eligible": 8,
+      "name": "KdV",
+      "noise_ratio": 0.2,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 144,
+      "eligible": 0,
+      "name": "KdV",
+      "noise_ratio": 0.5,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 189,
+      "eligible": 19,
+      "name": "KdV",
+      "noise_ratio": 0.75,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 189,
+      "eligible": 15,
+      "name": "KdV",
+      "noise_ratio": 0.0,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 187,
+      "eligible": 9,
+      "name": "KdV",
+      "noise_ratio": 1.0,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 144,
+      "eligible": 0,
+      "name": "VBG",
+      "noise_ratio": 0.2,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 144,
+      "eligible": 0,
+      "name": "VBG",
+      "noise_ratio": 0.5,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 144,
+      "eligible": 0,
+      "name": "VBG",
+      "noise_ratio": 0.75,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 144,
+      "eligible": 0,
+      "name": "VBG",
+      "noise_ratio": 0.0,
+      "trial": 0
+    },
+    {
+      "all_checks_passed": true,
+      "candidates": 144,
+      "eligible": 0,
+      "name": "VBG",
+      "noise_ratio": 1.0,
+      "trial": 0
+    }
+  ],
+  "cases_checked": 25,
+  "focused_tests_passed": 27,
+  "matched_formula_study_observations_and_systems": true,
+  "protected_files_unchanged": 640,
+  "rebuilt_physical_systems": true,
+  "source_checks": {
+    "eiv_study.py": true,
+    "experiments.py": true,
+    "methods.py": true,
+    "requirements.txt": true,
+    "run_oracle_grid.py": true,
+    "run_sanity.py": true,
+    "simulation_generation.py": true
+  },
+  "state": "passed"
+}

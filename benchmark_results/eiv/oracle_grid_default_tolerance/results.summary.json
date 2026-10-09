@@ -1,0 +1,19 @@
+{
+  "candidate_count": 4200,
+  "cases_with_eligible_candidates": 14,
+  "completed": 25,
+  "eligible_count": 1496,
+  "exact_support_selected": 0,
+  "requested": 25,
+  "state": "complete",
+  "status_counts": {
+    "AlmostPrimalInfeasible": 1,
+    "AlmostSolved": 1442,
+    "InsufficientProgress": 704,
+    "MaxIterations": 1,
+    "NumericalError": 171,
+    "PrimalInfeasible": 36,
+    "Solved": 1845
+  },
+  "updated_at": "2026-10-05T19:16:16.144533+00:00"
+}
