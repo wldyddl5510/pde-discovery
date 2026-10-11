@@ -19,7 +19,7 @@ import subprocess
 from time import perf_counter
 import numpy as np
 from pdes import PDES, load, metrics, observe, trial_seed
-from wsindy import EIV, CrossFitPilot, LassoPath, MSTLS, MovingAverage, StrongSystem, WeakSystem, estimate, fit
+from wsindy import BestSubset, CrossFitPilot, LassoPath, MSTLS, MovingAverage, StrongSystem, WeakSystem, estimate, fit
 
 
 @dataclass(frozen=True)
@@ -40,7 +40,8 @@ METHODS = {
     "filtered-lasso": Method(MovingAverage(), "uhat", "uhat", "lasso"),
     "debiased-lasso": Method(CrossFitPilot(), "uhat", "U", LassoPath(loss="debiased")),
     "eiv": Method(regression="eiv"),
-    "eiv-gurobi": Method(regression=EIV(solver="gurobi")),
+    # sparsity r per PDE (per equation); here the true sparsity, as in the PDE experiments of arXiv:2206.00176
+    "best-subset": Method(regression=BestSubset(r={name: tuple(len(eq) for eq in pde.truth) for name, pde in PDES.items()})),
 }
 
 

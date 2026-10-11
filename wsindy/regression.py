@@ -7,6 +7,7 @@ MSTLS and LassoPath take a loss that supplies the design and the least-squares s
 """
 from __future__ import annotations
 from dataclasses import dataclass, field
+from functools import lru_cache
 import warnings
 import numpy as np
 from scipy import linalg
@@ -221,6 +222,107 @@ class LassoPath:
             rank=int(rank), alpha_max=alpha_max.tolist(), selected_alpha=(ratios[best]*alpha_max).tolist(),
             column_rms=column_rms.tolist(), response_rms=response_rms.tolist(),
             normalized_coefficients=normalized[best].tolist(), kkt_errors=kkt.tolist(), solver_warnings=messages))
+
+
+@lru_cache(maxsize=None)
+def gurobi_env():
+    """One Gurobi license check per process, without the banner."""
+    import gurobipy as gp
+    env = gp.Env(empty=True)
+    env.setParam("OutputFlag", 0)
+    env.start()
+    return env
+
+
+@dataclass
+class BestSubset:
+    """Best subset selection by mixed-integer optimization (Bertsimas, King & Mazumder, arXiv:1507.03133;
+    MIOSR, Bertsimas & Gurnee, arXiv:2206.00176): min ||Y - X W||_F^2 with at most r nonzero
+    coefficients in total (int r) or r[e] in equation e (tuple). Supports are SOS-1 encoded as in
+    MIOSR; the warm start is the least-squares fit restricted to its r largest entries; the chosen
+    support is refitted by the loss.
+
+    r may also map PDE names to bounds. r=None: for each equation, r = 1, 2, ... until the
+    selection loss of Eq. 4.4 (as in MSTLS) increases; the previous r is kept.
+    """
+    r: int | tuple[int, ...] | dict | None = None
+    loss: object = "ls"
+    time_limit: float = 30.   # seconds per MIO; on timeout the incumbent is used and its gap reported
+    mip_gap: float = 1e-4
+
+    @staticmethod
+    def _refit(loss, G, b, support):
+        coefficients = np.zeros(support.shape)
+        for e in range(b.shape[1]):
+            if support[:, e].any():
+                coefficients[support[:, e], e] = loss.solve(G[:, support[:, e]], b[:, e])[0]
+        return coefficients
+
+    def _solve(self, loss, G, b, r):
+        import gurobipy as gp
+        J, E = G.shape[1], b.shape[1]
+        if not np.isscalar(r) and len(r) != E:
+            raise ValueError("Give one sparsity bound per equation.")
+        largest = np.abs(loss.solve(G, b)[0])
+        keep = np.zeros(largest.shape, dtype=bool)
+        if np.isscalar(r):
+            keep.flat[np.argsort(largest, axis=None)[::-1][:r]] = True
+        else:
+            for e, r_e in enumerate(r):
+                keep[np.argsort(largest[:, e])[::-1][:r_e], e] = True
+        start = self._refit(loss, G, b, keep)
+        # ||b - G W||^2 = ||Q^T b - R W||^2 + const for G = QR: conditioning of G rather than G^T G.
+        Q, R = np.linalg.qr(G)
+        with gp.Model(env=gurobi_env()) as model:
+            model.Params.Threads, model.Params.TimeLimit, model.Params.MIPGap = 1, self.time_limit, self.mip_gap
+            W = model.addMVar((J, E), lb=-gp.GRB.INFINITY)
+            zero = model.addMVar((J, E), vtype=gp.GRB.BINARY)   # 1 forces the coefficient to zero
+            residual = model.addMVar((J, E), lb=-gp.GRB.INFINITY)
+            for w, z in zip(W.tolist(), zero.tolist()):
+                for pair in zip(w, z):
+                    model.addSOS(gp.GRB.SOS_TYPE1, list(pair))
+            model.addConstr(residual == Q.T@b-R@W)
+            if np.isscalar(r):
+                model.addConstr(zero.sum() >= J*E-r)
+            else:
+                for e, r_e in enumerate(r):
+                    model.addConstr(zero[:, e].sum() >= J-r_e)
+            model.setObjective((residual*residual).sum(), gp.GRB.MINIMIZE)
+            W.Start, zero.Start = start, (start == 0).astype(float)
+            model.optimize()
+            if not model.SolCount:
+                raise RuntimeError(f"Gurobi found no solution (status {model.Status}).")
+            support, gap = zero.X < .5, float(model.MIPGap)
+            info = dict(optimal=model.Status == gp.GRB.OPTIMAL, mip_gap=gap if np.isfinite(gap) else None,
+                        solve_seconds=float(model.Runtime))
+        return self._refit(loss, G, b, support), info
+
+    def regress(self, system):
+        loss = _loss(self.loss)
+        G, b = loss.matrices(system)
+        r = self.r[system.pde.name] if isinstance(self.r, dict) else self.r
+        if r is not None:
+            W, info = self._solve(loss, G, b, r)
+            return Fit((W*system.scales).T, dict(info, r=r if np.isscalar(r) else list(r)))
+        W = np.zeros((G.shape[1], b.shape[1]))
+        info = dict(r=[], losses=[], optimal=[], mip_gap=[], solve_seconds=0.)
+        for e in range(b.shape[1]):   # least squares separates by equation
+            y = b[:, [e]]
+            least_squares = loss.solve(G, y)[0]
+            projected = linalg.norm(G@least_squares)
+            losses, chosen = [], None
+            for r in range(1, G.shape[1]+1):
+                w, step = self._solve(loss, G, y, r)
+                info["solve_seconds"] += step["solve_seconds"]
+                losses.append(float((linalg.norm(G@(w-least_squares))/projected if projected else 0)
+                                    + np.count_nonzero(w)/w.size))
+                if len(losses) > 1 and losses[-1] > losses[-2]:
+                    break
+                chosen = (r, w, step)
+            r, W[:, [e]], step = chosen
+            info["r"].append(r); info["losses"].append(losses)
+            info["optimal"].append(step["optimal"]); info["mip_gap"].append(step["mip_gap"])
+        return Fit((W*system.scales).T, info)
 
 
 @dataclass

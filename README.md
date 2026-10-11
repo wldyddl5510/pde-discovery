@@ -2,7 +2,7 @@
 
 Weak SINDy for PDEs ([Messenger & Bortz, arXiv:2007.02848v3](https://arxiv.org/abs/2007.02848)) with
 pluggable dictionaries, state estimators and regressions. Dictionaries, optimizers and smoothers can
-be taken directly from [PySINDy](https://pysindy.readthedocs.io) (pinned to 2.1.0); the convolutional
+be taken directly from [PySINDy](https://pysindy.readthedocs.io) (pinned to 2.1.0); MIO and conic programs use gurobipy (license required); the convolutional
 weak form, the authors' scaling and MSTLS are implemented here.
 
 ```
@@ -10,8 +10,9 @@ wsindy/
   dictionary.py     Block(functions=<PySINDy library>, alphas) -> terms D^alpha f(U)
   testfunctions.py  Tests(m, p, s, shape); unset fields are chosen from data
   system.py         WeakSystem(pde, U, grid, X=..., Y=...); StrongSystem: pointwise SINDy (PySINDy derivatives)
-  regression.py     MSTLS, LassoPath (loss "ls" | "debiased"), FromAPI(any PySINDy/sklearn optimizer)
-  eiv.py            EIV conic estimator (Section 6, scalar polynomial dictionaries); solver Clarabel or Gurobi
+  regression.py     MSTLS, LassoPath, BestSubset (MIO, gurobipy) with loss "ls" | "debiased";
+                    FromAPI(any PySINDy/sklearn optimizer)
+  eiv.py            EIV conic estimator (Section 6, scalar polynomial dictionaries), solved with Gurobi
   estimators.py     uhat: MovingAverage, CrossFitPilot, FromPySINDy, FromCallable
 pdes.py             benchmark PDEs (data, dictionary, truth, test functions), noise, seeds, metrics
 run.py              trials -> benchmark_results/runs/<method>/<PDE>.jsonl
@@ -38,7 +39,7 @@ A method is a state estimator `uhat`, the state used on each side of the weak sy
 ```python
 import pysindy as ps
 from pdes import PDES, load, observe, trial_seed
-from wsindy import WeakSystem, estimate, fit, MSTLS, LassoPath, FromPySINDy
+from wsindy import WeakSystem, estimate, fit, MSTLS, LassoPath, BestSubset, FromPySINDy
 
 pde = PDES["KS"]
 clean, grid = load("KS")                                   # U: (*space, time, n_components)
@@ -52,6 +53,8 @@ system = WeakSystem(pde, U, grid, X=uhat, Y=U)             # choose the state fo
 W = fit(system, "mstls").coef                              # (n_equations, n_terms), physical units
 W = fit(system, MSTLS(loss="debiased")).coef               # linearize monomials at the X-side state
 W = fit(system, LassoPath()).coef
+W = fit(system, BestSubset(r=3)).coef                     # MIO best subset: <= r = 3 nonzeros (tuple: per equation)
+W = fit(system, BestSubset()).coef                        # r = 1, 2, ... per equation until the Eq. 4.4 loss rises
 W = fit(system, ps.SR3(reg_weight_lam=0.1, regularizer="L1")).coef            # any PySINDy/sklearn optimizer
 ```
 
@@ -65,8 +68,9 @@ New regressions implement `regress(system) -> Fit`; new losses implement `matric
 | `filtered` | moving average | uhat | uhat | MSTLS |
 | `debiased` | time-parity cross-fit pilot | uhat | U | MSTLS, debiased loss |
 | `lasso`, `filtered-lasso`, `debiased-lasso` | as above | | | LASSO path |
-| `eiv`, `eiv-gurobi` | — | U | U | EIV (Clarabel / gurobipy, needs a license) |
+| `eiv` | — | U | U | EIV |
 | `sindy` | — | U | U | MSTLS on the pointwise (strong-form) system `StrongSystem` |
+| `best-subset` | — | U | U | `BestSubset` with sparsity r per PDE from the table in `run.py` (default: true r per equation) |
 
 A dictionary is a tuple of blocks; any PySINDy feature library works, polynomial or not:
 

@@ -15,7 +15,7 @@ from pathlib import Path
 import numpy as np
 from pdes import PDES
 
-ORDER = ("wsindy", "filtered", "debiased", "lasso", "filtered-lasso", "debiased-lasso", "eiv")
+ORDER = ("wsindy", "filtered", "debiased", "lasso", "filtered-lasso", "debiased-lasso", "best-subset", "eiv")
 LEGACY = {("wsindy", "lasso"): "lasso", ("filtered-wsindy", "mstls"): "filtered",
           ("filtered-wsindy", "lasso"): "filtered-lasso", ("debiased-wsindy", "mstls"): "debiased",
           ("debiased-wsindy", "lasso"): "debiased-lasso"}
@@ -47,11 +47,14 @@ def _cell(values):
     return f"{np.mean(values):.6g} ± {np.std(values, ddof=1):.3g}" if len(values) > 1 else f"{values[0]:.6g}"
 
 
-def _penalty(pde, group):
-    if "selected_alpha" not in group[0]:
-        return "—"
-    alphas = np.array([r["selected_alpha"] for r in group])
-    return ", ".join(f"{lhs.rsplit('_', 1)[0]}={np.mean(alphas[:, e]):.4g}" for e, lhs in enumerate(pde.lhs))
+def _selection(pde, group):
+    """Mean LASSO penalty, or best-subset sparsity r, per equation."""
+    names = [lhs.rsplit("_", 1)[0] for lhs in pde.lhs]
+    for key, symbol in (("selected_alpha", "lambda"), ("r", "r")):
+        if key in group[0]:
+            values = np.array([np.broadcast_to(r[key], len(names)) for r in group], dtype=float)
+            return ", ".join(f"{symbol}_{n}={np.mean(values[:, e]):.4g}" for e, n in enumerate(names))
+    return "—"
 
 
 def tables(runs):
@@ -71,7 +74,7 @@ def tables(runs):
                   f"{len(terms)} dictionary terms; test functions `{pde.tests}`.", ""]
         for ratio in sorted({r for r, _ in seeds}):
             lines += [f"### Noise ratio {ratio:g}", "",
-                      "| Method | Trials | Exact | TPR | E_inf | E2 | Mean seconds | Mean lambda |",
+                      "| Method | Trials | Exact | TPR | E_inf | E2 | Mean seconds | Mean lambda / r |",
                       "| :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |"]
             for method in methods:
                 group = [r for k, r in sorted(runs[(name, method)].items()) if k[0] == ratio]
@@ -81,10 +84,10 @@ def tables(runs):
                 runtime = float(np.mean([r["runtime"] for r in group]))
                 lines.append(f"| {method} | {len(group)} | {100*exact:.1f}% | "
                              + " | ".join(_cell([r[f] for r in group]) for f in ("tpr", "e_inf", "e2"))
-                             + f" | {runtime:.3g} | {_penalty(pde, group)} |")
+                             + f" | {runtime:.3g} | {_selection(pde, group)} |")
                 rows.append(dict(name=name, noise_ratio=ratio, method=method, trials=len(group), exact_rate=exact,
                                  **{f"{f}_mean": float(np.mean([r[f] for r in group])) for f in ("tpr", "e_inf", "e2")},
-                                 runtime_mean=runtime, lambda_mean=_penalty(pde, group)))
+                                 runtime_mean=runtime, selection=_selection(pde, group)))
             lines.append("")
     return lines, rows
 
@@ -114,13 +117,15 @@ def main():
     parser.add_argument("paths", nargs="+", type=Path)
     parser.add_argument("-o", "--output", type=Path, default=Path("results.md"))
     parser.add_argument("--plot", type=Path)
+    parser.add_argument("--methods", nargs="+", help="Only these methods (default: all found)")
     args = parser.parse_args()
-    lines, rows = tables(read(args.paths))
+    runs = {key: run for key, run in read(args.paths).items() if not args.methods or key[1] in args.methods}
+    lines, rows = tables(runs)
     header = ["# WSINDy benchmark", "",
               "Methods are defined in `run.py` (METHODS). TPR = TP/(TP+FN+FP); Exact = exact-support rate; "
               "E_inf = max relative error over true terms; E2 = relative coefficient L2 error; mean ± sample SD "
               "over trials, failures included. Seconds cover estimation, weak system and regression. "
-              "Mean lambda: mean selected LASSO penalty per equation.", ""]
+              "Mean lambda / r: mean selected LASSO penalty, or best-subset sparsity bound r, per equation.", ""]
     args.output.write_text("\n".join(header+lines))
     with args.output.with_suffix(".summary.csv").open("w", newline="") as sink:
         writer = csv.DictWriter(sink, fieldnames=list(rows[0]))

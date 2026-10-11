@@ -4,7 +4,7 @@ import numpy as np
 import pysindy as ps
 from scipy.optimize import approx_fprime
 from pdes import AUTHORS, PDE, PDES, Profile, metrics, observe, trial_seed
-from wsindy import (Block, CrossFitPilot, EIV, FromAPI, FromCallable, FromPySINDy, MSTLS, StrongSystem, Tests, WeakSystem,
+from wsindy import (BestSubset, Block, CrossFitPilot, EIV, FromAPI, FromCallable, FromPySINDy, MSTLS, StrongSystem, Tests, WeakSystem,
                     estimate, fit, spatial)
 from wsindy.eiv import conic
 from wsindy.testfunctions import changepoint_supports, poly_weights
@@ -110,6 +110,7 @@ class Regression(unittest.TestCase):
         self.assertTrue(np.any(kept.coef))
 
     def test_eiv(self):
+        require_gurobi(self)
         X = np.eye(3)
         beta, t, status, success, _ = conic(X, np.array([1e-3, 0, 0]), mu=0., tau=1., lam=1.)
         self.assertEqual(status, "AnalyticZero")
@@ -122,18 +123,53 @@ class Regression(unittest.TestCase):
         self.assertEqual(result.coef.shape, (1, 7))
 
 
-    def test_eiv_gurobi_matches_clarabel(self):
-        try:
-            import gurobipy
-            gurobipy.Model().dispose()
-        except Exception:
-            self.skipTest("gurobipy or a Gurobi license is unavailable")
-        rng = np.random.default_rng(0)
-        X = rng.normal(size=(200, 10))
-        y = X@np.where(rng.random(10) < .3, 1., 0.)+.05*rng.normal(size=200)
-        a, b = (conic(X, y, .05, .1*np.abs(y).max(), 1., solver=s) for s in ("clarabel", "gurobi"))
-        self.assertTrue(a[3] and b[3])
-        np.testing.assert_allclose(np.abs(a[0]).sum()+a[1], np.abs(b[0]).sum()+b[1], rtol=1e-6)
+    def test_best_subset_is_exact(self):
+        require_gurobi(self)
+        from itertools import combinations
+        from types import SimpleNamespace
+        rng = np.random.default_rng(3)
+        X = rng.normal(size=(80, 9))
+        X[:, 1] = X[:, 0]+.1*rng.normal(size=80)   # correlated columns defeat greedy selection
+        Y = np.column_stack([X@np.r_[1., -1., 0, 0, .5, 0, 0, 0, 0], X@np.r_[0, 0, 2., 0, 0, 0, 0, -1., 0]])
+        Y += .3*rng.normal(size=Y.shape)
+        system = SimpleNamespace(X=X, Y=Y, scales=np.ones((9, 2)))
+        def best(y, r):   # exhaustive search
+            return min(np.linalg.norm(y-X[:, list(c)]@np.linalg.lstsq(X[:, list(c)], y, rcond=None)[0])**2
+                       for c in combinations(range(9), r))
+        for r in ((3, 2), (2, 2)):
+            W = BestSubset(r=r).regress(system).coef
+            self.assertEqual([int(np.count_nonzero(w)) for w in W], list(r))
+            for e in range(2):
+                self.assertAlmostEqual(np.linalg.norm(Y[:, e]-X@W[e])**2, best(Y[:, e], r[e]), places=8)
+        independent = rng.normal(size=(80, 9))   # r = 1, 2, ... per equation until the loss increases
+        signal = np.column_stack([independent@np.r_[1., -1., 0, 0, .5, 0, 0, 0, 0],
+                                  independent@np.r_[0, 0, 2., 0, 0, 0, 0, -1., 0]])
+        greedy = BestSubset().regress(SimpleNamespace(X=independent, Y=signal+.01*rng.normal(size=(80, 2)),
+                                                      scales=np.ones((9, 2))))
+        self.assertEqual(greedy.info["r"], [3, 2])
+        self.assertTrue(all(path[-1] > path[-2] for path in greedy.info["losses"]))
+        fit_total = BestSubset(r=5).regress(system)
+        self.assertTrue(fit_total.info["optimal"])
+        self.assertEqual(np.count_nonzero(fit_total.coef), 5)
+        total = min(best(Y[:, 0], a)+best(Y[:, 1], 5-a) for a in range(1, 5))
+        self.assertAlmostEqual(np.linalg.norm(Y-X@fit_total.coef.T)**2, total, places=8)
+
+    def test_best_subset_recovers_advection(self):
+        require_gurobi(self)
+        U, grid = advection()
+        system = WeakSystem(ADVECTION, U, grid)
+        for regression in (BestSubset(r=1), BestSubset()):
+            coef = fit(system, regression).coef
+            self.assertTrue(metrics(coef, ADVECTION.truth_matrix(system.terms))["exact_support"])
+            np.testing.assert_allclose(coef[coef != 0], -1, rtol=1e-6)
+
+
+def require_gurobi(test):
+    try:
+        from wsindy.regression import gurobi_env
+        gurobi_env()
+    except Exception:
+        test.skipTest("gurobipy or a Gurobi license is unavailable")
 
 
 class Estimators(unittest.TestCase):

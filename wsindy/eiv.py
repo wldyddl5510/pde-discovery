@@ -11,78 +11,40 @@ from functools import lru_cache
 from math import comb, factorial
 import numpy as np
 from numpy.polynomial import Chebyshev, Polynomial
-from scipy import linalg, sparse
-from .regression import Fit
+from scipy import linalg
+from .regression import Fit, gurobi_env
 
 
-def _clarabel(objective, A, rhs, linear, columns, tolerance):
-    import clarabel
-    settings = clarabel.DefaultSettings()
-    settings.verbose, settings.max_iter, settings.max_threads, settings.equilibrate_enable = False, 200, 1, False
-    settings.tol_gap_abs = settings.tol_gap_rel = settings.tol_feas = tolerance
-    settings.tol_infeas_abs = settings.tol_infeas_rel = tolerance
-    solution = clarabel.DefaultSolver(sparse.csc_matrix((len(objective),)*2), objective, A, rhs,
-        [clarabel.NonnegativeConeT(linear), clarabel.SecondOrderConeT(columns+1)], settings).solve()
-    gap = abs(float(solution.obj_val)-float(solution.obj_val_dual))
-    gap_ok = gap <= 10*tolerance*max(1., abs(float(solution.obj_val)), abs(float(solution.obj_val_dual)))
-    return np.asarray(solution.x), str(solution.status) == "Solved" and gap_ok, dict(
-        status=str(solution.status), duality_gap=gap, iterations=int(solution.iterations))
-
-
-_GUROBI_ENV = None
-
-
-def _gurobi(objective, A, rhs, linear, columns, tolerance):
-    """Linear rows as A v <= rhs; the cone block as ||beta||_2^2 <= t^2 with t >= 0 (Gurobi SOC)."""
-    global _GUROBI_ENV
+def conic(X, y, mu, tau, lam, tolerance=1e-8):
+    """Second-order cone program solved by Gurobi; beta = 0 is certified when tau >= ||y||_inf.
+    Returns (beta, t, status, success, diagnostics)."""
     import gurobipy as gp
-    if _GUROBI_ENV is None:   # one license check per process, without the banner
-        _GUROBI_ENV = gp.Env(empty=True)
-        _GUROBI_ENV.setParam("OutputFlag", 0)
-        _GUROBI_ENV.start()
-    with gp.Model(env=_GUROBI_ENV) as model:
+    columns = X.shape[1]
+    y_inf = float(np.max(np.abs(y)))
+    if tau >= y_inf:
+        return np.zeros(columns), 0., "AnalyticZero", True, dict(residual_inf=y_inf)
+    with gp.Model(env=gurobi_env()) as model:
         model.Params.Threads = 1
         model.Params.FeasibilityTol = model.Params.OptimalityTol = max(tolerance, 1e-9)
         model.Params.BarQCPConvTol = tolerance
-        lower = np.full(2*columns+1, -gp.GRB.INFINITY)
-        lower[columns] = 0.
-        v = model.addMVar(2*columns+1, lb=lower)
-        model.addConstr(A[:linear]@v <= rhs[:linear])
-        model.addConstr(v[:columns]@v[:columns] <= v[columns:columns+1]@v[columns:columns+1])
-        model.setObjective(objective@v, gp.GRB.MINIMIZE)
+        beta, z, t = model.addMVar(columns, lb=-gp.GRB.INFINITY), model.addMVar(columns), model.addVar()
+        model.addConstr(beta <= z)
+        model.addConstr(-beta <= z)                       # z >= |beta|
+        model.addConstr(y-X@beta <= tau+mu*t)
+        model.addConstr(X@beta-y <= tau+mu*t)             # ||y - X beta||_inf <= tau + mu t
+        model.addConstr(beta@beta <= t*t)                 # ||beta||_2 <= t (second-order cone)
+        model.setObjective(z.sum()+lam*t, gp.GRB.MINIMIZE)
         model.optimize()
         solved = model.Status == gp.GRB.OPTIMAL
-        return (np.asarray(v.X) if model.SolCount else np.full(2*columns+1, np.nan), solved,
-                dict(status="Solved" if solved else f"GurobiStatus{model.Status}", iterations=int(model.BarIterCount)))
-
-
-def conic(X, y, mu, tau, lam, tolerance=1e-8, solver="clarabel"):
-    """Returns (beta, t, status, success, diagnostics); beta = 0 is certified when tau >= ||y||_inf."""
-    rows, columns = X.shape
-    y_inf = float(linalg.norm(y, ord=np.inf))
-    if tau >= y_inf:
-        return np.zeros(columns), 0., "AnalyticZero", True, dict(residual_inf=y_inf)
-    eye, zero_p = sparse.eye(columns, format="csc"), sparse.csc_matrix((columns, 1))
-    zero_rp, neg_mu = sparse.csc_matrix((rows, columns)), sparse.csc_matrix(np.full((rows, 1), -mu))
-    # Variables [beta, t, z] with z >= |beta|.
-    A = sparse.vstack([sparse.hstack([eye, zero_p, -eye]), sparse.hstack([-eye, zero_p, -eye]),
-                       sparse.hstack([-sparse.csc_matrix(X), neg_mu, zero_rp]),
-                       sparse.hstack([sparse.csc_matrix(X), neg_mu, zero_rp]),
-                       sparse.csc_matrix(([-1.], ([0], [columns])), shape=(1, 2*columns+1)),
-                       sparse.hstack([-eye, zero_p, sparse.csc_matrix((columns, columns))])], format="csc")
-    rhs = np.concatenate([np.zeros(2*columns), tau-y, tau+y, np.zeros(columns+1)])
-    objective = np.concatenate([np.zeros(columns), [lam], np.ones(columns)])
-    solve = {"clarabel": _clarabel, "gurobi": _gurobi}[solver]
-    x, solved, diagnostics = solve(objective, A, rhs, 2*columns+2*rows, columns, tolerance)
-    beta, t = x[:columns].astype(float), float(x[columns])
+        beta, t = (beta.X, t.X) if model.SolCount else (np.full(columns, np.nan), np.nan)
+        status, iterations = "Solved" if solved else f"GurobiStatus{model.Status}", int(model.BarIterCount)
     residual = float(np.max(np.abs(y-X@beta)))   # NaN when the solver failed
     residual_violation = max(0., residual-tau-mu*t)
     cone_violation = max(0., float(np.linalg.norm(beta))-t)
     success = (solved and np.all(np.isfinite(beta)) and np.isfinite(t)
                and residual_violation <= 10*tolerance*max(1., y_inf, residual, abs(tau+mu*t))
-               and cone_violation <= 10*tolerance*max(1., float(linalg.norm(beta)), abs(t)))
-    status = diagnostics.pop("status")
-    return beta, t, status, bool(success), dict(diagnostics, solver=solver, residual_inf=residual,
+               and cone_violation <= 10*tolerance*max(1., float(np.linalg.norm(beta)), abs(t)))
+    return beta, float(t), status, bool(success), dict(iterations=iterations, residual_inf=residual,
         residual_violation=residual_violation, cone_violation=cone_violation)
 
 
@@ -166,7 +128,6 @@ class EIV:
     M: float | None = None
     M1: float | None = None
     tolerance: float = 1e-8
-    solver: str = "clarabel"         # or "gurobi" (gurobipy with a license)
     support_tolerance: float = 1e-7  # diagnostic support mask; coefficients are not thresholded
 
     def regress(self, system):
@@ -180,7 +141,7 @@ class EIV:
         calibration = tolerances(system, u, X.shape[0], variance, self.delta, self.M, self.M1)
         mu = calibration["mu"] if self.mu is None else self.mu
         tau = calibration["tau"] if self.tau is None else self.tau
-        beta, t, status, success, diagnostics = conic(X, y, mu, tau, self.lam, self.tolerance, self.solver)
+        beta, t, status, success, diagnostics = conic(X, y, mu, tau, self.lam, self.tolerance)
         return Fit(beta[None, :], dict(calibration, mu=mu, tau=tau, variance=variance, t=t, status=status,
                                        success=success, support=[(np.abs(beta) > self.support_tolerance).tolist()],
                                        **diagnostics))
