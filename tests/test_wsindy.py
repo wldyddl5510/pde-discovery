@@ -1,225 +1,170 @@
-"""Independent checks of the paper's weak integrals and sparse selection."""
 import unittest
+from dataclasses import replace
 import numpy as np
-from methods import (LibraryTerm, build_wsindy_system, lasso, mstls, polynomial_library,
-                     bump_function_weights, select_test_supports, test_function_weights, wsindy)
+import pysindy as ps
+from scipy.optimize import approx_fprime
+from pdes import AUTHORS, PDE, PDES, Profile, metrics, observe, trial_seed
+from wsindy import (Block, CrossFitPilot, EIV, FromAPI, FromCallable, FromPySINDy, MSTLS, StrongSystem, Tests, WeakSystem,
+                    estimate, fit, spatial)
+from wsindy.eiv import conic
+from wsindy.testfunctions import changepoint_supports, poly_weights
 
 
-class WeakIntegralTests(unittest.TestCase):
-    def test_bump_derivatives_and_eighth_order_integral_against_quadrature(self):
-        table = bump_function_weights(200, 8)
-        r = np.linspace(-1, 1, 401)[1:-1]
-        d, phi = 1-r*r, np.exp(-9/(1-r*r))
-        np.testing.assert_allclose(table[1, 1:-1], -18*r*phi/d**2, atol=1e-15)
-        np.testing.assert_allclose(table[2, 1:-1], phi*((-18*r/d**2)**2-18/d**2-72*r*r/d**3), atol=1e-14)
-        self.assertTrue(np.all(table[:, (0, -1)] == 0))
-        x, t = np.linspace(-1, 1, 513), np.linspace(0, 1, 129)
-        u = np.exp(1.3*x[:, None]+.7*t)
-        terms = tuple(LibraryTerm((1,), (q, 0)) for q in range(9))
-        system = build_wsindy_system(u, (x,), t, library_terms=terms,
-            half_widths=(200, 50), strides=(20, 10), rescale=False, test_function="bump")
-        nodes, weights = np.polynomial.legendre.leggauss(128)
-        integrals = []
-        for grid, rate, m, centers in zip((x, t), (1.3, .7), (200, 50), system.centers):
-            radius = m*(grid[1]-grid[0])
-            integrals.append(radius*(np.exp(-9/(1-nodes**2))*np.exp(rate*(centers[:, None]+radius*nodes)))@weights)
-        reference = (integrals[0][:, None]*integrals[1]).ravel()
-        np.testing.assert_allclose(system.G, np.column_stack([1.3**q*reference for q in range(9)]), rtol=2e-5, atol=1e-13)
-        np.testing.assert_allclose(system.b[:, 0], .7*reference, rtol=1e-10, atol=1e-15)
-
-    def test_all_columns_against_continuous_quadrature(self):
-        x, t = np.linspace(-1, 1, 161), np.linspace(0, 0.6, 121)
-        a, b, c, d = 0.8, -0.6, 0.7, -0.4
-        u, v = np.exp(a*x[:, None]+c*t), np.exp(b*x[:, None]+d*t)
-        terms = polynomial_library(2, 1, 3, 6)
-        m, s, p = (70, 50), (8, 8), (16, 8)
-        system = build_wsindy_system((u, v), (x,), t, library_terms=terms,
-            lhs_components=(0, 1), half_widths=m, strides=s, test_degrees=p, rescale=False)
-        nodes, weights = np.polynomial.legendre.leggauss(64)
-        def integral(xrate, trate):
-            values = []
-            for grid, rate, radius_points, stride, degree in zip((x, t), (xrate, trate), m, s, p):
-                radius = radius_points*(grid[1]-grid[0])
-                centers = grid[radius_points:len(grid)-radius_points:stride]
-                locations = centers[:, None]+radius*nodes
-                values.append(radius*((1-nodes**2)**degree*np.exp(rate*locations))@weights)
-            return (values[0][:, None]*values[1]).ravel()
-        expected = []
-        for term in terms:
-            xrate = term.powers[0]*a+term.powers[1]*b
-            trate = term.powers[0]*c+term.powers[1]*d
-            expected.append(xrate**term.derivative[0]*integral(xrate, trate))
-        np.testing.assert_allclose(system.G, np.column_stack(expected), rtol=1e-6, atol=2e-10)
-        np.testing.assert_allclose(system.b, np.column_stack((c*integral(a, c), d*integral(b, d))), rtol=1e-8, atol=1e-11)
-
-    def test_scaling_identity_for_monomials_trigonometry_and_second_time_derivative(self):
-        x, t = np.linspace(-1, 1, 65), np.linspace(0, 1, 49)
-        u = 20*np.exp(0.2*x[:, None]+0.1*t)
-        terms = polynomial_library(1, 1, 4, 2, trigonometric_frequencies=(1, 2))
-        options = dict(library_terms=terms, lhs_time_order=2, half_widths=(24, 18),
-                       strides=(5, 4), test_degrees=(14, 12))
-        original = build_wsindy_system(u, (x,), t, rescale=False, **options)
-        scaled = build_wsindy_system(u, (x,), t, rescale=True, **options)
-        volume = np.prod(scaled.coordinate_scales)
-        lhs_factor = scaled.state_scales[0]/scaled.coordinate_scales[-1]**2
-        np.testing.assert_allclose(scaled.b, original.b*volume*lhs_factor, rtol=2e-8, atol=1e-10)
-        np.testing.assert_allclose(scaled.G, original.G*volume*lhs_factor*scaled.coefficient_scales[:, 0], rtol=2e-8, atol=2e-9)
-        gamma = (np.linalg.norm(u)/np.linalg.norm(u**4))**0.25
-        self.assertAlmostEqual(scaled.state_scales[0], gamma, places=14)
-        authors = build_wsindy_system(u, (x,), t, state_scale_rule="authors", **options)
-        self.assertAlmostEqual(authors.state_scales[0], gamma**(4/3), places=14)
-
-    def test_second_time_derivative_and_mixed_spatial_term(self):
-        x, y, t = np.linspace(-1, 1, 49), np.linspace(-2, 2, 53), np.linspace(0, 1, 81)
-        u = np.exp(0.3*x[:, None, None]-0.4*y[None, :, None]+0.7*t)
-        terms = (LibraryTerm((1,), (0, 0, 0)), LibraryTerm((1,), (1, 1, 0)))
-        system = build_wsindy_system(u, (x, y), t, library_terms=terms, lhs_time_order=2,
-            half_widths=(18, 20, 30), strides=(6, 6, 10), test_degrees=(14, 14, 12), rescale=False)
-        np.testing.assert_allclose(system.G[:, 1], -0.12*system.G[:, 0], rtol=1e-8, atol=1e-10)
-        np.testing.assert_allclose(system.b[:, 0], 0.49*system.G[:, 0], rtol=1e-8, atol=1e-10)
-
-    def test_analytic_test_derivatives_and_decay(self):
-        table, p = test_function_weights(8, 4)
-        r = np.linspace(-1, 1, 17)
-        self.assertLessEqual((1-(1-1/8)**2)**p, 1e-10)
-        self.assertGreater((1-(1-1/8)**2)**(p-1), 1e-10)
-        np.testing.assert_allclose(table[1], -2*p*r*(1-r**2)**(p-1), atol=1e-13)
-        np.testing.assert_allclose(table[2], -2*p*(1-r**2)**(p-1)+4*p*(p-1)*r**2*(1-r**2)**(p-2), atol=1e-12)
-        self.assertTrue(np.all(table[:, (0, -1)] == 0))
-
-    def test_invalid_grids_terms_and_test_support(self):
-        x, t = np.linspace(0, 1, 17), np.linspace(0, 1, 9)
-        u = np.ones((17, 9))
-        base = dict(library_terms=polynomial_library(1, 1, 1, 2), half_widths=(4, 2), strides=(1, 1))
-        for change in ({"half_widths": (9, 2)}, {"strides": (0, 1)}, {"test_degrees": (2, 4)},
-                       {"library_terms": (LibraryTerm((1.5,), (1, 0)),)}, {"lhs_components": (1,)}):
-            with self.subTest(change=change), self.assertRaises(ValueError):
-                build_wsindy_system(u, (x,), t, **(base | change))
-        irregular = x.copy()
-        irregular[3] += 0.01
-        with self.assertRaises(ValueError):
-            build_wsindy_system(u, (irregular,), t, **base)
-
-    def test_spectral_support_selection_is_deterministic_and_fits_grid(self):
-        x, t = np.linspace(0, 2*np.pi, 64), np.linspace(0, 1, 64)
-        # An exactly piecewise-constant Fourier amplitude gives a known
-        # cumulative-spectrum corner, independent of a PDE or random noise.
-        waves = np.fft.fftfreq(64)*64
-        amplitudes = np.where(np.abs(waves) <= 8, 0.5, 0.01)
-        profile = np.fft.ifft(amplitudes).real
-        u = profile[:, None]*profile[None, :]
-        widths, corners = select_test_supports(u, (x,), t)
-        self.assertEqual(corners, ((9, 9),))
-        self.assertEqual((widths, corners), select_test_supports(u, (x,), t))
-        for m, size in zip(widths, u.shape):
-            self.assertGreaterEqual(m, 2)
-            self.assertLessEqual(2*m+1, size)
-        with self.assertRaisesRegex(ValueError, "nonzero"):
-            select_test_supports(np.zeros_like(u), (x,), t)
+def advection(n=128, steps=101):
+    """u = sin(x - t) + 0.5 cos(2(x - t)) on a periodic grid: u_t = -u_x."""
+    x, t = np.linspace(0, 2*np.pi, n, endpoint=False), np.linspace(0, 2, steps)
+    xi = x[:, None]-t[None, :]
+    return (np.sin(xi)+.5*np.cos(2*xi))[..., None], (x, t)
 
 
-class SparseSelectionTests(unittest.TestCase):
-    def test_lasso_matches_independent_soft_threshold_and_retains_shrinkage(self):
-        G = np.diag([1., 4., 20.])
-        truth = np.array([2., -.075, .0005])
-        result = lasso(G, G@truth, [.1])
-        # Orthogonal columns: shrink physical coefficients by alpha-scaled
-        # prediction amplitude / original column amplitude.
-        np.testing.assert_allclose(result.coefficients[:, 0], [1.8, -.025, 0], atol=1e-14)
-        self.assertLess(result.kkt_errors.max(), 1e-12)
-        self.assertEqual(result.coefficients[0, 0], result.scaled_coefficients[0, 0])
+ADVECTION = PDE("advection", "", "", ("u",), (Block(ps.PolynomialLibrary(degree=2), spatial(2, 1)),), ("u_t",),
+                ({"u_x": -1.},), Tests(m=(16, 12), s=(4, 4)))
 
-    def test_lasso_is_invariant_to_diagonal_preconditioning_and_handles_zero_response(self):
-        rng = np.random.default_rng(21)
-        G = rng.normal(size=(70, 8)); G[:, -1] = 0
-        b = np.column_stack((G[:, 0]+.2*G[:, 2], np.zeros(70)))
-        scale = np.logspace(-4, 4, 8)
-        original = lasso(G, b)
-        changed = lasso(G*scale, b, coefficient_scales=np.broadcast_to(scale[:, None], (8, 2)))
-        np.testing.assert_allclose(original.coefficients, changed.coefficients, atol=1e-10)
-        np.testing.assert_allclose(original.losses, changed.losses, atol=1e-10)
-        np.testing.assert_array_equal(original.coefficients[:, 1], 0)
-        self.assertEqual(original.coefficients[-1, 0], 0)
 
-    def test_lasso_correlated_and_duplicate_columns_satisfy_kkt(self):
-        rng = np.random.default_rng(12)
-        G = rng.normal(size=(100, 12))
-        G[:, 1] = G[:, 0]; G[:, 3] = G[:, 2]+1e-5*rng.normal(size=100)
-        b = G[:, 0]-.2*G[:, 2]+.01*rng.normal(size=100)
-        result = lasso(G, b)
-        self.assertLessEqual(result.kkt_errors.max(), 1e-7)
-        theta = result.normalized_coefficients[:, 0]
-        Z = G/result.column_rms; y = b/result.response_rms[0]
-        alpha = result.threshold*result.alpha_max[0]
-        gradient = Z.T@(Z@theta-y)/len(y)
-        violation = np.where(theta != 0, np.abs(gradient+alpha*np.sign(theta)),
-            np.maximum(np.abs(gradient)-alpha, 0))
-        self.assertLess(violation.max()/result.alpha_max[0], 1e-7)
+class Dictionary(unittest.TestCase):
+    def test_paper_dictionaries(self):
+        sizes = {"IB": 43, "KdV": 43, "KS": 43, "NLS": 190, "RD": 181, "NS": 50, "HKS": 73, "VBG": 43}
+        for name, size in sizes.items():
+            terms = PDES[name].dictionary_terms()[1]
+            self.assertEqual(len(terms), size, name)
+            PDES[name].truth_matrix(terms)   # every true term is in the dictionary
+            self.assertFalse(any(t.powers == (0,)*len(t.powers) and any(t.alpha) for t in terms))
 
-    def test_consistency_absolute_threshold_ignores_relative_column_bounds(self):
-        G = np.diag([1., 1e6])
-        truth = np.array([.2, .03])
-        result = mstls(G, G@truth, [.01], selection_rule="absolute")
-        np.testing.assert_allclose(result.coefficients[:, 0], truth, atol=1e-14)
-        relative = mstls(G, G@truth, [.01])
-        self.assertEqual(relative.coefficients[0, 0], 0)
-        np.testing.assert_array_equal(mstls(G, G@truth, [1], selection_rule="absolute").coefficients, np.zeros((2, 1)))
+    def test_general_features(self):
+        block = Block(ps.PolynomialLibrary(degree=1)+ps.FourierLibrary(n_frequencies=1), spatial(1, 1))
+        pde = replace(ADVECTION, dictionary=(block,), _cache={})
+        terms = pde.dictionary_terms()[1]
+        self.assertIn("(sin(1 u))_x", [t.label for t in terms])
+        U, grid = advection()
+        system = WeakSystem(pde, U, grid)
+        self.assertTrue(np.all(np.isfinite(system.X)))
 
-    def test_physical_selection_is_invariant_to_diagonal_preconditioning(self):
-        G, b = np.diag([1., 10.]), np.array([0.2, 0.3])
-        scales = np.array([[10.], [0.01]])
-        for threshold in (0.01, 0.1, 0.5):
-            original = mstls(G, b, [threshold], threshold_units="physical", allow_empty=False)
-            scaled = mstls(G*scales[:, 0], b, [threshold], coefficient_scales=scales,
-                           threshold_units="physical", allow_empty=False)
-            np.testing.assert_allclose(original.coefficients, scaled.coefficients, atol=1e-14)
-            np.testing.assert_allclose(original.losses, scaled.losses, atol=1e-14)
 
-    def test_author_empty_guard_returns_previous_model(self):
-        G, b = np.eye(2), np.array([0.2, 0.03])
-        guarded = mstls(G, b, [1], allow_empty=False)
-        np.testing.assert_allclose(guarded.coefficients[:, 0], b)
-        np.testing.assert_array_equal(mstls(G, b, [1], allow_empty=True).coefficients, np.zeros((2, 1)))
+class TestFunctions(unittest.TestCase):
+    def test_weights_are_derivatives(self):
+        m, p = 20, 8
+        r = np.linspace(-1, 1, 2*m+1)
+        weights = poly_weights(m, 2, p)
+        phi = lambda x: (1-x[0]**2)**p
+        numeric = [approx_fprime([x], phi, 1e-7)[0] for x in r[5:-5]]
+        np.testing.assert_allclose(weights[1, 5:-5], numeric, rtol=1e-5, atol=1e-6)
 
-    def test_bounds_apply_to_scaled_coefficients_and_allow_empty_support(self):
-        result = mstls(np.eye(2), np.array([0.2, 0.03]), [0.1])
-        np.testing.assert_allclose(result.scaled_coefficients[:, 0], [0.2, 0])
-        np.testing.assert_array_equal(mstls(np.eye(2), [0.2, 0.03], [1]).coefficients, np.zeros((2, 1)))
+    def test_algorithm_4_1_reproduces_table_degrees(self):
+        for name in ("IB", "KdV", "KS", "NLS", "RD", "NS"):
+            pde = PDES[name]
+            terms = (*pde.dictionary_terms()[1], *pde.lhs_terms())
+            orders = tuple(max(t.alpha[d] for t in terms) for d in range(len(pde.tests.m)))
+            grid = tuple(np.arange(400.) for _ in orders)
+            self.assertEqual(replace(pde.tests, p=None).resolve(None, grid, orders).p, pde.tests.p, name)
 
-    def test_smallest_threshold_wins_exact_loss_tie(self):
-        result = mstls(np.eye(2), [0.2, 0.03], [0.15, 0.1])
-        self.assertEqual(result.threshold, 0.1)
-        self.assertEqual(result.losses[0], result.losses[1])
+    def test_changepoint_supports(self):
+        U, grid = advection()
+        m = changepoint_supports(U, grid, 1e-10, 2.)
+        self.assertEqual(len(m), 2)
+        self.assertTrue(all(2 <= w <= (len(g)-1)//2 for w, g in zip(m, grid)))
+        resolved = Tests().resolve(U, grid, (2, 1))
+        self.assertEqual(resolved.m, m)
+        self.assertEqual(resolved.s, (128//50, 101//50))
 
-    def test_joint_loss_uses_the_matrix_two_norm(self):
-        result = mstls(np.eye(2), np.diag([0.2, 0.03]), [0.1])
-        # Removed projection norm: .03; full projection norm: .2;
-        # one selected entry among four candidate coefficients.
-        self.assertAlmostEqual(result.losses[0], 0.03/0.2 + 1/4)
 
-    def test_rank_deficiency_and_zero_columns_are_supported(self):
-        G = np.array([[1., 1., 0.], [0., 0., 0.]])
-        result = mstls(G, [0.4, 0], [0.01])
-        self.assertEqual(result.rank, 1)
-        np.testing.assert_allclose(G@result.coefficients[:, 0], [0.4, 0])
-        np.testing.assert_array_equal(mstls(G, [0, 0]).coefficients, np.zeros((3, 1)))
+class Regression(unittest.TestCase):
+    def test_recovers_advection(self):
+        U, grid = advection()
+        system = WeakSystem(ADVECTION, U, grid)
+        for regression in ("mstls", "lasso", MSTLS(loss="debiased"), FromAPI(ps.STLSQ(threshold=.1, alpha=0.))):
+            coef = fit(system, regression).coef
+            truth = ADVECTION.truth_matrix(system.terms)
+            self.assertTrue(metrics(coef, truth)["exact_support"], regression)
+            if regression != "lasso":   # LASSO keeps its shrinkage
+                np.testing.assert_allclose(coef[truth != 0], -1, rtol=1e-6)
 
-    def test_nonlinear_transport_recovers_physical_coefficients(self):
-        x, t = np.linspace(-1, 1, 81), np.linspace(0, 0.5, 81)
-        u = (0.3*x[:, None]+0.8+0.12*t)/(1+0.3*t)
-        terms = (LibraryTerm((1,), (1, 0)), LibraryTerm((2,), (1, 0)))
-        for rescale in (False, True):
-            result, _ = wsindy(u, (x,), t, library_terms=terms, half_widths=(25, 25),
-                strides=(5, 5), test_degrees=(12, 12), thresholds=(0.01,), rescale=rescale)
-            np.testing.assert_allclose(result.coefficients[:, 0], [0.4, -0.5], rtol=1e-7, atol=1e-8)
+    def test_strong_form_recovers_advection(self):
+        U, grid = advection(steps=401)
+        system = StrongSystem(ADVECTION, U, grid)   # spectral derivatives would assume periodic time
+        for regression in ("mstls", FromAPI(ps.STLSQ(threshold=.1, alpha=0.))):
+            coef = fit(system, regression).coef
+            self.assertTrue(metrics(coef, ADVECTION.truth_matrix(system.terms))["exact_support"])
+            np.testing.assert_allclose(coef[0, [t.label for t in system.terms].index("u_x")], -1, rtol=1e-3)
 
-    def test_coupled_linear_schrodinger_equations(self):
-        x, t = np.linspace(-np.pi, np.pi, 81), np.linspace(0, 3, 81)
-        u, v = np.sin(x[:, None])*np.cos(0.5*t), np.sin(x[:, None])*np.sin(0.5*t)
-        terms = (LibraryTerm((1, 0), (2, 0)), LibraryTerm((0, 1), (2, 0)))
-        result, _ = wsindy((u, v), (x,), t, library_terms=terms, lhs_components=(0, 1),
-            half_widths=(25, 25), strides=(5, 5), test_degrees=(12, 12), thresholds=(0.01,))
-        np.testing.assert_allclose(result.coefficients, [[0, -0.5], [0.5, 0]], rtol=1e-7, atol=1e-8)
+    def test_scaling_restores_physical_least_squares(self):
+        U, grid = advection()
+        def least_squares(profile):
+            system = WeakSystem(replace(ADVECTION, profile=profile, tests=replace(ADVECTION.tests, p=(9, 9))), U, grid)
+            return np.linalg.lstsq(system.X, system.Y, rcond=None)[0]*system.scales
+        raw = Profile(False, AUTHORS.thresholds, "relative", False, "rms", "per_axis")
+        np.testing.assert_allclose(least_squares(AUTHORS), least_squares(raw), rtol=1e-6, atol=1e-9)
+
+    def test_debiased_loss_with_exact_pilot_is_least_squares(self):
+        U, grid = advection()
+        system = WeakSystem(ADVECTION, U, grid, X=U)
+        np.testing.assert_allclose(fit(system, MSTLS(loss="debiased")).coef, fit(system, "mstls").coef, rtol=1e-10)
+
+    def test_empty_support_rule(self):
+        rng = np.random.default_rng(0)
+        U, grid = rng.normal(size=(64, 60, 1)), (np.arange(64.), np.arange(60.))
+        pde = replace(ADVECTION, tests=Tests(m=(8, 8), s=(2, 2)))
+        system = WeakSystem(pde, U, grid)
+        empty = MSTLS(thresholds=[1.], allow_empty=True).regress(system)
+        kept = MSTLS(thresholds=[1.], allow_empty=False).regress(system)
+        self.assertFalse(np.any(empty.coef))
+        self.assertTrue(np.any(kept.coef))
+
+    def test_eiv(self):
+        X = np.eye(3)
+        beta, t, status, success, _ = conic(X, np.array([1e-3, 0, 0]), mu=0., tau=1., lam=1.)
+        self.assertEqual(status, "AnalyticZero")
+        beta, t, status, success, _ = conic(X, np.array([2., 0, 0]), mu=0., tau=.5, lam=1.)
+        self.assertTrue(success)
+        np.testing.assert_allclose(beta, [1.5, 0, 0], atol=1e-6)
+        U, grid = advection()
+        result = fit(WeakSystem(replace(ADVECTION, profile=Profile(False, AUTHORS.thresholds, "relative", False,
+                                                                     "rms", "per_axis")), U, grid), EIV(lam=1.))
+        self.assertEqual(result.coef.shape, (1, 7))
+
+
+    def test_eiv_gurobi_matches_clarabel(self):
+        try:
+            import gurobipy
+            gurobipy.Model().dispose()
+        except Exception:
+            self.skipTest("gurobipy or a Gurobi license is unavailable")
+        rng = np.random.default_rng(0)
+        X = rng.normal(size=(200, 10))
+        y = X@np.where(rng.random(10) < .3, 1., 0.)+.05*rng.normal(size=200)
+        a, b = (conic(X, y, .05, .1*np.abs(y).max(), 1., solver=s) for s in ("clarabel", "gurobi"))
+        self.assertTrue(a[3] and b[3])
+        np.testing.assert_allclose(np.abs(a[0]).sum()+a[1], np.abs(b[0]).sum()+b[1], rtol=1e-6)
+
+
+class Estimators(unittest.TestCase):
+    def test_crossfit_pilot_ignores_its_own_fold(self):
+        rng = np.random.default_rng(1)
+        U, grid = advection()
+        U = U+.05*rng.normal(size=U.shape)
+        pilot = estimate(U, grid, ADVECTION, CrossFitPilot())[0]
+        perturbed = U.copy()
+        perturbed[:, ::2] += 10.
+        self.assertTrue(np.allclose(estimate(perturbed, grid, ADVECTION, CrossFitPilot())[0][:, ::2], pilot[:, ::2]))
+
+    def test_external_estimators(self):
+        U, grid = advection()
+        noisy = U+.05*np.random.default_rng(2).normal(size=U.shape)
+        for estimator in (ps.SmoothedFiniteDifference(), FromPySINDy(ps.SmoothedFiniteDifference(), axes=(0, -2)),
+                          FromCallable(lambda V, g: V), "movavg"):
+            uhat, _ = estimate(noisy, grid, ADVECTION, estimator)
+            self.assertEqual(uhat.shape, U.shape)
+        smoothed = estimate(noisy, grid, ADVECTION, ps.SmoothedFiniteDifference())[0]
+        self.assertLess(np.linalg.norm(smoothed-U), np.linalg.norm(noisy-U))
+
+
+class Observations(unittest.TestCase):
+    def test_noise_and_seeds(self):
+        U = np.ones((50, 40, 2))*np.array([1., 3.])
+        noisy, stds = observe(PDES["NLS"], U, .5, trial_seed("NLS", .5, 0))
+        np.testing.assert_allclose(stds, [.5, 1.5])
+        self.assertEqual(trial_seed("KS", .5, 3), trial_seed("KS", .5, 3))
+        self.assertNotEqual(trial_seed("KS", .5, 3), trial_seed("KS", .5, 4))
+        np.testing.assert_allclose(noisy.std(axis=(0, 1)), stds, rtol=.05)
 
 
 if __name__ == "__main__":
