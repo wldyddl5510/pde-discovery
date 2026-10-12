@@ -1,0 +1,48 @@
+{
+  "pde": "IB",
+  "noise_ratios": [
+    0.0,
+    0.2,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "trials_per_level": 100,
+  "records": {
+    "wsindy": 500,
+    "debiased": 500,
+    "split-debiased": 500,
+    "lasso": 500,
+    "debiased-lasso": 500,
+    "split-debiased-lasso": 500
+  },
+  "same_noise_seeds": true,
+  "unique_complete_trial_schedule": true,
+  "finite_metrics": true,
+  "unit_tests": {
+    "full_suite_before_report_scope_change": "22 passed",
+    "final_split_and_report_tests": "6 passed"
+  },
+  "split_checks": [
+    "entire estimate and scales ignore regression observations",
+    "raw training observations excluded from weak integrals",
+    "direct physical quadrature agreement for both parities and odd support widths",
+    "corrected matrices affine in regression noise conditional on training data",
+    "data-dependent test supports rejected"
+  ],
+  "source_sha256": {
+    "run.py": "ef3bb254915f0a02974fc25708bd85b7ec6479aa6b6e082ecc8268dbf212a45f",
+    "report.py": "5352f6ffe29bc29eb0babb28ee77bd021c631ba23ca6a828f7af75b0e9fc0181",
+    "pdes.py": "dc171651f3513ba4ebf41422aba64d0d4bb13ed76aab636de9040d462c2111fa",
+    "wsindy/system.py": "f840df961bd6ca84b6e72d6730509a5676c01297c3944b7281e66c97d0d322f8",
+    "wsindy/estimators.py": "7ff8050e896a54223d08e5773292be1011c23bd4cce893fa9a36b2afe327879b",
+    "wsindy/regression.py": "b9da20d8d64ac297886e5495e13df4a923f3a128fcb4e899b513b702d723d509",
+    "tests/test_split.py": "3809398ab9a46ec88821f4f3f1ecbfe6c5e1c3e068c302776b731cae725a53d0"
+  },
+  "selected_windows": [
+    [
+      61,
+      61
+    ]
+  ]
+}

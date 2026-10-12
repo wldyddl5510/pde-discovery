@@ -69,7 +69,7 @@ def hermite(v, degree, variance):
 
 
 class WeakSystem:
-    def __init__(self, pde, U, grid, X=None, Y=None):
+    def __init__(self, pde, U, grid, X=None, Y=None, *, scale_state=None):
         self.pde, self.U = pde, np.asarray(U, dtype=float)
         self.grid = tuple(np.asarray(g, dtype=float) for g in grid)
         self.X_state = self.U if X is None else np.asarray(X, dtype=float)
@@ -89,13 +89,16 @@ class WeakSystem:
             power = max((sum(t.powers) for t in self.terms if t.powers is not None), default=1)
             if power > 1:   # gamma_u = (||U||/||U^P||)^(1/(P-1)) per component (toggle_scale=2)
                 for c in range(self.U.shape[-1]):
-                    v = self.Y_state[..., c]
+                    v = (self.Y_state if scale_state is None else np.asarray(scale_state))[..., c]
                     amplitude = float(np.max(np.abs(v)))
                     if amplitude:
                         normalized = v/amplitude
                         log_ratio = ((1-power)*np.log(amplitude)+np.log(np.linalg.norm(normalized.ravel()))
                                      -np.log(np.linalg.norm((normalized**power).ravel())))
                         self.state_scales[c] = np.exp(log_ratio/(power-1))
+
+    def _quadrature_values(self, values):
+        return values
 
     def columns(self, terms, state, *, pilot=None, variance=None, rescale=True):
         """Weak columns of D^alpha f(state); monomials can be linearized at `pilot` or Hermite-corrected."""
@@ -117,7 +120,8 @@ class WeakSystem:
                 trial = hermite(state[..., 0], term.powers[0], variance)
             else:
                 trial = monomial(state, gamma, term.powers, pilot)
-            weak = dict(_weak_columns(trial, {t.alpha for _, t in members}, self.weights, radii, spacing, self.tests.s))
+            weak = dict(_weak_columns(self._quadrature_values(trial), {t.alpha for _, t in members},
+                                      self.weights, radii, spacing, self.tests.s))
             for index, t in members:
                 matrix[:, index] = weak[t.alpha]
         return matrix
@@ -137,6 +141,34 @@ class WeakSystem:
             state = np.prod(self.state_scales**np.array(t.powers)) if t.powers is not None else 1.0
             return state*np.prod(self.coordinate_scales**(-np.array(t.alpha)))
         return np.array([[factor(t)/factor(l) for l in self.lhs] for t in self.terms])
+
+
+class SplitSystem(WeakSystem):
+    """Weak system on the regression times of a split: the times at which the estimate X is defined.
+
+    X comes from a split estimator such as SplitPilot and is NaN at the times it was estimated from.
+    Those training times only set the state scaling; no integral uses them. The regression times are
+    integrated with trapezoid weights on their own grid (2*dt each for ratio .5), while test-function
+    supports, derivatives and centers stay those of the full grid.
+    """
+    def __init__(self, pde, U, grid, X, Y=None):
+        X, U = np.asarray(X, dtype=float), np.asarray(U, dtype=float)
+        others = tuple(a for a in range(X.ndim) if a != X.ndim-2)
+        training = np.isnan(X).all(axis=others)
+        if not training.any() or np.isnan(X).any(axis=others)[~training].any() or np.sum(~training) < 2:
+            raise ValueError("SplitSystem needs X that is NaN on whole training time slices and finite at >= 2 others")
+        if pde.tests.m is None:
+            raise ValueError("SplitSystem requires fixed Tests.m")
+        super().__init__(pde, U, grid, X=X, Y=Y, scale_state=U[..., training, :])
+        kept = np.flatnonzero(~training)
+        middle = (kept[1:]+kept[:-1])/2
+        weights = np.zeros(len(training))
+        weights[kept] = np.diff(np.r_[2*kept[0]-middle[0], middle, 2*kept[-1]-middle[-1]])
+        self.time_weights = weights.reshape([1]*(U.ndim-2)+[-1])
+        self.sampling_info = dict(training_times=int(training.sum()), regression_times=len(kept))
+
+    def _quadrature_values(self, values):
+        return np.where(self.time_weights > 0, self.time_weights*values, 0.)
 
 
 class StrongSystem:

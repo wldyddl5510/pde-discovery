@@ -271,13 +271,14 @@ class BestSubset:
             for e, r_e in enumerate(r):
                 keep[np.argsort(largest[:, e])[::-1][:r_e], e] = True
         start = self._refit(loss, G, b, keep)
-        # ||b - G W||^2 = ||Q^T b - R W||^2 + const for G = QR: conditioning of G rather than G^T G.
+        # ||b - G W||^2 = ||Q^T b - R W||^2 + const for the reduced G = QR (R has min(K, J) rows;
+        # exact when K <= J): conditioning of G rather than G^T G.
         Q, R = np.linalg.qr(G)
         with gp.Model(env=gurobi_env()) as model:
             model.Params.Threads, model.Params.TimeLimit, model.Params.MIPGap = 1, self.time_limit, self.mip_gap
             W = model.addMVar((J, E), lb=-gp.GRB.INFINITY)
             zero = model.addMVar((J, E), vtype=gp.GRB.BINARY)   # 1 forces the coefficient to zero
-            residual = model.addMVar((J, E), lb=-gp.GRB.INFINITY)
+            residual = model.addMVar((R.shape[0], E), lb=-gp.GRB.INFINITY)
             for w, z in zip(W.tolist(), zero.tolist()):
                 for pair in zip(w, z):
                     model.addSOS(gp.GRB.SOS_TYPE1, list(pair))

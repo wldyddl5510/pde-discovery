@@ -9,11 +9,12 @@ weak form, the authors' scaling and MSTLS are implemented here.
 wsindy/
   dictionary.py     Block(functions=<PySINDy library>, alphas) -> terms D^alpha f(U)
   testfunctions.py  Tests(m, p, s, shape); unset fields are chosen from data
-  system.py         WeakSystem(pde, U, grid, X=..., Y=...); StrongSystem: pointwise SINDy (PySINDy derivatives)
+  system.py         WeakSystem(pde, U, grid, X=..., Y=...); SplitSystem: regression times of a split;
+                    StrongSystem: pointwise SINDy (PySINDy derivatives)
   regression.py     MSTLS, LassoPath, BestSubset (MIO, gurobipy) with loss "ls" | "debiased";
                     FromAPI(any PySINDy/sklearn optimizer)
   eiv.py            EIV conic estimator (Section 6, scalar polynomial dictionaries), solved with Gurobi
-  estimators.py     uhat: MovingAverage, CrossFitPilot, FromPySINDy, FromCallable
+  estimators.py     uhat: MovingAverage, SplitPilot, FromPySINDy, FromCallable
 pdes.py             benchmark PDEs (data, dictionary, truth, test functions), noise, seeds, metrics
 run.py              trials -> benchmark_results/runs/<method>/<PDE>.jsonl
 report.py           saved trials -> results.md, results.summary.csv, results.png
@@ -26,6 +27,7 @@ python -m pip install -r requirements.txt
 python -m unittest discover -s tests
 
 python run.py KS NLS RD --method wsindy filtered lasso --trials 100 --workers 4
+python run.py IB --method debiased --split .3 --out benchmark_results/split-0.3   # uhat from 30% of the times
 python report.py benchmark_results -o results.md --plot results.png
 ```
 
@@ -39,23 +41,26 @@ A method is a state estimator `uhat`, the state used on each side of the weak sy
 ```python
 import pysindy as ps
 from pdes import PDES, load, observe, trial_seed
-from wsindy import WeakSystem, estimate, fit, MSTLS, LassoPath, BestSubset, FromPySINDy
+from wsindy import WeakSystem, SplitSystem, estimate, fit, MSTLS, LassoPath, BestSubset, SplitPilot
 
 pde = PDES["KS"]
 clean, grid = load("KS")                                   # U: (*space, time, n_components)
 U, _ = observe(pde, clean, 0.5, trial_seed("KS", 0.5, 0))
 
-uhat, info = estimate(U, grid, pde, "movavg")              # ours: "movavg", "crossfit", MovingAverage(...)
+uhat, info = estimate(U, grid, pde, "movavg")              # ours: "movavg", MovingAverage(...)
 uhat, info = estimate(U, grid, pde, ps.SmoothedFiniteDifference())        # PySINDy smoother (time axis)
 uhat, info = estimate(U, grid, pde, lambda U, grid: my_smoother(U))      # any function
 
 system = WeakSystem(pde, U, grid, X=uhat, Y=U)             # choose the state for X and for Y
 W = fit(system, "mstls").coef                              # (n_equations, n_terms), physical units
-W = fit(system, MSTLS(loss="debiased")).coef               # linearize monomials at the X-side state
 W = fit(system, LassoPath()).coef
 W = fit(system, BestSubset(r=3)).coef                     # MIO best subset: <= r = 3 nonzeros (tuple: per equation)
 W = fit(system, BestSubset()).coef                        # r = 1, 2, ... per equation until the Eq. 4.4 loss rises
 W = fit(system, ps.SR3(reg_weight_lam=0.1, regularizer="L1")).coef            # any PySINDy/sklearn optimizer
+
+uhat, info = estimate(U, grid, pde, SplitPilot(ratio=.5))  # from half of the time points only; NaN there
+system = SplitSystem(pde, U, grid, X=uhat, Y=U)            # integrals over the other half only
+W = fit(system, MSTLS(loss="debiased")).coef               # linearize monomials at uhat
 ```
 
 New regressions implement `regress(system) -> Fit`; new losses implement `matrices(system)` and
@@ -66,11 +71,11 @@ New regressions implement `regress(system) -> Fit`; new losses implement `matric
 | --- | --- | --- | --- | --- |
 | `wsindy` | — | U | U | MSTLS |
 | `filtered` | moving average | uhat | uhat | MSTLS |
-| `debiased` | time-parity cross-fit pilot | uhat | U | MSTLS, debiased loss |
+| `debiased` | `SplitPilot`: box average over a fraction `--split` (default .5) of the times | uhat | U, other times only (`SplitSystem`) | MSTLS, debiased loss |
 | `lasso`, `filtered-lasso`, `debiased-lasso` | as above | | | LASSO path |
 | `eiv` | — | U | U | EIV |
 | `sindy` | — | U | U | MSTLS on the pointwise (strong-form) system `StrongSystem` |
-| `best-subset` | — | U | U | `BestSubset` with sparsity r per PDE from the table in `run.py` (default: true r per equation) |
+| `best-subset`, `filtered-best-subset`, `debiased-best-subset` | as above | | | `BestSubset` with sparsity r per PDE (`TRUE_R` in `run.py`: true r per equation) |
 
 A dictionary is a tuple of blocks; any PySINDy feature library works, polynomial or not:
 
@@ -83,6 +88,32 @@ Tests()                                     # m: spectral changepoint (findcorne
 
 Monomial features (from `PolynomialLibrary`) get the state scaling and the debiased linearization;
 other features are evaluated on the unscaled state, as the authors' code does for trigonometric terms.
+
+### Data splitting in the debiased methods
+
+Every debiased method splits the time points. `SplitPilot(ratio)` reserves a fraction `ratio` of them,
+spread evenly (ratio .5: the odd times), and only these determine uhat, the noise level, the averaging
+window and the state scaling. The corrected weak integrals and the regression use the remaining times
+only. `SplitSystem` reads the split from the estimate, which is NaN at its training times, so the two
+cannot disagree. No observation enters both uhat and the regression; the groups are never swapped or
+pooled. Fixed `Tests.m` is required, since data-dependent supports would look at the regression times.
+
+`SplitSystem` keeps the full-grid supports, derivatives and query centers, and integrates the regression
+times with trapezoid weights on their own grid (`2*dt` each for ratio .5). For unequally spaced training
+times (e.g. ratio .3) the noise level uses sixth divided differences, and the time window is long enough
+to reach a training time from every regression time.
+
+Conditioning on the training times, the corrected weak matrices are affine in the regression
+observations, so the residual is Gaussian under independent Gaussian noise. The design still contains
+that noise (`grad f(uhat) eps`), like the linear columns of any weak form: conditionally this is an
+errors-in-variables model, not a fixed design. The affine property holds for monomial features; other
+PySINDy features are not linearized. Coefficient-error and support-recovery guarantees still need
+approximation-error, conditioning and sparse-regression analysis.
+
+Earlier debiased runs (`benchmark_results/debiasing/time2_foldwise`, and `debiased*` in
+`benchmark_results/debiasing/single_split`) averaged each time parity over the other but pooled both
+parities in every integral; `report.py` lists them as `crossfit-debiased*`. The `split-debiased*` runs in
+`single_split` equal the current `debiased*` with `--split .5`.
 
 ## Benchmarks and protocol
 

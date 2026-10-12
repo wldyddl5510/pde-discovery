@@ -10,7 +10,7 @@ from wsindy import Term
 RESULTS = Path(__file__).parents[1]/"benchmark_results"
 CASES = [("authors", "wsindy", "KS", .5, 3), ("authors", "wsindy", "NLS", .2, 1),
          ("filtered", "filtered", "KdV", .5, 2), ("lasso/original/raw", "lasso", "IB", .75, 0),
-         ("debiasing/time2_foldwise/KS/mstls", "debiased", "KS", 1., 5), ("consistency/raw", "wsindy", "VBG", .5, 0)]
+         ("consistency/raw", "wsindy", "VBG", .5, 0)]
 
 
 def saved(run, name, ratio, trial):

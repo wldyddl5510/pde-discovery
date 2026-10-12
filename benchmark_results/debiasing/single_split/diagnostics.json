@@ -1,0 +1,95 @@
+{
+  "note": "Clean truth is used only for evaluation; oracle support is a diagnostic, not a benchmark method.",
+  "cases": [
+    {
+      "noise_ratio": 0.0,
+      "trial": 0,
+      "window": [
+        61,
+        61
+      ],
+      "estimated_noise_std": [
+        16.406988485873722
+      ],
+      "relative_estimation_rmse": 0.26124416318888,
+      "oracle_support_coefficients": [
+        -0.48857168890294006
+      ],
+      "oracle_support_relative_error": 0.02285662219411988,
+      "weak_rows": 784,
+      "terms": 43
+    },
+    {
+      "noise_ratio": 0.2,
+      "trial": 0,
+      "window": [
+        61,
+        61
+      ],
+      "estimated_noise_std": [
+        140.44454643318747
+      ],
+      "relative_estimation_rmse": 0.2609508711016494,
+      "oracle_support_coefficients": [
+        -0.4907488985660236
+      ],
+      "oracle_support_relative_error": 0.01850220286795279,
+      "weak_rows": 784,
+      "terms": 43
+    },
+    {
+      "noise_ratio": 0.5,
+      "trial": 0,
+      "window": [
+        61,
+        61
+      ],
+      "estimated_noise_std": [
+        351.96095759223095
+      ],
+      "relative_estimation_rmse": 0.2615650624844896,
+      "oracle_support_coefficients": [
+        -0.4945677311691919
+      ],
+      "oracle_support_relative_error": 0.010864537661616214,
+      "weak_rows": 784,
+      "terms": 43
+    },
+    {
+      "noise_ratio": 0.75,
+      "trial": 0,
+      "window": [
+        61,
+        61
+      ],
+      "estimated_noise_std": [
+        523.7472887870487
+      ],
+      "relative_estimation_rmse": 0.26264584828302845,
+      "oracle_support_coefficients": [
+        -0.49813955850439134
+      ],
+      "oracle_support_relative_error": 0.0037208829912173114,
+      "weak_rows": 784,
+      "terms": 43
+    },
+    {
+      "noise_ratio": 1.0,
+      "trial": 0,
+      "window": [
+        61,
+        61
+      ],
+      "estimated_noise_std": [
+        702.5265065545159
+      ],
+      "relative_estimation_rmse": 0.2614137885250403,
+      "oracle_support_coefficients": [
+        -0.4704642101978535
+      ],
+      "oracle_support_relative_error": 0.05907157960429299,
+      "weak_rows": 784,
+      "terms": 43
+    }
+  ]
+}

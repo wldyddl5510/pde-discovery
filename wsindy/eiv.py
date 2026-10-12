@@ -1,17 +1,13 @@
 """Section 6 errors-in-variables estimator (scalar polynomial dictionaries, physical units).
 
-min ||beta||_1 + lam t  s.t.  ||y - X beta||_inf <= tau + mu t,  ||beta||_2 <= t,
-where X holds Gaussian-unbiased (Hermite) monomials of the X-side state, and mu, tau
-follow the declared delta formula with data proxies for the envelopes M, M1.
-These tolerances carry no proved confidence guarantee.
+min ||beta||_1 + lam t  s.t.  ||Y(U) - (X(U) - E[eta_noise]) beta||_inf <= tau + mu t,  ||beta||_2 <= t
+(Belloni, Rosenbaum & Tsybakov 2017, Eq. 3). X(U) - E[eta_noise] is X built from Gaussian-unbiased
+(Hermite) monomials of the X-side state. The derivation of tau and mu is pending; for sanity checks,
+oracle=True sets them from the true beta* and noise variance, and lam is chosen on a grid.
 """
 from __future__ import annotations
-from dataclasses import dataclass
-from functools import lru_cache
-from math import comb, factorial
+from dataclasses import dataclass, field
 import numpy as np
-from numpy.polynomial import Chebyshev, Polynomial
-from scipy import linalg
 from .regression import Fit, gurobi_env
 
 
@@ -48,100 +44,65 @@ def conic(X, y, mu, tau, lam, tolerance=1e-8):
         residual_violation=residual_violation, cone_violation=cone_violation)
 
 
-@lru_cache(maxsize=128)
-def _derivative_suprema(shape, degree, max_order):
-    """max |phi^(q)| on [-1, 1] for q = 0..max_order (numerical polynomial roots)."""
-    maxima = []
-    if shape == "poly":
-        base = Chebyshev([.5, 0., -.5])**degree
-        for order in range(max_order+1):
-            derivative = base.deriv(order)
-            roots = derivative.deriv().roots()
-            candidates = [-1., 1., *[float(r.real) for r in roots if abs(r.imag) < 1e-8 and -1 < r.real < 1]]
-            maxima.append(float(np.max(np.abs(derivative(candidates)))))
-    else:
-        r = Polynomial([0., 1.])
-        polynomials = [Polynomial([1.])]
-        for q in range(max_order+1):
-            polynomials.append((1-r*r)**2*polynomials[-1].deriv()+(4*q*r*(1-r*r)-18*r)*polynomials[-1])
-        for order in range(max_order+1):
-            roots = polynomials[order+1].roots()
-            candidates = np.array([0., *[float(x.real) for x in roots if abs(x.imag) < 1e-8 and -1 < x.real < 1]])
-            denominator = 1-candidates*candidates
-            maxima.append(float(np.max(np.exp(-9/denominator)*np.abs(polynomials[order](candidates))/denominator**(2*order))))
-    return tuple(maxima)
-
-
-def _kernel(weights, radii, spacing, alpha):
-    value = np.array(1.)
-    for w, radius, h, order in zip(weights, radii, spacing, alpha):
-        value = np.multiply.outer(value, w[order]*h/radius**order)
-    return value.ravel()
-
-
-def tolerances(system, u, rows, variance, delta, M=None, M1=None):
-    """Declared mu, tau (physical units); g2 = max_k ||F_k||_op over translated test kernels."""
-    spacing, tests, terms = system.spacing, system.tests, system.terms
-    M = float(np.max(np.abs(u))) if M is None else M
-    M1 = float(np.max(np.sqrt(sum(g*g for g in np.gradient(u, *spacing, edge_order=2))))) if M1 is None else M1
-    lhs_alpha = system.lhs[0].alpha
-    derivatives = sorted({t.alpha for t in terms if t.powers[0] > 0})
-    J, S = max(t.powers[0] for t in terms), len(derivatives)
-    radii = spacing*np.asarray(tests.m)
-    F = np.column_stack([_kernel(system.weights, radii, spacing, d) for d in derivatives])
-    g2, g_inf = float(linalg.svdvals(F)[0]), float(np.max(linalg.norm(F, axis=1)))
-    g0 = float(linalg.norm(_kernel(system.weights, radii, spacing, lhs_alpha)))
-    degrees = tests.p or (0,)*len(spacing)
-    one_d = [np.asarray(_derivative_suprema(tests.shape, p, q+1))/radius**np.arange(q+2)
-             for p, q, radius in zip(degrees, system.orders, radii)]
-
-    def norms(alpha):
-        value = float(np.prod([bound[q] for bound, q in zip(one_d, alpha)]))
-        partials = [float(np.prod([bound[q+int(d == axis)] for d, (bound, q) in enumerate(zip(one_d, alpha))]))
-                    for axis in range(len(spacing))]
-        return value, float(linalg.norm(partials))
-
-    volume, h = float(u.size*np.prod(spacing)), float(linalg.norm(spacing))
-    lhs_sup, lhs_grad = norms(lhs_alpha)
-    b_Y = volume*h*(M*lhs_grad+M1*lhs_sup)
-    bounds = []
-    for t in terms:
-        j = t.powers[0]
-        phi_sup, phi_grad = norms(t.alpha)
-        bounds.append(volume*h*(M**j*phi_grad+(j*M**(j-1)*M1 if j else 0.)*phi_sup))
-    L = float(max(2., np.log(8*rows*(S*J+1)/delta)))
-    d_r = [float(np.sqrt(sum(comb(j, r)**2*M**(2*(j-r)) for j in range(r, J+1)))) for r in range(1, J+1)]
-    Gamma = float(np.sqrt(sum(factorial(r)*variance**r*d_r[r-1]**2 for r in range(1, J+1))))
-    mu = float(linalg.norm(bounds)+Gamma*g2*np.sqrt(L)
-               + g_inf*sum(variance**(r/2)*d_r[r-1]*L**(r/2) for r in range(2, J+1)))
-    tau = float(b_Y+np.sqrt(variance)*g0*np.sqrt(2*L))
-    return dict(mu=mu, tau=tau, M=M, M1=M1, L_delta=L, g0=g0, g2=g2, g_inf=g_inf, Gamma=Gamma)
-
-
 @dataclass
 class EIV:
-    delta: float = .05
-    lam: float = 1.
-    mu: float | None = None          # None: declared formula
-    tau: float | None = None
-    variance: float | None = None    # None: sixth-difference estimate from the X-side state
-    M: float | None = None
-    M1: float | None = None
+    lam: object = field(default_factory=lambda: np.logspace(-3, 3, 13))   # value or grid
+    tau: float | None = None         # required unless oracle
+    mu: float | None = None
+    oracle: bool = False             # tau, mu (and the grid choice of lam) from the true beta* and sigma^2
+    tau_share: float = 1.            # oracle: tau = share*r*, mu = (1-share)*r*/||beta*||_2, r* = ||y - X beta*||_inf
+    variance: float | None = None    # None: true sigma^2 if oracle, else sixth-difference estimate
+    normalize: bool = False          # solve on unit-norm columns, so ||beta||_1, ||beta||_2 are scale-free
+    row_normalize: bool = False      # oracle: divide each weak equation by its noise std (Monte Carlo around u*)
+    draws: int = 50
     tolerance: float = 1e-8
-    support_tolerance: float = 1e-7  # diagnostic support mask; coefficients are not thresholded
+    support_tolerance: float = 1e-3  # diagnostic support |beta_j| > tolerance*max|beta|; no thresholding
 
     def regress(self, system):
         from .estimators import noise_std
         if system.U.shape[-1] != 1 or any(t.powers is None for t in system.terms):
             raise ValueError("EIV supports scalar polynomial dictionaries.")
-        u = system.X_state[..., 0]
-        variance = noise_std(u)**2 if self.variance is None else self.variance
+        if self.oracle:
+            truth = system.pde.truth_matrix(system.terms)[0]
+            variance = system.noise_std[0]**2 if self.variance is None else self.variance
+        else:
+            if self.tau is None or self.mu is None:
+                raise ValueError("Give tau and mu, or use oracle=True.")
+            variance = noise_std(system.X_state[..., 0])**2 if self.variance is None else self.variance
         X = system.columns(system.terms, system.X_state, variance=variance, rescale=False)
         y = system.columns(system.lhs, system.Y_state, rescale=False)[:, 0]
-        calibration = tolerances(system, u, X.shape[0], variance, self.delta, self.M, self.M1)
-        mu = calibration["mu"] if self.mu is None else self.mu
-        tau = calibration["tau"] if self.tau is None else self.tau
-        beta, t, status, success, diagnostics = conic(X, y, mu, tau, self.lam, self.tolerance)
-        return Fit(beta[None, :], dict(calibration, mu=mu, tau=tau, variance=variance, t=t, status=status,
-                                       success=success, support=[(np.abs(beta) > self.support_tolerance).tolist()],
-                                       **diagnostics))
+        if self.row_normalize:
+            if not self.oracle:
+                raise ValueError("Row normalization uses the oracle noise model; set oracle=True.")
+            std = self._row_std(system, truth, variance)
+            weights = 1/std if np.all(std > 0) else np.ones_like(std)   # noise-free: no row scale
+            X, y = X*weights[:, None], y*weights
+        scale = np.linalg.norm(X, axis=0) if self.normalize else np.ones(X.shape[1])
+        X = X/scale
+        if self.oracle:
+            residual = float(np.max(np.abs(y-X@(truth*scale))))
+            tau, mu = self.tau_share*residual, (1-self.tau_share)*residual/np.linalg.norm(truth*scale)
+        else:
+            tau, mu = self.tau, self.mu
+        lams = np.atleast_1d(self.lam).astype(float)
+        if len(lams) > 1 and not self.oracle:
+            raise ValueError("A lam grid needs oracle=True (selection by coefficient error).")
+        fits = [conic(X, y, mu, tau, lam, self.tolerance) for lam in lams]
+        errors = [float(np.linalg.norm(f[0]/scale-truth)/np.linalg.norm(truth)) if self.oracle else np.nan for f in fits]
+        best = int(np.nanargmin(errors)) if len(lams) > 1 else 0
+        beta, t, status, success, diagnostics = fits[best]
+        support = np.abs(beta) > self.support_tolerance*np.max(np.abs(beta)) if np.any(beta) else np.zeros(len(beta), bool)
+        return Fit((beta/scale)[None, :], dict(diagnostics, lam=float(lams[best]), lams=lams.tolist(),
+                   oracle_e2_path=errors if self.oracle else None, tau=tau, mu=mu, variance=variance, t=t,
+                   status=status, success=success, support=[support.tolist()]))
+
+    def _row_std(self, system, truth, variance):
+        """Standard deviation of each weak residual Y_k(U) - X_k(U) beta* over fresh noise around u*."""
+        rng, active = np.random.default_rng(0), truth != 0
+        terms = [t for t, a in zip(system.terms, active) if a]
+        residuals = []
+        for _ in range(self.draws):
+            V = system.clean+np.sqrt(variance)*rng.standard_normal(system.clean.shape)
+            residuals.append(system.columns(system.lhs, V, rescale=False)[:, 0]
+                             - system.columns(terms, V, variance=variance, rescale=False)@truth[active])
+        return np.std(residuals, axis=0)

@@ -4,7 +4,7 @@ import numpy as np
 import pysindy as ps
 from scipy.optimize import approx_fprime
 from pdes import AUTHORS, PDE, PDES, Profile, metrics, observe, trial_seed
-from wsindy import (BestSubset, Block, CrossFitPilot, EIV, FromAPI, FromCallable, FromPySINDy, MSTLS, StrongSystem, Tests, WeakSystem,
+from wsindy import (BestSubset, Block, EIV, FromAPI, FromCallable, FromPySINDy, MSTLS, StrongSystem, Tests, WeakSystem,
                     estimate, fit, spatial)
 from wsindy.eiv import conic
 from wsindy.testfunctions import changepoint_supports, poly_weights
@@ -118,9 +118,15 @@ class Regression(unittest.TestCase):
         self.assertTrue(success)
         np.testing.assert_allclose(beta, [1.5, 0, 0], atol=1e-6)
         U, grid = advection()
-        result = fit(WeakSystem(replace(ADVECTION, profile=Profile(False, AUTHORS.thresholds, "relative", False,
-                                                                     "rms", "per_axis")), U, grid), EIV(lam=1.))
-        self.assertEqual(result.coef.shape, (1, 7))
+        system = WeakSystem(replace(ADVECTION, profile=Profile(False, AUTHORS.thresholds, "relative", False,
+                                                               "rms", "per_axis")), U, grid)
+        system.noise_std = [0.]
+        for normalize in (False, True):   # oracle tau keeps beta* feasible; lam is chosen on the grid
+            result = fit(system, EIV(oracle=True, normalize=normalize))
+            self.assertEqual(result.coef.shape, (1, 7))
+            self.assertIn(result.info["lam"], result.info["lams"])
+        with self.assertRaises(ValueError):
+            fit(system, EIV())   # tau and mu are required without the oracle
 
 
     def test_best_subset_is_exact(self):
@@ -154,6 +160,21 @@ class Regression(unittest.TestCase):
         total = min(best(Y[:, 0], a)+best(Y[:, 1], 5-a) for a in range(1, 5))
         self.assertAlmostEqual(np.linalg.norm(Y-X@fit_total.coef.T)**2, total, places=8)
 
+    def test_best_subset_with_fewer_rows_than_terms(self):
+        require_gurobi(self)
+        from itertools import combinations
+        from types import SimpleNamespace
+        rng = np.random.default_rng(0)
+        X = rng.normal(size=(10, 20))   # K = 10 weak rows < J = 20 terms
+        Y = X[:, [2, 5, 7]]@np.array([[1.], [-2.], [.5]])+.01*rng.normal(size=(10, 1))
+        system = SimpleNamespace(X=X, Y=Y, scales=np.ones((20, 1)))
+        W = BestSubset(r=3).regress(system).coef[0]
+        best = min(np.linalg.norm(Y[:, 0]-X[:, list(c)]@np.linalg.lstsq(X[:, list(c)], Y[:, 0], rcond=None)[0])**2
+                   for c in combinations(range(20), 3))
+        self.assertEqual(np.count_nonzero(W), 3)
+        self.assertAlmostEqual(np.linalg.norm(Y[:, 0]-X@W)**2, best, places=8)
+        self.assertEqual(BestSubset().regress(system).coef.shape, (1, 20))
+
     def test_best_subset_recovers_advection(self):
         require_gurobi(self)
         U, grid = advection()
@@ -173,15 +194,6 @@ def require_gurobi(test):
 
 
 class Estimators(unittest.TestCase):
-    def test_crossfit_pilot_ignores_its_own_fold(self):
-        rng = np.random.default_rng(1)
-        U, grid = advection()
-        U = U+.05*rng.normal(size=U.shape)
-        pilot = estimate(U, grid, ADVECTION, CrossFitPilot())[0]
-        perturbed = U.copy()
-        perturbed[:, ::2] += 10.
-        self.assertTrue(np.allclose(estimate(perturbed, grid, ADVECTION, CrossFitPilot())[0][:, ::2], pilot[:, ::2]))
-
     def test_external_estimators(self):
         U, grid = advection()
         noisy = U+.05*np.random.default_rng(2).normal(size=U.shape)

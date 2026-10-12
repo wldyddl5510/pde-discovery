@@ -1,10 +1,12 @@
 """Identification trials, one JSONL record per (PDE, method, noise ratio, trial).
 
     python run.py KS NLS --method wsindy filtered --trials 100 --workers 4
+    python run.py IB --method debiased debiased-lasso --split .3 --out benchmark_results/split-0.3
 
 Records go to <out>/<method>/<PDE>.jsonl; completed trials are skipped on rerun.
 A method is a uhat estimator, the state for each side of the weak system, and a
-regression; add new combinations to METHODS.
+regression; add new combinations to METHODS. Debiased methods estimate uhat from a
+fraction --split of the time points and fit the debiased loss on the other times only.
 """
 from __future__ import annotations
 import os
@@ -12,14 +14,15 @@ for _variable in ("VECLIB_MAXIMUM_THREADS", "OPENBLAS_NUM_THREADS", "OMP_NUM_THR
     os.environ.setdefault(_variable, "1")   # many small least-squares fits per process
 import argparse
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import json
 from pathlib import Path
 import subprocess
 from time import perf_counter
 import numpy as np
 from pdes import PDES, load, metrics, observe, trial_seed
-from wsindy import BestSubset, CrossFitPilot, LassoPath, MSTLS, MovingAverage, StrongSystem, WeakSystem, estimate, fit
+from wsindy import (EIV, BestSubset, LassoPath, MSTLS, MovingAverage, SplitPilot, SplitSystem, StrongSystem, WeakSystem,
+                    estimate, fit)
 
 
 @dataclass(frozen=True)
@@ -31,22 +34,34 @@ class Method:
     system: type = WeakSystem  # or StrongSystem (pointwise SINDy / PDE-FIND)
 
 
+# Best-subset sparsity r per PDE and equation: the true r, as in the PDE experiments of arXiv:2206.00176.
+TRUE_R = {name: tuple(len(equation) for equation in pde.truth) for name, pde in PDES.items()}
+
 METHODS = {
     "sindy": Method(system=StrongSystem),
     "wsindy": Method(),
     "filtered": Method(MovingAverage(), "uhat", "uhat"),
-    "debiased": Method(CrossFitPilot(), "uhat", "U", MSTLS(loss="debiased")),
+    "debiased": Method(SplitPilot(), "uhat", "U", MSTLS(loss="debiased"), SplitSystem),
     "lasso": Method(regression="lasso"),
     "filtered-lasso": Method(MovingAverage(), "uhat", "uhat", "lasso"),
-    "debiased-lasso": Method(CrossFitPilot(), "uhat", "U", LassoPath(loss="debiased")),
-    "eiv": Method(regression="eiv"),
-    # sparsity r per PDE (per equation); here the true sparsity, as in the PDE experiments of arXiv:2206.00176
-    "best-subset": Method(regression=BestSubset(r={name: tuple(len(eq) for eq in pde.truth) for name, pde in PDES.items()})),
+    "debiased-lasso": Method(SplitPilot(), "uhat", "U", LassoPath(loss="debiased"), SplitSystem),
+    "eiv": Method(regression=EIV(oracle=True, normalize=True)),   # sanity check: oracle tau, mu; lam grid
+    "eiv-rownorm": Method(regression=EIV(oracle=True, normalize=True, row_normalize=True)),
+    "best-subset": Method(regression=BestSubset(r=TRUE_R)),
+    "filtered-best-subset": Method(MovingAverage(), "uhat", "uhat", BestSubset(r=TRUE_R)),
+    "debiased-best-subset": Method(SplitPilot(), "uhat", "U", BestSubset(r=TRUE_R, loss="debiased"), SplitSystem),
 }
 
 
-def run_trial(name, method_name, ratio, trial):
-    pde, method = PDES[name], METHODS[method_name]
+def with_split(method, ratio):
+    """The method with a split estimator that uses a fraction `ratio` of the time points."""
+    if not isinstance(method.estimator, SplitPilot):
+        return method
+    return replace(method, estimator=replace(method.estimator, ratio=ratio))
+
+
+def run_trial(name, method_name, ratio, trial, method=None):
+    pde, method = PDES[name], method or METHODS[method_name]
     clean, grid = load(name)
     seed = trial_seed(name, ratio, trial)
     U, noise_std = observe(pde, clean, ratio, seed)
@@ -54,6 +69,8 @@ def run_trial(name, method_name, ratio, trial):
     uhat, info = estimate(U, grid, pde, method.estimator) if "uhat" in (method.X, method.Y) else (U, {})
     states = dict(U=U, uhat=uhat)
     system = method.system(pde, U, grid, X=states[method.X], Y=states[method.Y])
+    info = dict(info, **getattr(system, "sampling_info", {}))
+    system.clean, system.noise_std = clean, noise_std   # oracle-only information (sanity checks)
     result = fit(system, method.regression)
     runtime = perf_counter()-start
     truth = pde.truth_matrix(system.terms)
@@ -66,14 +83,14 @@ def run_trial(name, method_name, ratio, trial):
                 coefficients=result.coef.tolist(), estimator=info, **result.info)
 
 
-def _chunk(name, method_name, ratio, trials):
-    return [run_trial(name, method_name, ratio, trial) for trial in trials]
+def _chunk(name, method_name, method, ratio, trials):
+    return [run_trial(name, method_name, ratio, trial, method) for trial in trials]
 
 
-def _config(method_name, args):
+def _config(method, args):
     commit = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True,
                             cwd=Path(__file__).parent).stdout.strip()
-    return dict(method=repr(METHODS[method_name]), noise_ratios=args.noise, trials=args.trials, commit=commit,
+    return dict(method=repr(method), noise_ratios=args.noise, trials=args.trials, commit=commit,
                 pdes={name: dict(terms=[t.label for t in PDES[name].dictionary_terms()[1]],
                                  lhs=list(PDES[name].lhs), tests=repr(PDES[name].tests)) for name in args.pdes})
 
@@ -85,16 +102,18 @@ def main():
     parser.add_argument("--noise", nargs="+", type=float, default=[0., .2, .5, .75, 1.])
     parser.add_argument("--trials", type=int, default=100)
     parser.add_argument("--workers", type=int, default=1)
+    parser.add_argument("--split", type=float, default=.5, help="debiased methods: fraction of time points for uhat")
     parser.add_argument("--out", type=Path, default=Path("benchmark_results/runs"))
     args = parser.parse_args()
     tasks = []
     for method_name in args.method:
+        method = with_split(METHODS[method_name], args.split)
         directory = args.out/method_name
         directory.mkdir(parents=True, exist_ok=True)
         config = directory/"config.json"
-        if config.exists() and json.loads(config.read_text())["method"] != repr(METHODS[method_name]):
+        if config.exists() and json.loads(config.read_text())["method"] != repr(method):
             raise SystemExit(f"{directory} holds a different method definition; choose another --out.")
-        config.write_text(json.dumps(_config(method_name, args), indent=2)+"\n")
+        config.write_text(json.dumps(_config(method, args), indent=2)+"\n")
         for name in args.pdes:
             path, done = directory/f"{name}.jsonl", set()
             if path.exists():
@@ -102,11 +121,11 @@ def main():
                     done = {(r["noise_ratio"], r["trial"]) for r in map(json.loads, source)}
             for ratio in args.noise:
                 todo = [t for t in range(args.trials) if (ratio, t) not in done]
-                tasks.extend((name, method_name, ratio, todo[i:i+10]) for i in range(0, len(todo), 10))
+                tasks.extend((name, method_name, method, ratio, todo[i:i+10]) for i in range(0, len(todo), 10))
     with ProcessPoolExecutor(args.workers) as pool:
         futures = {pool.submit(_chunk, *task): task for task in tasks}
         for count, future in enumerate(as_completed(futures), 1):
-            name, method_name, ratio, trials = futures[future]
+            name, method_name, _, ratio, trials = futures[future]
             with (args.out/method_name/f"{name}.jsonl").open("a") as sink:
                 sink.writelines(json.dumps(record, allow_nan=False)+"\n" for record in future.result())
             print(f"[{count}/{len(tasks)}] {method_name} {name} noise {ratio:g} trials {trials[0]}-{trials[-1]}", flush=True)

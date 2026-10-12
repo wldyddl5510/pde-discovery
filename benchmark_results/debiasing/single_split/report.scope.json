@@ -1,0 +1,4 @@
+{
+  "include_when_scanning_parent": false,
+  "reason": "This comparison reruns existing baselines with the same seeds. Select this study directory explicitly to report it."
+}
