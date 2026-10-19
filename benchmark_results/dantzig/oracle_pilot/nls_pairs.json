@@ -1,0 +1,637 @@
+{
+  "diagnostic": "exhaustive-two-column-minimax-NLS-exact-plugin-noiseless",
+  "planned_pairs": 17955,
+  "completed_pairs": 17955,
+  "equations": 2,
+  "solved_LPs": 35910,
+  "complete": true,
+  "method": "exact_plugin_dantzig",
+  "threshold_ratio": 0.01,
+  "runtime_seconds": 141.19444458303042,
+  "failures": [],
+  "max_normalized_primal_violation": 2.1513901771186283e-12,
+  "max_normalized_dual_stationarity": 1.793889276595958e-15,
+  "max_dual_mass_excess": 7.993605777301127e-15,
+  "provenance": {
+    "metadata_file": "NLS_noise-0_trial-0.json",
+    "metadata_sha256": "cefb9672736da33057a2de2300628bd1a0fc1adb3c5e38b6b293d4f1767c1a00",
+    "score_file": "NLS_noise-0_trial-0.npz",
+    "score_sha256": "3bd93948cc663121c1d52622687a31197f2cd2d4f91ce98a19d826d8791ef88d",
+    "saved_solution": "NLS_noise-0_trial-0__exact_plugin_dantzig.json",
+    "saved_solution_sha256": "dd670a29e981709a0491787434c68d17c0e0a696ebdfcd40fec0d71d7d601757",
+    "diagnostic_source_sha256": "0906c3ac3836658b7669c03b2f598aee6a130f20cc88b99482c72cdcf5059f54",
+    "output_archive_sha256": "ac69a72f1276464da23deed7160cf542910e0083ec2008f8ba8b10dd8b7765d1"
+  },
+  "scaling": "LP uses H[:,j]/max|H[:,j]|, b/||b||inf and transforms coefficients back; physical norm unchanged",
+  "exact_certificate": "Nonnegative rational weights sum to 1 and annihilate both raw binary64 H columns exactly; -sum(weights*sign*b) is a dual lower bound. Row indices refer to [H;-H], -1 is padding.",
+  "interpretation": "All supports of size <=2 are contained in a column pair. Excluding every pair below a lambda and exhibiting a feasible 3-term vector establishes minimum cardinality 3 for the saved floating score. This separate diagnostic never edits Gurobi flags and does not certify the residual tie-break.",
+  "results": [
+    {
+      "equation": 0,
+      "label": "u_t = 0.5 v_xx + u^2 v + v^3",
+      "minimum_two_column_residual_ratio": 0.014882314018129976,
+      "minimum_two_column_residual": 38.30817741754208,
+      "best_pair": [
+        120,
+        157
+      ],
+      "best_pair_labels": [
+        "u^2 v^3",
+        "(u^4 v^2)_xx"
+      ],
+      "best_pair_coefficients": [
+        0.0941051806401373,
+        0.00017008728733163605
+      ],
+      "minimum_exact_dual_ratio": 0.014882314018129643,
+      "minimum_exact_dual_physical": 38.30817741754122,
+      "minimum_exact_dual_fraction": "6550232038076839075780315533658890306739523735/170987827655760619358268987201721267080134656",
+      "minimum_exact_dual_over_threshold": 1.488231401812964,
+      "exact_witness_count": 17955,
+      "exact_threshold_exclusions": 17955,
+      "all_pairs_exactly_excluded_at_threshold": true,
+      "truth_feasibility_ratio": 4.21577599922903e-05,
+      "saved_three_term_candidates": [
+        {
+          "lambda_ratio": 0.01,
+          "lam": 25.740739894934475,
+          "physical_residual": 0.004553822755440251,
+          "e2": 2.741413265569245e-05,
+          "coefficients": [
+            {
+              "index": 10,
+              "term": "v_xx",
+              "value": 0.5000125822529408
+            },
+            {
+              "index": 43,
+              "term": "u^2 v",
+              "value": 1.0000369158328992
+            },
+            {
+              "index": 57,
+              "term": "v^3",
+              "value": 1.000013033080915
+            }
+          ],
+          "exact_physical_residual": 0.00455382275534413,
+          "exact_physical_residual_fraction": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 1.4882314018129639,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        },
+        {
+          "lambda_ratio": 0.0031622776601683794,
+          "lam": 8.139936672595624,
+          "physical_residual": 0.004553822755440251,
+          "e2": 2.741413265569245e-05,
+          "coefficients": [
+            {
+              "index": 10,
+              "term": "v_xx",
+              "value": 0.5000125822529408
+            },
+            {
+              "index": 43,
+              "term": "u^2 v",
+              "value": 1.0000369158328992
+            },
+            {
+              "index": 57,
+              "term": "v^3",
+              "value": 1.000013033080915
+            }
+          ],
+          "exact_physical_residual": 0.00455382275534413,
+          "exact_physical_residual_fraction": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 4.7062009151142075,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        },
+        {
+          "lambda_ratio": 0.001,
+          "lam": 2.5740739894934475,
+          "physical_residual": 0.004553822755440251,
+          "e2": 2.741413265569245e-05,
+          "coefficients": [
+            {
+              "index": 10,
+              "term": "v_xx",
+              "value": 0.5000125822529408
+            },
+            {
+              "index": 43,
+              "term": "u^2 v",
+              "value": 1.0000369158328992
+            },
+            {
+              "index": 57,
+              "term": "v^3",
+              "value": 1.000013033080915
+            }
+          ],
+          "exact_physical_residual": 0.00455382275534413,
+          "exact_physical_residual_fraction": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 14.88231401812964,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        },
+        {
+          "lambda_ratio": 0.00031622776601683794,
+          "lam": 0.8139936672595623,
+          "physical_residual": 0.004553822755440251,
+          "e2": 2.741413265569245e-05,
+          "coefficients": [
+            {
+              "index": 10,
+              "term": "v_xx",
+              "value": 0.5000125822529408
+            },
+            {
+              "index": 43,
+              "term": "u^2 v",
+              "value": 1.0000369158328992
+            },
+            {
+              "index": 57,
+              "term": "v^3",
+              "value": 1.000013033080915
+            }
+          ],
+          "exact_physical_residual": 0.00455382275534413,
+          "exact_physical_residual_fraction": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 47.06200915114208,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        },
+        {
+          "lambda_ratio": 0.0001,
+          "lam": 0.2574073989493447,
+          "physical_residual": 0.004553822755440251,
+          "e2": 2.741413265569245e-05,
+          "coefficients": [
+            {
+              "index": 10,
+              "term": "v_xx",
+              "value": 0.5000125822529408
+            },
+            {
+              "index": 43,
+              "term": "u^2 v",
+              "value": 1.0000369158328992
+            },
+            {
+              "index": 57,
+              "term": "v^3",
+              "value": 1.000013033080915
+            }
+          ],
+          "exact_physical_residual": 0.00455382275534413,
+          "exact_physical_residual_fraction": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 148.82314018129642,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        },
+        {
+          "lambda_ratio": 3.1622776601683795e-05,
+          "lam": 0.08139936672595624,
+          "physical_residual": 0.004553822755440251,
+          "e2": 2.741413265569245e-05,
+          "coefficients": [
+            {
+              "index": 10,
+              "term": "v_xx",
+              "value": 0.5000125822529408
+            },
+            {
+              "index": 43,
+              "term": "u^2 v",
+              "value": 1.0000369158328992
+            },
+            {
+              "index": 57,
+              "term": "v^3",
+              "value": 1.000013033080915
+            }
+          ],
+          "exact_physical_residual": 0.00455382275534413,
+          "exact_physical_residual_fraction": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 470.6200915114207,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        },
+        {
+          "lambda_ratio": 1e-05,
+          "lam": 0.025740739894934476,
+          "physical_residual": 0.004553822755440251,
+          "e2": 2.741413265569245e-05,
+          "coefficients": [
+            {
+              "index": 10,
+              "term": "v_xx",
+              "value": 0.5000125822529408
+            },
+            {
+              "index": 43,
+              "term": "u^2 v",
+              "value": 1.0000369158328992
+            },
+            {
+              "index": 57,
+              "term": "v^3",
+              "value": 1.000013033080915
+            }
+          ],
+          "exact_physical_residual": 0.00455382275534413,
+          "exact_physical_residual_fraction": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 1488.231401812964,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        },
+        {
+          "lambda_ratio": 3.162277660168379e-06,
+          "lam": 0.008139936672595624,
+          "physical_residual": 0.004553822755440251,
+          "e2": 2.741413265569245e-05,
+          "coefficients": [
+            {
+              "index": 10,
+              "term": "v_xx",
+              "value": 0.5000125822529408
+            },
+            {
+              "index": 43,
+              "term": "u^2 v",
+              "value": 1.0000369158328992
+            },
+            {
+              "index": 57,
+              "term": "v^3",
+              "value": 1.000013033080915
+            }
+          ],
+          "exact_physical_residual": 0.00455382275534413,
+          "exact_physical_residual_fraction": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 4706.200915114207,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        },
+        {
+          "lambda_ratio": 1.7782794100389227e-06,
+          "lam": 0.004577422775432944,
+          "physical_residual": 0.004553822755440251,
+          "e2": 2.741413265569245e-05,
+          "coefficients": [
+            {
+              "index": 10,
+              "term": "v_xx",
+              "value": 0.5000125822529408
+            },
+            {
+              "index": 43,
+              "term": "u^2 v",
+              "value": 1.0000369158328992
+            },
+            {
+              "index": 57,
+              "term": "v^3",
+              "value": 1.000013033080915
+            }
+          ],
+          "exact_physical_residual": 0.00455382275534413,
+          "exact_physical_residual_fraction": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 8368.940186853932,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        },
+        {
+          "lambda_ratio": 5.623413251903491e-06,
+          "lam": 0.01447508178389754,
+          "physical_residual": 0.004553822755440251,
+          "e2": 2.741413265569245e-05,
+          "coefficients": [
+            {
+              "index": 10,
+              "term": "v_xx",
+              "value": 0.5000125822529408
+            },
+            {
+              "index": 43,
+              "term": "u^2 v",
+              "value": 1.0000369158328992
+            },
+            {
+              "index": 57,
+              "term": "v^3",
+              "value": 1.000013033080915
+            }
+          ],
+          "exact_physical_residual": 0.00455382275534413,
+          "exact_physical_residual_fraction": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 2646.4912592173564,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        }
+      ]
+    },
+    {
+      "equation": 1,
+      "label": "v_t = -0.5 u_xx - u v^2 - u^3",
+      "minimum_two_column_residual_ratio": 0.015863010674282935,
+      "minimum_two_column_residual": 40.72667770542704,
+      "best_pair": [
+        113,
+        169
+      ],
+      "best_pair_labels": [
+        "u^3 v^2",
+        "u^2 v^4"
+      ],
+      "best_pair_coefficients": [
+        -0.09564742070421639,
+        -0.017284070929640745
+      ],
+      "minimum_exact_dual_ratio": 0.01586301067428288,
+      "minimum_exact_dual_physical": 40.726677705426894,
+      "minimum_exact_dual_fraction": "7716909700410541661983997770478404608714443777/189480461829624041064838051155898823830667264",
+      "minimum_exact_dual_over_threshold": 1.5863010674282878,
+      "exact_witness_count": 17955,
+      "exact_threshold_exclusions": 17955,
+      "all_pairs_exactly_excluded_at_threshold": true,
+      "truth_feasibility_ratio": 4.7242143767506e-05,
+      "saved_three_term_candidates": [
+        {
+          "lambda_ratio": 0.01,
+          "lam": 25.673989976854145,
+          "physical_residual": 0.0041090045060627745,
+          "e2": 2.7593605290146718e-05,
+          "coefficients": [
+            {
+              "index": 3,
+              "term": "u_xx",
+              "value": -0.4999845536137819
+            },
+            {
+              "index": 36,
+              "term": "u^3",
+              "value": -0.9999805005742235
+            },
+            {
+              "index": 50,
+              "term": "u v^2",
+              "value": -0.9999669190777603
+            }
+          ],
+          "exact_physical_residual": 0.0041090045049515765,
+          "exact_physical_residual_fraction": "20346804793134235909341639/4951760157141521099596496896",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 1.586301067428288,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        },
+        {
+          "lambda_ratio": 0.0031622776601683794,
+          "lam": 8.118828495119276,
+          "physical_residual": 0.0041090045060627745,
+          "e2": 2.7593605290146718e-05,
+          "coefficients": [
+            {
+              "index": 3,
+              "term": "u_xx",
+              "value": -0.4999845536137819
+            },
+            {
+              "index": 36,
+              "term": "u^3",
+              "value": -0.9999805005742235
+            },
+            {
+              "index": 50,
+              "term": "u v^2",
+              "value": -0.9999669190777603
+            }
+          ],
+          "exact_physical_residual": 0.0041090045049515765,
+          "exact_physical_residual_fraction": "20346804793134235909341639/4951760157141521099596496896",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 5.016324427829728,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        },
+        {
+          "lambda_ratio": 0.001,
+          "lam": 2.5673989976854146,
+          "physical_residual": 0.0041090045060627745,
+          "e2": 2.7593605290146718e-05,
+          "coefficients": [
+            {
+              "index": 3,
+              "term": "u_xx",
+              "value": -0.4999845536137819
+            },
+            {
+              "index": 36,
+              "term": "u^3",
+              "value": -0.9999805005742235
+            },
+            {
+              "index": 50,
+              "term": "u v^2",
+              "value": -0.9999669190777603
+            }
+          ],
+          "exact_physical_residual": 0.0041090045049515765,
+          "exact_physical_residual_fraction": "20346804793134235909341639/4951760157141521099596496896",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 15.86301067428288,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        },
+        {
+          "lambda_ratio": 0.00031622776601683794,
+          "lam": 0.8118828495119276,
+          "physical_residual": 0.0041090045060627745,
+          "e2": 2.7593605290146718e-05,
+          "coefficients": [
+            {
+              "index": 3,
+              "term": "u_xx",
+              "value": -0.4999845536137819
+            },
+            {
+              "index": 36,
+              "term": "u^3",
+              "value": -0.9999805005742235
+            },
+            {
+              "index": 50,
+              "term": "u v^2",
+              "value": -0.9999669190777603
+            }
+          ],
+          "exact_physical_residual": 0.0041090045049515765,
+          "exact_physical_residual_fraction": "20346804793134235909341639/4951760157141521099596496896",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 50.163244278297284,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        },
+        {
+          "lambda_ratio": 0.0001,
+          "lam": 0.25673989976854145,
+          "physical_residual": 0.0041090045060627745,
+          "e2": 2.7593605290146718e-05,
+          "coefficients": [
+            {
+              "index": 3,
+              "term": "u_xx",
+              "value": -0.4999845536137819
+            },
+            {
+              "index": 36,
+              "term": "u^3",
+              "value": -0.9999805005742235
+            },
+            {
+              "index": 50,
+              "term": "u v^2",
+              "value": -0.9999669190777603
+            }
+          ],
+          "exact_physical_residual": 0.0041090045049515765,
+          "exact_physical_residual_fraction": "20346804793134235909341639/4951760157141521099596496896",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 158.63010674282881,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        },
+        {
+          "lambda_ratio": 3.1622776601683795e-05,
+          "lam": 0.08118828495119275,
+          "physical_residual": 0.0041090045060627745,
+          "e2": 2.7593605290146718e-05,
+          "coefficients": [
+            {
+              "index": 3,
+              "term": "u_xx",
+              "value": -0.4999845536137819
+            },
+            {
+              "index": 36,
+              "term": "u^3",
+              "value": -0.9999805005742235
+            },
+            {
+              "index": 50,
+              "term": "u v^2",
+              "value": -0.9999669190777603
+            }
+          ],
+          "exact_physical_residual": 0.0041090045049515765,
+          "exact_physical_residual_fraction": "20346804793134235909341639/4951760157141521099596496896",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 501.63244278297293,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        },
+        {
+          "lambda_ratio": 1e-05,
+          "lam": 0.025673989976854147,
+          "physical_residual": 0.0041090045060627745,
+          "e2": 2.7593605290146718e-05,
+          "coefficients": [
+            {
+              "index": 3,
+              "term": "u_xx",
+              "value": -0.4999845536137819
+            },
+            {
+              "index": 36,
+              "term": "u^3",
+              "value": -0.9999805005742235
+            },
+            {
+              "index": 50,
+              "term": "u v^2",
+              "value": -0.9999669190777603
+            }
+          ],
+          "exact_physical_residual": 0.0041090045049515765,
+          "exact_physical_residual_fraction": "20346804793134235909341639/4951760157141521099596496896",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 1586.3010674282878,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        },
+        {
+          "lambda_ratio": 3.162277660168379e-06,
+          "lam": 0.008118828495119275,
+          "physical_residual": 0.0041090045060627745,
+          "e2": 2.7593605290146718e-05,
+          "coefficients": [
+            {
+              "index": 3,
+              "term": "u_xx",
+              "value": -0.4999845536137819
+            },
+            {
+              "index": 36,
+              "term": "u^3",
+              "value": -0.9999805005742235
+            },
+            {
+              "index": 50,
+              "term": "u v^2",
+              "value": -0.9999669190777603
+            }
+          ],
+          "exact_physical_residual": 0.0041090045049515765,
+          "exact_physical_residual_fraction": "20346804793134235909341639/4951760157141521099596496896",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 5016.324427829729,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        },
+        {
+          "lambda_ratio": 1.7782794100389227e-06,
+          "lam": 0.00456555277493854,
+          "physical_residual": 0.0041090045060627745,
+          "e2": 2.7593605290146718e-05,
+          "coefficients": [
+            {
+              "index": 3,
+              "term": "u_xx",
+              "value": -0.4999845536137819
+            },
+            {
+              "index": 36,
+              "term": "u^3",
+              "value": -0.9999805005742235
+            },
+            {
+              "index": 50,
+              "term": "u v^2",
+              "value": -0.9999669190777603
+            }
+          ],
+          "exact_physical_residual": 0.0041090045049515765,
+          "exact_physical_residual_fraction": "20346804793134235909341639/4951760157141521099596496896",
+          "physical_feasible": true,
+          "minimum_dual_bound_over_lambda": 8920.42644408489,
+          "cardinality_three_independently_supported": true,
+          "original_cardinality_optimal": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+300/2100 trials
+600/2100 trials
+900/2100 trials
+1200/2100 trials
+1500/2100 trials
+1800/2100 trials
+2100/2100 trials
+{
+  "trials": 2100,
+  "unique_trials": 2100,
+  "input_sha256": "a64c900409d923b1710351d83981d25a96029613e62000210a45844fe5bf9f75",
+  "max_absolute_coefficient_difference_from_corrected_ols": 2.2870594307278225e-14,
+  "max_relative_coefficient_difference_from_corrected_ols": 2.0458250512356207e-14
+}

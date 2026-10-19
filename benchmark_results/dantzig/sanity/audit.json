@@ -1,0 +1,33 @@
+{
+  "protocol": "independent-solver-free-dantzig-audit-v1",
+  "passed": true,
+  "audited_at_utc": "2026-10-19T06:06:34.867322+00:00",
+  "executable": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python",
+  "numpy": "2.4.6",
+  "expected_realizations": 104,
+  "audited_realizations": 104,
+  "completed_preparation_caches": 104,
+  "complete": true,
+  "ignored_in_progress_jsonl_tail": false,
+  "trial_snapshot_sha256": "996fb1ea025abd90065d4be5727e244475696da6fde6d1cf25ba9e4e71f08dd0",
+  "auditor_source_sha256": "b0f18f6972a232fff91dc506f57f53b343ea62780639af605e3f22428754baf2",
+  "counts": {
+    "assertions": 54388,
+    "candidate_solutions": 3826,
+    "certified_candidate_solutions": 1323,
+    "equation_oracles": 260,
+    "completed_realizations": 104
+  },
+  "maxima": {
+    "score_residual_recompute_difference_relative_to_b": 0.0,
+    "coefficient_e2_recompute_difference": 0.0,
+    "selected_constraint_violation_relative_to_b": 0.0,
+    "candidate_constraint_violation_relative_to_b": 1.8109446597521046e-08
+  },
+  "failures": [],
+  "source_review": "No truth input/name in solve_one or score construction. Reviewed truth uses in the frozen runner/path: physical E2 and support evaluation, score diagnostics, oracle lambda ranking/refinement. Warm starts select saved feasible coefficients by neighboring lambda, not coefficient truth.",
+  "limitations": [
+    "Does not rerun Gurobi or independently reproduce its branch-and-bound lower bounds; checks reported bounds and certification consistency.",
+    "Checks saved physical score caches, their signatures and all candidate constraints; does not rebuild full weak scores from raw observations."
+  ]
+}

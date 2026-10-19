@@ -1,0 +1,248 @@
+{
+  "protocol": "independent-exact-NLS-certificate-verification-v1",
+  "passed": true,
+  "created_at_utc": "2026-10-19T15:06:48.109241+00:00",
+  "runtime_seconds": 9.843726832885295,
+  "equations": 2,
+  "dictionary_columns": 190,
+  "pairs_per_equation": 17955,
+  "counts": {
+    "assertions": 251554,
+    "exact_dual_witnesses_verified": 35910,
+    "exact_three_term_primals_verified": 19,
+    "minimum_cardinality_three_certificates": 19
+  },
+  "failures": [],
+  "results": [
+    {
+      "equation": 0,
+      "pairs_verified": 17955,
+      "physical_lambda_at_threshold": "7245374162441735/281474976710656",
+      "minimum_pair_dual_bound": "6550232038076839075780315533658890306739523735/170987827655760619358268987201721267080134656",
+      "minimum_pair": [
+        120,
+        157
+      ],
+      "minimum_dual_bound_over_threshold": 1.4882314018129639,
+      "all_supports_size_at_most_two_excluded": true,
+      "saved_three_term_candidates": [
+        {
+          "lambda_ratio": 0.01,
+          "physical_lambda": "7245374162441735/281474976710656",
+          "exact_residual": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.741413265569245e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        },
+        {
+          "lambda_ratio": 0.0031622776601683794,
+          "physical_lambda": "572797121336267/70368744177664",
+          "exact_residual": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.741413265569245e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        },
+        {
+          "lambda_ratio": 0.001,
+          "physical_lambda": "1449074832488347/562949953421312",
+          "exact_residual": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.741413265569245e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        },
+        {
+          "lambda_ratio": 0.00031622776601683794,
+          "physical_lambda": "7331803153104217/9007199254740992",
+          "exact_residual": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.741413265569245e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        },
+        {
+          "lambda_ratio": 0.0001,
+          "physical_lambda": "2318519731981355/9007199254740992",
+          "exact_residual": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.741413265569245e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        },
+        {
+          "lambda_ratio": 3.1622776601683795e-05,
+          "physical_lambda": "2932721261241687/36028797018963968",
+          "exact_residual": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.741413265569245e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        },
+        {
+          "lambda_ratio": 1e-05,
+          "physical_lambda": "7419263142340337/288230376151711744",
+          "exact_residual": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.741413265569245e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        },
+        {
+          "lambda_ratio": 3.162277660168379e-06,
+          "physical_lambda": "4692354017986699/576460752303423488",
+          "exact_residual": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.741413265569245e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        },
+        {
+          "lambda_ratio": 1.7782794100389227e-06,
+          "physical_lambda": "5277409153473799/1152921504606846976",
+          "exact_residual": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.741413265569245e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        },
+        {
+          "lambda_ratio": 5.623413251903491e-06,
+          "physical_lambda": "8344316534799157/576460752303423488",
+          "exact_residual": "90197752330389936699857513/19807040628566084398385987584",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.741413265569245e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        }
+      ]
+    },
+    {
+      "equation": 1,
+      "pairs_verified": 17955,
+      "physical_lambda_at_threshold": "1806646432701159/70368744177664",
+      "minimum_pair_dual_bound": "7716909700410541661983997770478404608714443777/189480461829624041064838051155898823830667264",
+      "minimum_pair": [
+        113,
+        169
+      ],
+      "minimum_dual_bound_over_threshold": 1.586301067428288,
+      "all_supports_size_at_most_two_excluded": true,
+      "saved_three_term_candidates": [
+        {
+          "lambda_ratio": 0.01,
+          "physical_lambda": "1806646432701159/70368744177664",
+          "exact_residual": "20346804793134235909341639/4951760157141521099596496896",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.7593605290146718e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        },
+        {
+          "lambda_ratio": 0.0031622776601683794,
+          "physical_lambda": "4570494123163017/562949953421312",
+          "exact_residual": "20346804793134235909341639/4951760157141521099596496896",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.7593605290146718e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        },
+        {
+          "lambda_ratio": 0.001,
+          "physical_lambda": "5781268584643709/2251799813685248",
+          "exact_residual": "20346804793134235909341639/4951760157141521099596496896",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.7593605290146718e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        },
+        {
+          "lambda_ratio": 0.00031622776601683794,
+          "physical_lambda": "7312790597060827/9007199254740992",
+          "exact_residual": "20346804793134235909341639/4951760157141521099596496896",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.7593605290146718e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        },
+        {
+          "lambda_ratio": 0.0001,
+          "physical_lambda": "4625014867714967/18014398509481984",
+          "exact_residual": "20346804793134235909341639/4951760157141521099596496896",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.7593605290146718e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        },
+        {
+          "lambda_ratio": 3.1622776601683795e-05,
+          "physical_lambda": "5850232477648661/72057594037927936",
+          "exact_residual": "20346804793134235909341639/4951760157141521099596496896",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.7593605290146718e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        },
+        {
+          "lambda_ratio": 1e-05,
+          "physical_lambda": "1850005947085987/72057594037927936",
+          "exact_residual": "20346804793134235909341639/4951760157141521099596496896",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.7593605290146718e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        },
+        {
+          "lambda_ratio": 3.162277660168379e-06,
+          "physical_lambda": "4680185982118929/576460752303423488",
+          "exact_residual": "20346804793134235909341639/4951760157141521099596496896",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.7593605290146718e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        },
+        {
+          "lambda_ratio": 1.7782794100389227e-06,
+          "physical_lambda": "5263723974644107/1152921504606846976",
+          "exact_residual": "20346804793134235909341639/4951760157141521099596496896",
+          "physical_feasible": true,
+          "minimum_cardinality_three_proved": true,
+          "coefficient_e2": 2.7593605290146718e-05,
+          "original_cardinality_flag": false,
+          "original_secondary_flag": false
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "verifier_source_sha256": "fb73faa73beff4b3f9710b39446bb162ea3d4ca4d5431f77513f0e1e775bc40f",
+    "diagnostic_json_sha256": "521be7deb2fbeab821a0164ddf7280082008ace01c13c5faa65c83dea700a7c3",
+    "certificate_archive_sha256": "ac69a72f1276464da23deed7160cf542910e0083ec2008f8ba8b10dd8b7765d1",
+    "physical_score_archive_sha256": "3bd93948cc663121c1d52622687a31197f2cd2d4f91ce98a19d826d8791ef88d",
+    "original_saved_solution_sha256": "dd670a29e981709a0491787434c68d17c0e0a696ebdfcd40fec0d71d7d601757"
+  },
+  "proof": "All physical binary64 values are exact Fractions. Gaussian elimination reconstructs dual weights; exact stationarity and l1<=1 imply residual>=dual objective. Every pair's bound exceeds lambda; a feasible nonzero three-term primal proves minimum cardinality 3.",
+  "limitations": [
+    "Does not certify the residual tie-break, alter any main solver flag, or rerun a linear program.",
+    "The proof concerns the saved finite-grid binary64 score and physical lambda, rather than exact continuum weak integrals."
+  ]
+}

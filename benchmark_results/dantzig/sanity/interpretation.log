@@ -1,0 +1,80 @@
+{
+  "plugin_dantzig": {
+    "realizations": 96,
+    "mean_e2": 0.9113057224970348,
+    "median_e2": 1.0,
+    "selected_all_zero": 72,
+    "selected_zero_equations": 94,
+    "selected_equations": 120,
+    "selected_secondary_unresolved": 0,
+    "selected_cardinality_unresolved": 0,
+    "exact_support": 5,
+    "e2_below_point1": 3,
+    "mean_fp": 3.25,
+    "mean_fn": 4.427083333333333,
+    "wins_vs_native_wsindy": 3,
+    "wins_with_all_zero_model": 3,
+    "wins_with_nonzero_model": 0,
+    "validated_candidates": 1759,
+    "candidates": 1767,
+    "certified_candidates": 587,
+    "cardinality_certified_candidates": 794,
+    "nonanalytic_candidates": 1647,
+    "certified_nonanalytic_candidates": 467,
+    "status_counts": {
+      "AnalyticZero": 120,
+      "Optimal": 468,
+      "ValidIncumbent": 1176,
+      "PrimaryFallback": 3
+    },
+    "primary_status_counts": {
+      "AnalyticZero": 120,
+      "2": 675,
+      "9": 972
+    },
+    "secondary_status_counts": {
+      "AnalyticZero": 120,
+      "2": 468,
+      "9": 1179
+    }
+  },
+  "debiased_dantzig": {
+    "realizations": 96,
+    "mean_e2": 0.962612047224367,
+    "median_e2": 1.0,
+    "selected_all_zero": 83,
+    "selected_zero_equations": 107,
+    "selected_equations": 120,
+    "selected_secondary_unresolved": 0,
+    "selected_cardinality_unresolved": 0,
+    "exact_support": 2,
+    "e2_below_point1": 1,
+    "mean_fp": 0.5520833333333334,
+    "mean_fn": 4.739583333333333,
+    "wins_vs_native_wsindy": 3,
+    "wins_with_all_zero_model": 2,
+    "wins_with_nonzero_model": 1,
+    "validated_candidates": 1749,
+    "candidates": 1756,
+    "certified_candidates": 633,
+    "cardinality_certified_candidates": 803,
+    "nonanalytic_candidates": 1636,
+    "certified_nonanalytic_candidates": 513,
+    "status_counts": {
+      "AnalyticZero": 120,
+      "Optimal": 514,
+      "ValidIncumbent": 1117,
+      "PrimaryFallback": 5
+    },
+    "primary_status_counts": {
+      "AnalyticZero": 120,
+      "2": 684,
+      "9": 952
+    },
+    "secondary_status_counts": {
+      "AnalyticZero": 120,
+      "2": 515,
+      "9": 1121
+    }
+  }
+}

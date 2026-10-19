@@ -244,11 +244,25 @@ class BestSubset:
 
     r may also map PDE names to bounds. r=None: for each equation, r = 1, 2, ... until the
     selection loss of Eq. 4.4 (as in MSTLS) increases; the previous r is kept.
+
+    threshold=lambda adds MSTLS's relative magnitude prior on physical coefficients: a selected
+    term needs lambda*max(1, B_j) <= |c_j| <= min(1, B_j)/lambda, B_j = |b|/|G_j| in physical units.
+    The constrained minimizer is returned without the least-squares refit.
     """
     r: int | tuple[int, ...] | dict | None = None
     loss: object = "ls"
     time_limit: float = 30.   # seconds per MIO; on timeout the incumbent is used and its gap reported
     mip_gap: float = 1e-4
+    threshold: float | None = None
+
+    def _bounds(self, G, b, units):
+        """MSTLS's relative bounds on |coefficients| of the scaled system; inf for zero columns."""
+        if self.threshold is None:
+            return None
+        norms = linalg.norm(G, axis=0)
+        B = np.divide(linalg.norm(b, axis=0)[None, :], norms[:, None], out=np.full(units.shape, np.inf),
+                      where=norms[:, None] > 0)*units
+        return self.threshold*np.maximum(1, B)/units, np.minimum(1, B)/self.threshold/units
 
     @staticmethod
     def _refit(loss, G, b, support):
@@ -258,7 +272,7 @@ class BestSubset:
                 coefficients[support[:, e], e] = loss.solve(G[:, support[:, e]], b[:, e])[0]
         return coefficients
 
-    def _solve(self, loss, G, b, r):
+    def _solve(self, loss, G, b, r, bounds=None):
         import gurobipy as gp
         J, E = G.shape[1], b.shape[1]
         if not np.isscalar(r) and len(r) != E:
@@ -283,6 +297,15 @@ class BestSubset:
                 for pair in zip(w, z):
                     model.addSOS(gp.GRB.SOS_TYPE1, list(pair))
             model.addConstr(residual == Q.T@b-R@W)
+            if bounds is not None:   # sign binaries: lower <= |W| <= upper on the support, W = 0 off it
+                lower, upper = bounds
+                usable = np.isfinite(lower)
+                lower, upper = np.where(usable, lower, 0), np.where(usable, upper, 0)
+                positive, negative = (model.addMVar((J, E), vtype=gp.GRB.BINARY) for _ in range(2))
+                model.addConstr(positive+negative == 1-zero)
+                model.addConstr(W >= lower*positive-upper*negative)
+                model.addConstr(W <= upper*positive-lower*negative)
+                zero.lb = (~usable).astype(float)
             if np.isscalar(r):
                 model.addConstr(zero.sum() >= J*E-r)
             else:
@@ -296,14 +319,16 @@ class BestSubset:
             support, gap = zero.X < .5, float(model.MIPGap)
             info = dict(optimal=model.Status == gp.GRB.OPTIMAL, mip_gap=gap if np.isfinite(gap) else None,
                         solve_seconds=float(model.Runtime))
-        return self._refit(loss, G, b, support), info
+            constrained = np.where(support, W.X, 0.)
+        return (self._refit(loss, G, b, support) if bounds is None else constrained), info
 
     def regress(self, system):
         loss = _loss(self.loss)
         G, b = loss.matrices(system)
         r = self.r[system.pde.name] if isinstance(self.r, dict) else self.r
+        bounds = self._bounds(G, b, system.scales)
         if r is not None:
-            W, info = self._solve(loss, G, b, r)
+            W, info = self._solve(loss, G, b, r, bounds)
             return Fit((W*system.scales).T, dict(info, r=r if np.isscalar(r) else list(r)))
         W = np.zeros((G.shape[1], b.shape[1]))
         info = dict(r=[], losses=[], optimal=[], mip_gap=[], solve_seconds=0.)
@@ -313,7 +338,7 @@ class BestSubset:
             projected = linalg.norm(G@least_squares)
             losses, chosen = [], None
             for r in range(1, G.shape[1]+1):
-                w, step = self._solve(loss, G, y, r)
+                w, step = self._solve(loss, G, y, r, bounds and tuple(x[:, [e]] for x in bounds))
                 info["solve_seconds"] += step["solve_seconds"]
                 losses.append(float((linalg.norm(G@(w-least_squares))/projected if projected else 0)
                                     + np.count_nonzero(w)/w.size))

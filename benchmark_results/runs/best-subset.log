@@ -242,13 +242,9 @@
 [242/400] best-subset RD noise 1 trials 10-19
 [243/400] best-subset RD noise 1 trials 20-29
 [244/400] best-subset RD noise 1 trials 30-39
-[1/56] best-subset RD noise 1 trials 70-79
-[2/56] best-subset RD noise 1 trials 50-59
-[3/56] best-subset RD noise 1 trials 40-49
-[4/56] best-subset RD noise 1 trials 60-69
-[5/56] best-subset NS noise 0 trials 10-19
-[6/56] best-subset NS noise 0 trials 0-9
-[7/56] best-subset NS noise 0 trials 20-29
+/opt/homebrew/anaconda3/envs/pde_discovery/lib/python3.11/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 5 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+56] best-subset NS noise 0 trials 20-29
 [8/56] best-subset NS noise 0 trials 30-39
 [9/56] best-subset NS noise 0 trials 40-49
 [10/56] best-subset NS noise 0 trials 50-59

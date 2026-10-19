@@ -1,0 +1,514 @@
+Start: prepared 0/104, solved 0/320, prepare workers=1, solver workers=6
+[prepare 1/104] IB_noise-0_trial-0 alpha=2.26e-06,energy=0.00552, time=0.3s elapsed=0.9s
+[prepare 2/104] IB_noise-0.2_trial-0 alpha=2.27e-06,energy=0.00552, time=0.4s elapsed=1.3s
+[prepare 3/104] IB_noise-0.5_trial-0 alpha=2.26e-06,energy=0.00552, time=0.4s elapsed=1.8s
+[solve 1/320] IB_noise-0_trial-0 rate_plugin_dantzig E2=0.0034606,exact=True,time=0.1s elapsed=1.8s
+[solve 2/320] IB_noise-0_trial-0 rate_debiased_dantzig E2=0.0034616,exact=True,time=0.1s elapsed=1.8s
+[solve 3/320] IB_noise-0_trial-0 exact_plugin_dantzig E2=0.0034616,exact=True,time=0.1s elapsed=1.8s
+[solve 4/320] IB_noise-0_trial-0 exact_debiased_dantzig E2=0.0034616,exact=True,time=0.1s elapsed=1.9s
+[solve 5/320] IB_noise-0.2_trial-0 rate_plugin_dantzig E2=0.0034606,exact=True,time=0.1s elapsed=1.9s
+[solve 6/320] IB_noise-0.2_trial-0 rate_debiased_dantzig E2=1,exact=False,time=0.1s elapsed=1.9s
+[solve 7/320] IB_noise-0.2_trial-0 exact_debiased_dantzig E2=1,exact=False,time=0.1s elapsed=1.9s
+[solve 8/320] IB_noise-0.5_trial-0 rate_plugin_dantzig E2=0.0034607,exact=True,time=0.1s elapsed=1.9s
+[checkpoint] joined 2/104 realizations
+[prepare 4/104] IB_noise-0.75_trial-0 alpha=2.25e-06,energy=0.00552, time=0.4s elapsed=2.2s
+[solve 9/320] IB_noise-0.75_trial-0 rate_plugin_dantzig E2=0.0034607,exact=True,time=0.1s elapsed=2.2s
+[solve 10/320] IB_noise-0.75_trial-0 exact_debiased_dantzig E2=1,exact=False,time=0.2s elapsed=2.4s
+[solve 11/320] IB_noise-0.5_trial-0 rate_debiased_dantzig E2=1,exact=False,time=0.5s elapsed=2.4s
+[solve 12/320] IB_noise-0.75_trial-0 rate_debiased_dantzig E2=1,exact=False,time=0.2s elapsed=2.4s
+[solve 13/320] IB_noise-0.5_trial-0 exact_debiased_dantzig E2=1,exact=False,time=0.5s elapsed=2.4s
+[prepare 5/104] IB_noise-1_trial-0 alpha=2.26e-06,energy=0.00552, time=0.4s elapsed=2.5s
+[solve 14/320] IB_noise-1_trial-0 rate_plugin_dantzig E2=0.0034609,exact=True,time=0.0s elapsed=2.6s
+[solve 15/320] IB_noise-1_trial-0 exact_debiased_dantzig E2=0.012107,exact=True,time=0.3s elapsed=2.8s
+[solve 16/320] IB_noise-1_trial-0 rate_debiased_dantzig E2=0.012107,exact=True,time=0.3s elapsed=2.8s
+[checkpoint] joined 5/104 realizations
+[prepare 6/104] KdV_noise-0_trial-0 alpha=0.0485,energy=0.00288, time=0.6s elapsed=3.1s
+[prepare 7/104] KdV_noise-0.2_trial-0 alpha=0.00129,energy=0.00288, time=0.6s elapsed=3.7s
+[solve 17/320] KdV_noise-0_trial-0 exact_plugin_dantzig E2=0.00011709,exact=True,time=0.7s elapsed=3.8s
+[solve 18/320] KdV_noise-0_trial-0 exact_debiased_dantzig E2=0.00011709,exact=True,time=0.7s elapsed=3.8s
+[prepare 8/104] KdV_noise-0.5_trial-0 alpha=0.00129,energy=0.00288, time=0.7s elapsed=4.5s
+[prepare 9/104] KdV_noise-0.75_trial-0 alpha=0.00129,energy=0.00288, time=0.9s elapsed=5.4s
+[solve 19/320] KdV_noise-0_trial-0 rate_debiased_dantzig E2=0.00017203,exact=True,time=2.6s elapsed=5.7s
+[prepare 10/104] KdV_noise-1_trial-0 alpha=0.00129,energy=0.00288, time=1.1s elapsed=6.5s
+[prepare 11/104] KS_noise-0_trial-0 alpha=0.0106,energy=0.00509, time=0.8s elapsed=7.3s
+[prepare 12/104] KS_noise-0.2_trial-0 alpha=0.000679,energy=0.00509, time=0.9s elapsed=8.2s
+[solve 20/320] KdV_noise-0_trial-0 rate_plugin_dantzig E2=0.00087808,exact=False,time=5.9s elapsed=9.0s
+[prepare 13/104] KS_noise-0.5_trial-0 alpha=0.000557,energy=0.00509, time=0.9s elapsed=9.1s
+[prepare 14/104] KS_noise-0.75_trial-0 alpha=0.000557,energy=0.00509, time=0.8s elapsed=9.9s
+[prepare 15/104] KS_noise-1_trial-0 alpha=0.000556,energy=0.00509, time=0.8s elapsed=10.7s
+[solve 21/320] KdV_noise-0.2_trial-0 rate_plugin_dantzig E2=0.0030191,exact=False,time=7.6s elapsed=11.4s
+[prepare 16/104] NLS_noise-0_trial-0 alpha=1,energy=0.000906, time=1.6s elapsed=12.5s
+[prepare 17/104] NLS_noise-0.2_trial-0 alpha=0.303,energy=0.00557, time=1.7s elapsed=14.2s
+[solve 22/320] KdV_noise-0.5_trial-0 rate_plugin_dantzig E2=0.0054293,exact=False,time=10.5s elapsed=15.0s
+[prepare 18/104] NLS_noise-0.5_trial-0 alpha=0.0764,energy=0.00557, time=1.7s elapsed=16.0s
+[prepare 19/104] NLS_noise-0.75_trial-0 alpha=0.0756,energy=0.00557, time=1.6s elapsed=17.8s
+[prepare 20/104] NLS_noise-1_trial-0 alpha=0.0737,energy=0.00557, time=1.6s elapsed=19.6s
+[solve 23/320] KdV_noise-0.75_trial-0 rate_plugin_dantzig E2=0.003001,exact=False,time=11.6s elapsed=23.0s
+[solve 24/320] KdV_noise-0.5_trial-0 rate_debiased_dantzig E2=0.89556,exact=False,time=22.3s elapsed=28.0s
+[checkpoint] joined 6/104 realizations
+[solve 25/320] KdV_noise-0.2_trial-0 exact_debiased_dantzig E2=0.89563,exact=False,time=29.2s elapsed=33.0s
+[solve 26/320] KdV_noise-0.2_trial-0 rate_debiased_dantzig E2=0.89563,exact=False,time=31.1s elapsed=34.8s
+[solve 27/320] KdV_noise-1_trial-0 rate_plugin_dantzig E2=0.002997,exact=False,time=11.0s elapsed=39.1s
+[solve 28/320] KdV_noise-0.5_trial-0 exact_debiased_dantzig E2=0.89556,exact=False,time=38.7s elapsed=47.8s
+[solve 29/320] KdV_noise-0.75_trial-0 rate_debiased_dantzig E2=1,exact=False,time=33.7s elapsed=48.8s
+[solve 30/320] KdV_noise-0.75_trial-0 exact_debiased_dantzig E2=1,exact=False,time=30.1s elapsed=53.2s
+[solve 31/320] KS_noise-0_trial-0 rate_debiased_dantzig E2=1.4134e-05,exact=False,time=9.0s elapsed=56.8s
+[solve 32/320] KS_noise-0_trial-0 exact_plugin_dantzig E2=9.964e-06,exact=False,time=9.0s elapsed=57.8s
+[checkpoint] joined 9/104 realizations
+[solve 33/320] KS_noise-0_trial-0 exact_debiased_dantzig E2=9.964e-06,exact=False,time=9.0s elapsed=62.2s
+[solve 34/320] KS_noise-0_trial-0 rate_plugin_dantzig E2=0.00035308,exact=True,time=26.7s elapsed=65.7s
+[solve 35/320] KdV_noise-1_trial-0 exact_debiased_dantzig E2=1,exact=False,time=36.3s elapsed=71.1s
+[solve 36/320] KdV_noise-1_trial-0 rate_debiased_dantzig E2=1,exact=False,time=38.1s elapsed=71.2s
+[solve 37/320] KS_noise-0.2_trial-0 rate_plugin_dantzig E2=0.00022988,exact=True,time=23.0s elapsed=79.8s
+[solve 38/320] KS_noise-0.5_trial-0 rate_plugin_dantzig E2=0.00019749,exact=True,time=21.9s elapsed=87.6s
+[solve 39/320] KS_noise-0.75_trial-0 rate_plugin_dantzig E2=0.00025793,exact=True,time=23.1s elapsed=102.8s
+[solve 40/320] KS_noise-0.2_trial-0 rate_debiased_dantzig E2=1,exact=False,time=73.4s elapsed=131.3s
+[checkpoint] joined 11/104 realizations
+[solve 41/320] KS_noise-0.2_trial-0 exact_debiased_dantzig E2=0.35092,exact=False,time=71.0s elapsed=133.1s
+[solve 42/320] KS_noise-0.5_trial-0 rate_debiased_dantzig E2=0.59941,exact=False,time=76.1s elapsed=147.2s
+[solve 43/320] KS_noise-0.5_trial-0 exact_debiased_dantzig E2=0.60082,exact=False,time=76.9s elapsed=148.1s
+[solve 44/320] KS_noise-0.75_trial-0 rate_debiased_dantzig E2=1,exact=False,time=63.1s elapsed=150.7s
+[solve 45/320] KS_noise-1_trial-0 rate_plugin_dantzig E2=0.00014795,exact=True,time=20.7s elapsed=152.1s
+[prepare 21/104] RD_noise-0_trial-0 alpha=0.0273,energy=0.000389, time=138.0s elapsed=157.6s
+[solve 46/320] KS_noise-0.75_trial-0 exact_debiased_dantzig E2=1,exact=False,time=67.8s elapsed=170.7s
+[heartbeat] prepared=21/104,solved=46/320, active=6,elapsed=200.7s
+[solve 47/320] KS_noise-1_trial-0 rate_debiased_dantzig E2=1,exact=False,time=70.4s elapsed=203.5s
+[solve 48/320] KS_noise-1_trial-0 exact_debiased_dantzig E2=1,exact=False,time=71.9s elapsed=219.1s
+[checkpoint] joined 15/104 realizations
+[heartbeat] prepared=21/104,solved=48/320, active=6,elapsed=249.2s
+[heartbeat] prepared=21/104,solved=48/320, active=6,elapsed=279.2s
+[prepare 22/104] RD_noise-0.2_trial-0 alpha=0.0108,energy=0.000389, time=136.4s elapsed=294.2s
+[heartbeat] prepared=22/104,solved=48/320, active=6,elapsed=324.2s
+[solve 49/320] NLS_noise-0_trial-0 rate_plugin_dantzig E2=1,exact=False,time=179.3s elapsed=327.4s
+[solve 50/320] NLS_noise-0_trial-0 rate_debiased_dantzig E2=1,exact=False,time=183.3s elapsed=334.0s
+[solve 51/320] NLS_noise-0_trial-0 exact_plugin_dantzig E2=1,exact=False,time=185.4s elapsed=337.6s
+[solve 52/320] NLS_noise-0_trial-0 exact_debiased_dantzig E2=1,exact=False,time=171.1s elapsed=341.8s
+[heartbeat] prepared=22/104,solved=52/320, active=6,elapsed=371.8s
+[solve 53/320] NLS_noise-0.2_trial-0 rate_plugin_dantzig E2=1,exact=False,time=183.2s elapsed=386.7s
+[solve 54/320] NLS_noise-0.2_trial-0 rate_debiased_dantzig E2=1,exact=False,time=176.3s elapsed=395.6s
+[heartbeat] prepared=22/104,solved=54/320, active=6,elapsed=425.6s
+[prepare 23/104] RD_noise-0.5_trial-0 alpha=0.00567,energy=0.000389, time=138.7s elapsed=433.0s
+[heartbeat] prepared=23/104,solved=54/320, active=6,elapsed=463.0s
+[heartbeat] prepared=23/104,solved=54/320, active=6,elapsed=493.0s
+[solve 55/320] NLS_noise-0.2_trial-0 exact_debiased_dantzig E2=1,exact=False,time=180.5s elapsed=507.9s
+[solve 56/320] NLS_noise-0.5_trial-0 rate_plugin_dantzig E2=1,exact=False,time=181.1s elapsed=515.1s
+[checkpoint] joined 17/104 realizations
+[solve 57/320] NLS_noise-0.5_trial-0 rate_debiased_dantzig E2=1,exact=False,time=178.5s elapsed=516.1s
+[solve 58/320] NLS_noise-0.5_trial-0 exact_debiased_dantzig E2=1,exact=False,time=180.6s elapsed=522.4s
+[heartbeat] prepared=23/104,solved=58/320, active=6,elapsed=552.4s
+[solve 59/320] NLS_noise-0.75_trial-0 rate_debiased_dantzig E2=1,exact=False,time=172.1s elapsed=567.7s
+[solve 60/320] NLS_noise-0.75_trial-0 rate_plugin_dantzig E2=1,exact=False,time=183.3s elapsed=570.1s
+[prepare 24/104] RD_noise-0.75_trial-0 alpha=0.00376,energy=0.000389, time=141.4s elapsed=574.4s
+[heartbeat] prepared=24/104,solved=60/320, active=6,elapsed=604.4s
+[heartbeat] prepared=24/104,solved=60/320, active=6,elapsed=634.4s
+[heartbeat] prepared=24/104,solved=60/320, active=6,elapsed=664.4s
+[solve 61/320] NLS_noise-0.75_trial-0 exact_debiased_dantzig E2=1,exact=False,time=178.6s elapsed=686.5s
+[solve 62/320] NLS_noise-1_trial-0 rate_plugin_dantzig E2=1,exact=False,time=179.7s elapsed=695.1s
+[solve 63/320] NLS_noise-1_trial-0 rate_debiased_dantzig E2=1,exact=False,time=183.7s elapsed=699.8s
+[solve 64/320] NLS_noise-1_trial-0 exact_debiased_dantzig E2=1,exact=False,time=184.4s elapsed=706.9s
+[checkpoint] joined 20/104 realizations
+[solve 65/320] RD_noise-0_trial-0 rate_debiased_dantzig E2=2.2653e-06,exact=True,time=137.4s elapsed=707.5s
+[prepare 25/104] RD_noise-1_trial-0 alpha=0.00267,energy=0.000389, time=143.8s elapsed=718.3s
+[heartbeat] prepared=25/104,solved=65/320, active=6,elapsed=748.3s
+[solve 66/320] RD_noise-0_trial-0 rate_plugin_dantzig E2=1,exact=False,time=196.3s elapsed=764.0s
+[prepare 26/104] NS_noise-0_trial-0 alpha=0.0117,energy=0.000453, time=51.7s elapsed=770.0s
+[solve 67/320] RD_noise-0_trial-0 exact_plugin_dantzig E2=1.4992e-07,exact=True,time=107.3s elapsed=793.9s
+[solve 68/320] RD_noise-0_trial-0 exact_debiased_dantzig E2=1.4992e-07,exact=True,time=107.7s elapsed=802.8s
+[prepare 27/104] NS_noise-0.2_trial-0 alpha=0.00996,energy=0.000453, time=49.2s elapsed=819.2s
+[heartbeat] prepared=27/104,solved=68/320, active=6,elapsed=849.2s
+[prepare 28/104] NS_noise-0.5_trial-0 alpha=0.00346,energy=0.000453, time=49.5s elapsed=868.7s
+[solve 69/320] RD_noise-0.2_trial-0 rate_debiased_dantzig E2=1,exact=False,time=188.4s elapsed=895.6s
+[solve 70/320] RD_noise-0.2_trial-0 exact_debiased_dantzig E2=1,exact=False,time=188.4s elapsed=896.0s
+[solve 71/320] RD_noise-0.2_trial-0 rate_plugin_dantzig E2=1,exact=False,time=196.3s elapsed=896.2s
+[prepare 29/104] NS_noise-0.75_trial-0 alpha=0.00215,energy=0.000453, time=50.3s elapsed=919.0s
+[heartbeat] prepared=29/104,solved=71/320, active=6,elapsed=949.0s
+[solve 72/320] RD_noise-0.5_trial-0 rate_plugin_dantzig E2=1,exact=False,time=196.3s elapsed=960.3s
+[checkpoint] joined 22/104 realizations
+[prepare 30/104] NS_noise-1_trial-0 alpha=0.00213,energy=0.000453, time=49.8s elapsed=968.8s
+[prepare 31/104] HKS_noise-0_trial-0 alpha=0.0166,energy=0.0055, time=0.8s elapsed=969.6s
+[prepare 32/104] HKS_noise-0.2_trial-0 alpha=0.000869,energy=0.0055, time=0.7s elapsed=970.3s
+[prepare 33/104] HKS_noise-0.5_trial-0 alpha=0.000824,energy=0.0055, time=0.7s elapsed=971.1s
+[prepare 34/104] HKS_noise-0.75_trial-0 alpha=0.000825,energy=0.0055, time=0.7s elapsed=971.8s
+[prepare 35/104] HKS_noise-1_trial-0 alpha=0.000824,energy=0.0055, time=0.7s elapsed=972.5s
+[prepare 36/104] VBG_noise-0_trial-0 alpha=1,energy=3.71e-05, time=1.2s elapsed=973.8s
+[prepare 37/104] VBG_noise-0.2_trial-0 alpha=0.673,energy=0.00294, time=1.7s elapsed=975.5s
+[prepare 38/104] VBG_noise-0.5_trial-0 alpha=0.283,energy=0.00294, time=1.2s elapsed=976.7s
+[prepare 39/104] VBG_noise-0.75_trial-0 alpha=0.199,energy=0.00294, time=1.2s elapsed=977.9s
+[prepare 40/104] VBG_noise-1_trial-0 alpha=0.187,energy=0.00294, time=1.2s elapsed=979.1s
+[prepare 41/104] IB_noise-0.2_trial-1 alpha=2.27e-06,energy=0.00552, time=0.8s elapsed=979.9s
+[prepare 42/104] IB_noise-0.5_trial-1 alpha=2.26e-06,energy=0.00552, time=0.7s elapsed=980.6s
+[prepare 43/104] IB_noise-0.75_trial-1 alpha=2.28e-06,energy=0.00552, time=0.7s elapsed=981.3s
+[prepare 44/104] IB_noise-1_trial-1 alpha=2.24e-06,energy=0.00552, time=0.7s elapsed=982.1s
+[prepare 45/104] KdV_noise-0.2_trial-1 alpha=0.00129,energy=0.00288, time=1.4s elapsed=983.5s
+[prepare 46/104] KdV_noise-0.5_trial-1 alpha=0.00129,energy=0.00288, time=1.4s elapsed=985.0s
+[prepare 47/104] KdV_noise-0.75_trial-1 alpha=0.00129,energy=0.00288, time=1.4s elapsed=986.4s
+[solve 73/320] RD_noise-0.5_trial-0 rate_debiased_dantzig E2=1,exact=False,time=193.5s elapsed=987.4s
+[prepare 48/104] KdV_noise-1_trial-1 alpha=0.00129,energy=0.00288, time=1.3s elapsed=987.7s
+[prepare 49/104] KS_noise-0.2_trial-1 alpha=0.000679,energy=0.00509, time=0.8s elapsed=988.5s
+[prepare 50/104] KS_noise-0.5_trial-1 alpha=0.000557,energy=0.00509, time=0.8s elapsed=989.3s
+[prepare 51/104] KS_noise-0.75_trial-1 alpha=0.000556,energy=0.00509, time=0.8s elapsed=990.1s
+[prepare 52/104] KS_noise-1_trial-1 alpha=0.000556,energy=0.00509, time=0.8s elapsed=990.9s
+[prepare 53/104] NLS_noise-0.2_trial-1 alpha=0.314,energy=0.00557, time=1.6s elapsed=992.6s
+[prepare 54/104] NLS_noise-0.5_trial-1 alpha=0.0771,energy=0.00557, time=1.5s elapsed=994.2s
+[prepare 55/104] NLS_noise-0.75_trial-1 alpha=0.0748,energy=0.00557, time=1.5s elapsed=995.8s
+[solve 74/320] RD_noise-0.5_trial-0 exact_debiased_dantzig E2=1,exact=False,time=193.3s elapsed=996.1s
+[prepare 56/104] NLS_noise-1_trial-1 alpha=0.0739,energy=0.00557, time=1.6s elapsed=997.5s
+[heartbeat] prepared=56/104,solved=74/320, active=6,elapsed=1027.5s
+[heartbeat] prepared=56/104,solved=74/320, active=6,elapsed=1057.5s
+[heartbeat] prepared=56/104,solved=74/320, active=6,elapsed=1087.5s
+[solve 75/320] RD_noise-0.75_trial-0 rate_plugin_dantzig E2=1,exact=False,time=196.4s elapsed=1092.0s
+[solve 76/320] RD_noise-0.75_trial-0 rate_debiased_dantzig E2=1,exact=False,time=196.4s elapsed=1092.4s
+[solve 77/320] RD_noise-0.75_trial-0 exact_debiased_dantzig E2=1,exact=False,time=196.4s elapsed=1092.6s
+[heartbeat] prepared=56/104,solved=77/320, active=6,elapsed=1122.6s
+[solve 78/320] NS_noise-0_trial-0 rate_debiased_dantzig E2=0.00092214,exact=False,time=44.9s elapsed=1137.2s
+[solve 79/320] NS_noise-0_trial-0 rate_plugin_dantzig E2=0.00075391,exact=False,time=45.6s elapsed=1137.7s
+[solve 80/320] NS_noise-0_trial-0 exact_plugin_dantzig E2=0.00092178,exact=False,time=45.6s elapsed=1138.2s
+[checkpoint] joined 24/104 realizations
+[solve 81/320] RD_noise-1_trial-0 rate_plugin_dantzig E2=1,exact=False,time=196.5s elapsed=1157.3s
+[solve 82/320] RD_noise-1_trial-0 rate_debiased_dantzig E2=1,exact=False,time=189.5s elapsed=1176.9s
+[solve 83/320] NS_noise-0_trial-0 exact_debiased_dantzig E2=0.00092178,exact=False,time=45.4s elapsed=1182.6s
+[solve 84/320] NS_noise-0.2_trial-0 rate_plugin_dantzig E2=0.00079383,exact=False,time=45.7s elapsed=1183.4s
+[solve 85/320] RD_noise-1_trial-0 exact_debiased_dantzig E2=1,exact=False,time=196.1s elapsed=1192.3s
+[prepare 57/104] RD_noise-0.2_trial-1 alpha=0.0108,energy=0.000389, time=201.9s elapsed=1199.5s
+[solve 86/320] NS_noise-0.2_trial-0 rate_debiased_dantzig E2=1,exact=False,time=77.8s elapsed=1216.8s
+[solve 87/320] NS_noise-0.5_trial-0 rate_plugin_dantzig E2=0.00077968,exact=False,time=45.2s elapsed=1222.2s
+[solve 88/320] NS_noise-0.2_trial-0 exact_debiased_dantzig E2=0.0027215,exact=False,time=76.6s elapsed=1233.9s
+[checkpoint] joined 27/104 realizations
+[solve 89/320] NS_noise-0.75_trial-0 rate_plugin_dantzig E2=0.0015325,exact=True,time=53.2s elapsed=1245.6s
+[solve 90/320] NS_noise-0.5_trial-0 rate_debiased_dantzig E2=0.15207,exact=False,time=74.5s elapsed=1257.1s
+[solve 91/320] NS_noise-0.5_trial-0 exact_debiased_dantzig E2=0.1519,exact=False,time=76.1s elapsed=1259.5s
+[solve 92/320] NS_noise-1_trial-0 rate_plugin_dantzig E2=0.0015644,exact=True,time=53.0s elapsed=1287.7s
+[solve 93/320] NS_noise-0.75_trial-0 rate_debiased_dantzig E2=0.22871,exact=False,time=76.4s elapsed=1293.3s
+[solve 94/320] NS_noise-0.75_trial-0 exact_debiased_dantzig E2=0.22784,exact=False,time=77.2s elapsed=1299.3s
+[solve 95/320] NS_noise-1_trial-0 rate_debiased_dantzig E2=0.1939,exact=False,time=65.9s elapsed=1311.5s
+[solve 96/320] NS_noise-1_trial-0 exact_debiased_dantzig E2=0.19314,exact=False,time=65.8s elapsed=1323.0s
+[checkpoint] joined 30/104 realizations
+[solve 97/320] HKS_noise-0_trial-0 rate_plugin_dantzig E2=1,exact=False,time=83.7s elapsed=1343.2s
+[solve 98/320] HKS_noise-0_trial-0 exact_plugin_dantzig E2=1.2397e-06,exact=True,time=52.6s elapsed=1345.9s
+[solve 99/320] HKS_noise-0_trial-0 exact_debiased_dantzig E2=1.2397e-06,exact=True,time=52.8s elapsed=1352.1s
+[solve 100/320] HKS_noise-0_trial-0 rate_debiased_dantzig E2=1,exact=False,time=88.0s elapsed=1375.7s
+[prepare 58/104] RD_noise-0.5_trial-1 alpha=0.00567,energy=0.000389, time=191.7s elapsed=1391.3s
+[solve 101/320] HKS_noise-0.2_trial-0 rate_plugin_dantzig E2=1,exact=False,time=83.4s elapsed=1394.9s
+[solve 102/320] HKS_noise-0.2_trial-0 rate_debiased_dantzig E2=1,exact=False,time=87.1s elapsed=1410.8s
+[solve 103/320] HKS_noise-0.5_trial-0 rate_plugin_dantzig E2=1,exact=False,time=83.3s elapsed=1429.2s
+[solve 104/320] HKS_noise-0.2_trial-0 exact_debiased_dantzig E2=1,exact=False,time=87.0s elapsed=1430.2s
+[checkpoint] joined 32/104 realizations
+[solve 105/320] HKS_noise-0.5_trial-0 rate_debiased_dantzig E2=1,exact=False,time=91.3s elapsed=1443.4s
+[solve 106/320] HKS_noise-0.5_trial-0 exact_debiased_dantzig E2=1,exact=False,time=91.3s elapsed=1467.0s
+[solve 107/320] HKS_noise-0.75_trial-0 rate_plugin_dantzig E2=1,exact=False,time=83.5s elapsed=1478.4s
+[solve 108/320] HKS_noise-0.75_trial-0 rate_debiased_dantzig E2=1,exact=False,time=88.0s elapsed=1498.8s
+[solve 109/320] HKS_noise-1_trial-0 rate_plugin_dantzig E2=1,exact=False,time=83.1s elapsed=1514.0s
+[solve 110/320] HKS_noise-0.75_trial-0 exact_debiased_dantzig E2=1,exact=False,time=87.9s elapsed=1517.1s
+[solve 111/320] VBG_noise-0_trial-0 rate_plugin_dantzig E2=1,exact=False,time=43.1s elapsed=1521.5s
+[solve 112/320] HKS_noise-1_trial-0 rate_debiased_dantzig E2=1,exact=False,time=83.1s elapsed=1526.6s
+[checkpoint] joined 34/104 realizations
+[solve 113/320] VBG_noise-0_trial-0 rate_debiased_dantzig E2=1,exact=False,time=48.1s elapsed=1546.9s
+[solve 114/320] VBG_noise-0_trial-0 exact_plugin_dantzig E2=1,exact=False,time=35.2s elapsed=1549.1s
+[solve 115/320] HKS_noise-1_trial-0 exact_debiased_dantzig E2=1,exact=False,time=83.1s elapsed=1550.1s
+[solve 116/320] VBG_noise-0_trial-0 exact_debiased_dantzig E2=1,exact=False,time=38.1s elapsed=1555.2s
+[prepare 59/104] RD_noise-0.75_trial-1 alpha=0.00375,energy=0.000389, time=173.2s elapsed=1564.7s
+[solve 117/320] VBG_noise-0.2_trial-0 rate_plugin_dantzig E2=1,exact=False,time=55.1s elapsed=1576.6s
+[solve 118/320] VBG_noise-0.2_trial-0 rate_debiased_dantzig E2=0.9556,exact=False,time=57.3s elapsed=1584.6s
+[solve 119/320] VBG_noise-0.5_trial-0 rate_plugin_dantzig E2=1,exact=False,time=36.9s elapsed=1586.1s
+[solve 120/320] VBG_noise-0.2_trial-0 exact_debiased_dantzig E2=0.97576,exact=False,time=53.8s elapsed=1600.8s
+[checkpoint] joined 37/104 realizations
+[solve 121/320] VBG_noise-0.5_trial-0 rate_debiased_dantzig E2=1,exact=False,time=58.0s elapsed=1608.1s
+[solve 122/320] VBG_noise-0.5_trial-0 exact_debiased_dantzig E2=1,exact=False,time=56.9s elapsed=1612.1s
+[solve 123/320] VBG_noise-0.75_trial-0 rate_plugin_dantzig E2=1,exact=False,time=37.0s elapsed=1613.6s
+[solve 124/320] IB_noise-0.2_trial-1 rate_plugin_dantzig E2=0.0034606,exact=True,time=0.1s elapsed=1613.7s
+[solve 125/320] IB_noise-0.2_trial-1 rate_debiased_dantzig E2=0.0083137,exact=True,time=0.4s elapsed=1614.1s
+[solve 126/320] IB_noise-0.2_trial-1 exact_debiased_dantzig E2=0.0083137,exact=True,time=0.4s elapsed=1614.5s
+[solve 127/320] IB_noise-0.5_trial-1 rate_plugin_dantzig E2=0.0034606,exact=True,time=0.1s elapsed=1614.6s
+[solve 128/320] IB_noise-0.5_trial-1 rate_debiased_dantzig E2=0.014368,exact=False,time=0.9s elapsed=1615.4s
+[checkpoint] joined 39/104 realizations
+[solve 129/320] IB_noise-0.5_trial-1 exact_debiased_dantzig E2=0.014368,exact=False,time=0.8s elapsed=1617.0s
+[solve 130/320] IB_noise-0.75_trial-1 rate_plugin_dantzig E2=0.0034606,exact=True,time=0.1s elapsed=1617.1s
+[solve 131/320] IB_noise-0.75_trial-1 rate_debiased_dantzig E2=0.014278,exact=True,time=0.4s elapsed=1617.5s
+[solve 132/320] IB_noise-0.75_trial-1 exact_debiased_dantzig E2=0.014278,exact=True,time=0.4s elapsed=1617.9s
+[solve 133/320] IB_noise-1_trial-1 rate_plugin_dantzig E2=0.0034605,exact=True,time=0.1s elapsed=1618.0s
+[solve 134/320] IB_noise-1_trial-1 rate_debiased_dantzig E2=1,exact=False,time=0.5s elapsed=1618.5s
+[solve 135/320] IB_noise-1_trial-1 exact_debiased_dantzig E2=1,exact=False,time=0.5s elapsed=1619.0s
+[solve 136/320] KdV_noise-0.2_trial-1 rate_plugin_dantzig E2=0.0030143,exact=False,time=9.1s elapsed=1628.1s
+[checkpoint] joined 42/104 realizations
+[solve 137/320] VBG_noise-1_trial-0 rate_plugin_dantzig E2=1,exact=False,time=33.1s elapsed=1634.6s
+[solve 138/320] KdV_noise-0.2_trial-1 rate_debiased_dantzig E2=0.35682,exact=True,time=17.7s elapsed=1646.5s
+[solve 139/320] KdV_noise-0.2_trial-1 exact_debiased_dantzig E2=0.35783,exact=True,time=15.0s elapsed=1649.6s
+[solve 140/320] VBG_noise-0.75_trial-0 exact_debiased_dantzig E2=1,exact=False,time=64.7s elapsed=1650.8s
+[solve 141/320] KdV_noise-0.5_trial-1 rate_plugin_dantzig E2=0.0030379,exact=False,time=12.7s elapsed=1659.2s
+[solve 142/320] VBG_noise-1_trial-0 rate_debiased_dantzig E2=1,exact=False,time=53.4s elapsed=1661.4s
+[solve 143/320] VBG_noise-0.75_trial-0 rate_debiased_dantzig E2=1,exact=False,time=78.1s elapsed=1662.7s
+[solve 144/320] KdV_noise-0.75_trial-1 rate_plugin_dantzig E2=0.0029954,exact=False,time=10.5s elapsed=1669.7s
+[checkpoint] joined 44/104 realizations
+[solve 145/320] KdV_noise-1_trial-1 rate_plugin_dantzig E2=0.0064948,exact=True,time=15.0s elapsed=1685.4s
+[solve 146/320] VBG_noise-1_trial-0 exact_debiased_dantzig E2=1,exact=False,time=75.1s elapsed=1687.2s
+[solve 147/320] KdV_noise-0.75_trial-1 rate_debiased_dantzig E2=0.89539,exact=False,time=27.0s elapsed=1688.4s
+[solve 148/320] KdV_noise-0.75_trial-1 exact_debiased_dantzig E2=0.89539,exact=False,time=27.2s elapsed=1689.9s
+[solve 149/320] KdV_noise-0.5_trial-1 rate_debiased_dantzig E2=0.89578,exact=False,time=40.5s elapsed=1690.1s
+[solve 150/320] KdV_noise-0.5_trial-1 exact_debiased_dantzig E2=0.89578,exact=False,time=40.4s elapsed=1691.2s
+[solve 151/320] KS_noise-0.5_trial-1 rate_plugin_dantzig E2=0.00020997,exact=True,time=24.4s elapsed=1715.5s
+[solve 152/320] KS_noise-0.2_trial-1 rate_plugin_dantzig E2=0.00024432,exact=True,time=27.3s elapsed=1715.7s
+[checkpoint] joined 47/104 realizations
+[solve 153/320] KdV_noise-1_trial-1 exact_debiased_dantzig E2=1,exact=False,time=33.1s elapsed=1720.3s
+[prepare 60/104] RD_noise-1_trial-1 alpha=0.00267,energy=0.000389, time=164.6s elapsed=1729.4s
+[solve 154/320] KdV_noise-1_trial-1 rate_debiased_dantzig E2=1,exact=False,time=45.4s elapsed=1730.8s
+[solve 155/320] KS_noise-0.75_trial-1 rate_plugin_dantzig E2=0.00017623,exact=True,time=23.8s elapsed=1744.1s
+[solve 156/320] KS_noise-0.2_trial-1 exact_debiased_dantzig E2=1,exact=False,time=79.3s elapsed=1769.4s
+[solve 157/320] KS_noise-0.2_trial-1 rate_debiased_dantzig E2=1,exact=False,time=79.5s elapsed=1769.4s
+[solve 158/320] KS_noise-0.5_trial-1 rate_debiased_dantzig E2=0.61646,exact=False,time=73.4s elapsed=1788.9s
+[prepare 61/104] NS_noise-0.2_trial-1 alpha=0.00997,energy=0.000453, time=61.1s elapsed=1790.6s
+[solve 159/320] KS_noise-0.5_trial-1 exact_debiased_dantzig E2=0.61845,exact=False,time=74.8s elapsed=1791.2s
+[solve 160/320] KS_noise-0.75_trial-1 rate_debiased_dantzig E2=0.7954,exact=False,time=74.0s elapsed=1804.8s
+[checkpoint] joined 50/104 realizations
+[solve 161/320] KS_noise-1_trial-1 rate_plugin_dantzig E2=0.00037206,exact=False,time=42.7s elapsed=1812.1s
+[solve 162/320] KS_noise-0.75_trial-1 exact_debiased_dantzig E2=0.79544,exact=False,time=78.1s elapsed=1822.3s
+[solve 163/320] KS_noise-1_trial-1 rate_debiased_dantzig E2=0.95064,exact=False,time=67.9s elapsed=1837.4s
+[prepare 62/104] NS_noise-0.5_trial-1 alpha=0.00346,energy=0.000453, time=59.0s elapsed=1849.6s
+[solve 164/320] KS_noise-1_trial-1 exact_debiased_dantzig E2=0.95063,exact=False,time=67.5s elapsed=1856.5s
+[heartbeat] prepared=62/104,solved=164/320, active=6,elapsed=1886.5s
+[prepare 63/104] NS_noise-0.75_trial-1 alpha=0.00215,energy=0.000453, time=58.5s elapsed=1908.1s
+[heartbeat] prepared=63/104,solved=164/320, active=6,elapsed=1938.1s
+[prepare 64/104] NS_noise-1_trial-1 alpha=0.00213,energy=0.000453, time=58.5s elapsed=1966.6s
+[prepare 65/104] HKS_noise-0.2_trial-1 alpha=0.000869,energy=0.0055, time=1.0s elapsed=1967.6s
+[prepare 66/104] HKS_noise-0.5_trial-1 alpha=0.000824,energy=0.0055, time=0.9s elapsed=1968.5s
+[prepare 67/104] HKS_noise-0.75_trial-1 alpha=0.000824,energy=0.0055, time=0.9s elapsed=1969.4s
+[prepare 68/104] HKS_noise-1_trial-1 alpha=0.000824,energy=0.0055, time=0.8s elapsed=1970.2s
+[solve 165/320] NLS_noise-0.2_trial-1 rate_plugin_dantzig E2=1,exact=False,time=179.7s elapsed=1971.0s
+[prepare 69/104] VBG_noise-0.2_trial-1 alpha=0.666,energy=0.00294, time=1.3s elapsed=1971.5s
+[prepare 70/104] VBG_noise-0.5_trial-1 alpha=0.282,energy=0.00294, time=1.3s elapsed=1972.8s
+[prepare 71/104] VBG_noise-0.75_trial-1 alpha=0.201,energy=0.00294, time=1.3s elapsed=1974.1s
+[prepare 72/104] VBG_noise-1_trial-1 alpha=0.186,energy=0.00294, time=1.3s elapsed=1975.5s
+[prepare 73/104] IB_noise-0.2_trial-2 alpha=2.26e-06,energy=0.00552, time=0.8s elapsed=1976.3s
+[prepare 74/104] IB_noise-0.5_trial-2 alpha=2.26e-06,energy=0.00552, time=0.8s elapsed=1977.0s
+[prepare 75/104] IB_noise-0.75_trial-2 alpha=2.26e-06,energy=0.00552, time=0.8s elapsed=1977.8s
+[prepare 76/104] IB_noise-1_trial-2 alpha=2.28e-06,energy=0.00552, time=0.8s elapsed=1978.6s
+[prepare 77/104] KdV_noise-0.2_trial-2 alpha=0.00129,energy=0.00288, time=1.4s elapsed=1980.1s
+[prepare 78/104] KdV_noise-0.5_trial-2 alpha=0.00129,energy=0.00288, time=1.4s elapsed=1981.5s
+[prepare 79/104] KdV_noise-0.75_trial-2 alpha=0.00129,energy=0.00288, time=1.4s elapsed=1982.9s
+[prepare 80/104] KdV_noise-1_trial-2 alpha=0.00129,energy=0.00288, time=1.5s elapsed=1984.4s
+[prepare 81/104] KS_noise-0.2_trial-2 alpha=0.000679,energy=0.00509, time=0.8s elapsed=1985.3s
+[prepare 82/104] KS_noise-0.5_trial-2 alpha=0.000557,energy=0.00509, time=0.8s elapsed=1986.1s
+[prepare 83/104] KS_noise-0.75_trial-2 alpha=0.000557,energy=0.00509, time=0.8s elapsed=1987.0s
+[prepare 84/104] KS_noise-1_trial-2 alpha=0.000556,energy=0.00509, time=0.8s elapsed=1987.8s
+[solve 166/320] NLS_noise-0.2_trial-1 rate_debiased_dantzig E2=1,exact=False,time=182.2s elapsed=1988.0s
+[prepare 85/104] NLS_noise-0.2_trial-2 alpha=0.305,energy=0.00557, time=1.7s elapsed=1989.6s
+[solve 167/320] NLS_noise-0.2_trial-1 exact_debiased_dantzig E2=1,exact=False,time=177.6s elapsed=1989.7s
+[prepare 86/104] NLS_noise-0.5_trial-2 alpha=0.0777,energy=0.00557, time=1.6s elapsed=1991.3s
+[prepare 87/104] NLS_noise-0.75_trial-2 alpha=0.0767,energy=0.00557, time=1.7s elapsed=1993.1s
+[prepare 88/104] NLS_noise-1_trial-2 alpha=0.0729,energy=0.00557, time=1.6s elapsed=1994.8s
+[solve 168/320] NLS_noise-0.5_trial-1 rate_plugin_dantzig E2=1,exact=False,time=184.1s elapsed=2006.4s
+[checkpoint] joined 53/104 realizations
+[solve 169/320] NLS_noise-0.5_trial-1 rate_debiased_dantzig E2=1,exact=False,time=179.8s elapsed=2017.2s
+[solve 170/320] NLS_noise-0.5_trial-1 exact_debiased_dantzig E2=1,exact=False,time=184.2s elapsed=2040.7s
+[heartbeat] prepared=88/104,solved=170/320, active=6,elapsed=2070.7s
+[heartbeat] prepared=88/104,solved=170/320, active=6,elapsed=2100.8s
+[heartbeat] prepared=88/104,solved=170/320, active=6,elapsed=2130.8s
+[solve 171/320] NLS_noise-0.75_trial-1 rate_plugin_dantzig E2=1,exact=False,time=184.3s elapsed=2155.4s
+[solve 172/320] NLS_noise-0.75_trial-1 rate_debiased_dantzig E2=1,exact=False,time=170.6s elapsed=2158.6s
+[solve 173/320] NLS_noise-0.75_trial-1 exact_debiased_dantzig E2=1,exact=False,time=176.6s elapsed=2166.4s
+[prepare 89/104] RD_noise-0.2_trial-2 alpha=0.0108,energy=0.000389, time=176.1s elapsed=2171.0s
+[solve 174/320] NLS_noise-1_trial-1 rate_plugin_dantzig E2=1,exact=False,time=180.8s elapsed=2188.2s
+[solve 175/320] NLS_noise-1_trial-1 rate_debiased_dantzig E2=1,exact=False,time=172.5s elapsed=2189.8s
+[solve 176/320] NLS_noise-1_trial-1 exact_debiased_dantzig E2=1,exact=False,time=166.6s elapsed=2207.3s
+[checkpoint] joined 56/104 realizations
+[heartbeat] prepared=89/104,solved=176/320, active=6,elapsed=2238.6s
+[heartbeat] prepared=89/104,solved=176/320, active=6,elapsed=2268.6s
+[heartbeat] prepared=89/104,solved=176/320, active=6,elapsed=2298.6s
+[heartbeat] prepared=89/104,solved=176/320, active=6,elapsed=2328.6s
+[prepare 90/104] RD_noise-0.5_trial-2 alpha=0.00568,energy=0.000389, time=171.3s elapsed=2342.5s
+[solve 177/320] RD_noise-0.2_trial-1 rate_plugin_dantzig E2=1,exact=False,time=196.4s elapsed=2351.8s
+[solve 178/320] RD_noise-0.2_trial-1 rate_debiased_dantzig E2=1,exact=False,time=195.0s elapsed=2353.6s
+[solve 179/320] RD_noise-0.2_trial-1 exact_debiased_dantzig E2=1,exact=False,time=196.4s elapsed=2362.8s
+[solve 180/320] RD_noise-0.5_trial-1 rate_debiased_dantzig E2=1,exact=False,time=184.5s elapsed=2374.3s
+[solve 181/320] RD_noise-0.5_trial-1 rate_plugin_dantzig E2=1,exact=False,time=196.4s elapsed=2384.6s
+[solve 182/320] RD_noise-0.5_trial-1 exact_debiased_dantzig E2=1,exact=False,time=183.7s elapsed=2392.3s
+[heartbeat] prepared=90/104,solved=182/320, active=6,elapsed=2422.3s
+[heartbeat] prepared=90/104,solved=182/320, active=6,elapsed=2452.3s
+[heartbeat] prepared=90/104,solved=182/320, active=6,elapsed=2482.3s
+[prepare 91/104] RD_noise-0.75_trial-2 alpha=0.00376,energy=0.000389, time=166.9s elapsed=2509.5s
+[heartbeat] prepared=91/104,solved=182/320, active=6,elapsed=2539.6s
+[solve 183/320] RD_noise-0.75_trial-1 rate_debiased_dantzig E2=1,exact=False,time=189.3s elapsed=2542.9s
+[solve 184/320] RD_noise-0.75_trial-1 rate_plugin_dantzig E2=1,exact=False,time=196.4s elapsed=2548.3s
+[checkpoint] joined 58/104 realizations
+[solve 185/320] RD_noise-0.75_trial-1 exact_debiased_dantzig E2=1,exact=False,time=189.3s elapsed=2552.1s
+[solve 186/320] RD_noise-1_trial-1 rate_plugin_dantzig E2=1,exact=False,time=196.3s elapsed=2570.7s
+[solve 187/320] RD_noise-1_trial-1 rate_debiased_dantzig E2=1,exact=False,time=188.2s elapsed=2572.9s
+[solve 188/320] RD_noise-1_trial-1 exact_debiased_dantzig E2=1,exact=False,time=189.3s elapsed=2581.6s
+[solve 189/320] NS_noise-0.2_trial-1 rate_plugin_dantzig E2=0.00075267,exact=False,time=42.1s elapsed=2585.1s
+[heartbeat] prepared=91/104,solved=189/320, active=6,elapsed=2615.1s
+[solve 190/320] NS_noise-0.5_trial-1 rate_plugin_dantzig E2=0.0013734,exact=True,time=50.6s elapsed=2621.3s
+[solve 191/320] NS_noise-0.2_trial-1 rate_debiased_dantzig E2=1,exact=False,time=77.1s elapsed=2626.5s
+[solve 192/320] NS_noise-0.75_trial-1 rate_plugin_dantzig E2=0.0010461,exact=False,time=44.3s elapsed=2629.4s
+[checkpoint] joined 60/104 realizations
+[solve 193/320] NS_noise-0.2_trial-1 exact_debiased_dantzig E2=1,exact=False,time=79.7s elapsed=2631.8s
+[solve 194/320] NS_noise-0.5_trial-1 rate_debiased_dantzig E2=0.012718,exact=True,time=68.6s elapsed=2641.5s
+[solve 195/320] NS_noise-0.5_trial-1 exact_debiased_dantzig E2=0.01274,exact=True,time=68.5s elapsed=2650.1s
+[prepare 92/104] RD_noise-1_trial-2 alpha=0.00267,energy=0.000389, time=154.0s elapsed=2663.6s
+[solve 196/320] NS_noise-1_trial-1 rate_plugin_dantzig E2=0.00078161,exact=False,time=48.2s elapsed=2678.7s
+[solve 197/320] NS_noise-0.75_trial-1 rate_debiased_dantzig E2=0.21245,exact=False,time=75.4s elapsed=2696.7s
+[solve 198/320] NS_noise-0.75_trial-1 exact_debiased_dantzig E2=0.21197,exact=False,time=75.4s elapsed=2701.9s
+[solve 199/320] NS_noise-1_trial-1 rate_debiased_dantzig E2=0.65422,exact=False,time=70.1s elapsed=2702.0s
+[solve 200/320] NS_noise-1_trial-1 exact_debiased_dantzig E2=0.65021,exact=False,time=69.6s elapsed=2711.2s
+[checkpoint] joined 64/104 realizations
+[prepare 93/104] NS_noise-0.2_trial-2 alpha=0.00997,energy=0.000453, time=54.7s elapsed=2718.4s
+[solve 201/320] HKS_noise-0.2_trial-1 rate_plugin_dantzig E2=1,exact=False,time=82.5s elapsed=2732.6s
+[solve 202/320] HKS_noise-0.2_trial-1 rate_debiased_dantzig E2=1,exact=False,time=82.3s elapsed=2761.1s
+[prepare 94/104] NS_noise-0.5_trial-2 alpha=0.00346,energy=0.000453, time=51.3s elapsed=2769.7s
+[solve 203/320] HKS_noise-0.2_trial-1 exact_debiased_dantzig E2=1,exact=False,time=82.4s elapsed=2779.1s
+[solve 204/320] HKS_noise-0.5_trial-1 rate_plugin_dantzig E2=1,exact=False,time=82.1s elapsed=2784.0s
+[solve 205/320] HKS_noise-0.5_trial-1 rate_debiased_dantzig E2=1,exact=False,time=93.0s elapsed=2795.0s
+[solve 206/320] HKS_noise-0.5_trial-1 exact_debiased_dantzig E2=1,exact=False,time=93.0s elapsed=2805.4s
+[solve 207/320] HKS_noise-0.75_trial-1 rate_plugin_dantzig E2=1,exact=False,time=82.3s elapsed=2814.9s
+[prepare 95/104] NS_noise-0.75_trial-2 alpha=0.00215,energy=0.000453, time=52.0s elapsed=2821.7s
+[solve 208/320] VBG_noise-0.2_trial-1 rate_plugin_dantzig E2=1,exact=False,time=32.7s elapsed=2847.6s
+[checkpoint] joined 66/104 realizations
+[solve 209/320] HKS_noise-0.75_trial-1 rate_debiased_dantzig E2=1,exact=False,time=93.4s elapsed=2854.5s
+[solve 210/320] HKS_noise-1_trial-1 rate_plugin_dantzig E2=1,exact=False,time=82.2s elapsed=2866.2s
+[prepare 96/104] NS_noise-1_trial-2 alpha=0.00213,energy=0.000453, time=50.4s elapsed=2872.1s
+[solve 211/320] HKS_noise-0.75_trial-1 exact_debiased_dantzig E2=1,exact=False,time=93.4s elapsed=2872.5s
+[prepare 97/104] HKS_noise-0.2_trial-2 alpha=0.000869,energy=0.0055, time=0.9s elapsed=2872.9s
+[prepare 98/104] HKS_noise-0.5_trial-2 alpha=0.000824,energy=0.0055, time=0.7s elapsed=2873.7s
+[prepare 99/104] HKS_noise-0.75_trial-2 alpha=0.000824,energy=0.0055, time=0.7s elapsed=2874.5s
+[prepare 100/104] HKS_noise-1_trial-2 alpha=0.000824,energy=0.0055, time=0.7s elapsed=2875.2s
+[prepare 101/104] VBG_noise-0.2_trial-2 alpha=0.666,energy=0.00294, time=1.1s elapsed=2876.3s
+[prepare 102/104] VBG_noise-0.5_trial-2 alpha=0.282,energy=0.00294, time=1.1s elapsed=2877.5s
+[prepare 103/104] VBG_noise-0.75_trial-2 alpha=0.199,energy=0.00294, time=1.1s elapsed=2878.5s
+[prepare 104/104] VBG_noise-1_trial-2 alpha=0.186,energy=0.00294, time=1.1s elapsed=2879.6s
+[solve 212/320] HKS_noise-1_trial-1 rate_debiased_dantzig E2=0.93978,exact=False,time=91.0s elapsed=2886.0s
+[solve 213/320] HKS_noise-1_trial-1 exact_debiased_dantzig E2=0.93997,exact=False,time=91.1s elapsed=2896.5s
+[solve 214/320] VBG_noise-0.2_trial-1 rate_debiased_dantzig E2=1,exact=False,time=54.8s elapsed=2903.6s
+[solve 215/320] VBG_noise-0.2_trial-1 exact_debiased_dantzig E2=1,exact=False,time=61.2s elapsed=2915.7s
+[solve 216/320] VBG_noise-0.5_trial-1 rate_debiased_dantzig E2=0.9798,exact=False,time=45.7s elapsed=2918.3s
+[checkpoint] joined 69/104 realizations
+[solve 217/320] VBG_noise-0.5_trial-1 rate_plugin_dantzig E2=1,exact=False,time=55.1s elapsed=2921.4s
+[solve 218/320] VBG_noise-0.5_trial-1 exact_debiased_dantzig E2=1,exact=False,time=53.6s elapsed=2939.7s
+[solve 219/320] VBG_noise-0.75_trial-1 rate_plugin_dantzig E2=1,exact=False,time=50.4s elapsed=2947.0s
+[solve 220/320] IB_noise-0.2_trial-2 rate_plugin_dantzig E2=0.0034606,exact=True,time=0.1s elapsed=2947.0s
+[solve 221/320] IB_noise-0.2_trial-2 rate_debiased_dantzig E2=1,exact=False,time=0.1s elapsed=2947.2s
+[solve 222/320] IB_noise-0.2_trial-2 exact_debiased_dantzig E2=1,exact=False,time=0.1s elapsed=2947.3s
+[solve 223/320] IB_noise-0.5_trial-2 rate_plugin_dantzig E2=0.0034607,exact=True,time=0.1s elapsed=2947.4s
+[solve 224/320] IB_noise-0.5_trial-2 rate_debiased_dantzig E2=0.0033787,exact=True,time=0.5s elapsed=2947.9s
+[checkpoint] joined 71/104 realizations
+[solve 225/320] IB_noise-0.5_trial-2 exact_debiased_dantzig E2=0.0033787,exact=True,time=0.5s elapsed=2949.6s
+[solve 226/320] IB_noise-0.75_trial-2 rate_plugin_dantzig E2=0.0034605,exact=True,time=0.1s elapsed=2949.6s
+[solve 227/320] IB_noise-0.75_trial-2 rate_debiased_dantzig E2=1,exact=False,time=0.3s elapsed=2950.0s
+[solve 228/320] IB_noise-0.75_trial-2 exact_debiased_dantzig E2=1,exact=False,time=0.3s elapsed=2950.3s
+[solve 229/320] IB_noise-1_trial-2 rate_plugin_dantzig E2=0.0034604,exact=True,time=0.1s elapsed=2950.4s
+[solve 230/320] IB_noise-1_trial-2 rate_debiased_dantzig E2=1,exact=False,time=0.4s elapsed=2950.8s
+[solve 231/320] IB_noise-1_trial-2 exact_debiased_dantzig E2=1,exact=False,time=0.4s elapsed=2951.2s
+[solve 232/320] VBG_noise-0.75_trial-1 rate_debiased_dantzig E2=1,exact=False,time=47.7s elapsed=2951.2s
+[checkpoint] joined 74/104 realizations
+[solve 233/320] VBG_noise-1_trial-1 rate_plugin_dantzig E2=1,exact=False,time=36.6s elapsed=2955.8s
+[solve 234/320] KdV_noise-0.2_trial-2 rate_plugin_dantzig E2=0.006318,exact=False,time=11.2s elapsed=2962.4s
+[solve 235/320] VBG_noise-0.75_trial-1 exact_debiased_dantzig E2=1,exact=False,time=51.3s elapsed=2967.0s
+[solve 236/320] KdV_noise-0.5_trial-2 rate_plugin_dantzig E2=0.0030249,exact=False,time=9.7s elapsed=2972.1s
+[solve 237/320] VBG_noise-1_trial-1 rate_debiased_dantzig E2=1,exact=False,time=66.0s elapsed=2987.4s
+[solve 238/320] KdV_noise-0.2_trial-2 rate_debiased_dantzig E2=0.3349,exact=True,time=35.6s elapsed=2987.8s
+[solve 239/320] KdV_noise-0.2_trial-2 exact_debiased_dantzig E2=0.33634,exact=True,time=33.4s elapsed=2989.2s
+[solve 240/320] KdV_noise-0.5_trial-2 rate_debiased_dantzig E2=0.74101,exact=False,time=23.0s elapsed=2989.9s
+[checkpoint] joined 76/104 realizations
+[solve 241/320] KdV_noise-0.5_trial-2 exact_debiased_dantzig E2=0.78098,exact=False,time=23.7s elapsed=2995.8s
+[solve 242/320] KdV_noise-0.75_trial-2 rate_plugin_dantzig E2=0.0030197,exact=False,time=9.5s elapsed=2996.9s
+[solve 243/320] KdV_noise-1_trial-2 rate_plugin_dantzig E2=0.0056372,exact=False,time=11.5s elapsed=3002.5s
+[solve 244/320] VBG_noise-1_trial-1 exact_debiased_dantzig E2=0.98054,exact=False,time=63.3s elapsed=3003.0s
+[solve 245/320] KdV_noise-1_trial-2 rate_debiased_dantzig E2=0.89508,exact=False,time=29.0s elapsed=3024.8s
+[solve 246/320] KdV_noise-0.75_trial-2 exact_debiased_dantzig E2=1,exact=False,time=35.6s elapsed=3024.8s
+[solve 247/320] KdV_noise-0.75_trial-2 rate_debiased_dantzig E2=1,exact=False,time=37.2s elapsed=3025.1s
+[solve 248/320] KS_noise-0.2_trial-2 rate_plugin_dantzig E2=0.00021814,exact=True,time=24.3s elapsed=3026.9s
+[checkpoint] joined 79/104 realizations
+[solve 249/320] KdV_noise-1_trial-2 exact_debiased_dantzig E2=0.89508,exact=False,time=40.4s elapsed=3037.2s
+[solve 250/320] KS_noise-0.5_trial-2 rate_plugin_dantzig E2=0.00028032,exact=True,time=22.3s elapsed=3047.1s
+[solve 251/320] KS_noise-0.75_trial-2 rate_plugin_dantzig E2=0.00027109,exact=True,time=24.1s elapsed=3061.4s
+[solve 252/320] KS_noise-0.2_trial-2 rate_debiased_dantzig E2=1,exact=False,time=61.0s elapsed=3064.0s
+[solve 253/320] KS_noise-0.2_trial-2 exact_debiased_dantzig E2=1,exact=False,time=60.8s elapsed=3085.6s
+[solve 254/320] KS_noise-1_trial-2 rate_plugin_dantzig E2=0.00016296,exact=True,time=22.0s elapsed=3086.0s
+[solve 255/320] KS_noise-0.5_trial-2 rate_debiased_dantzig E2=0.79087,exact=False,time=71.8s elapsed=3096.9s
+[solve 256/320] KS_noise-0.5_trial-2 exact_debiased_dantzig E2=0.80556,exact=False,time=71.4s elapsed=3099.4s
+[checkpoint] joined 82/104 realizations
+[solve 257/320] KS_noise-0.75_trial-2 rate_debiased_dantzig E2=1,exact=False,time=70.7s elapsed=3117.8s
+[solve 258/320] KS_noise-0.75_trial-2 exact_debiased_dantzig E2=1,exact=False,time=70.2s elapsed=3131.6s
+[solve 259/320] KS_noise-1_trial-2 rate_debiased_dantzig E2=1,exact=False,time=74.8s elapsed=3160.4s
+[solve 260/320] KS_noise-1_trial-2 exact_debiased_dantzig E2=1,exact=False,time=74.7s elapsed=3160.7s
+[heartbeat] prepared=104/104,solved=260/320, active=6,elapsed=3190.7s
+[heartbeat] prepared=104/104,solved=260/320, active=6,elapsed=3220.7s
+[heartbeat] prepared=104/104,solved=260/320, active=6,elapsed=3250.7s
+[solve 261/320] NLS_noise-0.2_trial-2 rate_plugin_dantzig E2=1,exact=False,time=177.6s elapsed=3274.6s
+[solve 262/320] NLS_noise-0.2_trial-2 rate_debiased_dantzig E2=1,exact=False,time=177.9s elapsed=3278.3s
+[solve 263/320] NLS_noise-0.2_trial-2 exact_debiased_dantzig E2=1,exact=False,time=181.2s elapsed=3299.1s
+[solve 264/320] NLS_noise-0.5_trial-2 rate_plugin_dantzig E2=1,exact=False,time=179.2s elapsed=3310.8s
+[checkpoint] joined 85/104 realizations
+[solve 265/320] NLS_noise-0.5_trial-2 exact_debiased_dantzig E2=1,exact=False,time=179.0s elapsed=3339.8s
+[solve 266/320] NLS_noise-0.5_trial-2 rate_debiased_dantzig E2=1,exact=False,time=182.3s elapsed=3342.7s
+[heartbeat] prepared=104/104,solved=266/320, active=6,elapsed=3372.7s
+[heartbeat] prepared=104/104,solved=266/320, active=6,elapsed=3402.7s
+[heartbeat] prepared=104/104,solved=266/320, active=6,elapsed=3432.7s
+[solve 267/320] NLS_noise-0.75_trial-2 rate_plugin_dantzig E2=1,exact=False,time=180.9s elapsed=3455.5s
+[solve 268/320] NLS_noise-0.75_trial-2 rate_debiased_dantzig E2=1,exact=False,time=179.2s elapsed=3457.5s
+[solve 269/320] NLS_noise-0.75_trial-2 exact_debiased_dantzig E2=1,exact=False,time=186.0s elapsed=3485.1s
+[solve 270/320] NLS_noise-1_trial-2 rate_plugin_dantzig E2=1,exact=False,time=180.4s elapsed=3492.6s
+[solve 271/320] NLS_noise-1_trial-2 exact_debiased_dantzig E2=1,exact=False,time=172.1s elapsed=3514.8s
+[solve 272/320] NLS_noise-1_trial-2 rate_debiased_dantzig E2=1,exact=False,time=178.7s elapsed=3518.5s
+[checkpoint] joined 88/104 realizations
+[heartbeat] prepared=104/104,solved=272/320, active=6,elapsed=3549.7s
+[heartbeat] prepared=104/104,solved=272/320, active=6,elapsed=3579.7s
+[heartbeat] prepared=104/104,solved=272/320, active=6,elapsed=3609.7s
+[heartbeat] prepared=104/104,solved=272/320, active=6,elapsed=3639.7s
+[solve 273/320] RD_noise-0.2_trial-2 rate_plugin_dantzig E2=1,exact=False,time=196.3s elapsed=3651.8s
+[solve 274/320] RD_noise-0.2_trial-2 rate_debiased_dantzig E2=1,exact=False,time=196.3s elapsed=3653.8s
+[solve 275/320] RD_noise-0.2_trial-2 exact_debiased_dantzig E2=1,exact=False,time=196.3s elapsed=3681.4s
+[solve 276/320] RD_noise-0.5_trial-2 rate_plugin_dantzig E2=1,exact=False,time=196.3s elapsed=3689.0s
+[solve 277/320] RD_noise-0.5_trial-2 rate_debiased_dantzig E2=1,exact=False,time=196.3s elapsed=3711.1s
+[solve 278/320] RD_noise-0.5_trial-2 exact_debiased_dantzig E2=1,exact=False,time=196.3s elapsed=3716.1s
+[heartbeat] prepared=104/104,solved=278/320, active=6,elapsed=3746.1s
+[heartbeat] prepared=104/104,solved=278/320, active=6,elapsed=3776.1s
+[heartbeat] prepared=104/104,solved=278/320, active=6,elapsed=3806.1s
+[heartbeat] prepared=104/104,solved=278/320, active=6,elapsed=3836.1s
+[solve 279/320] RD_noise-0.75_trial-2 rate_plugin_dantzig E2=1,exact=False,time=196.3s elapsed=3848.2s
+[solve 280/320] RD_noise-0.75_trial-2 rate_debiased_dantzig E2=1,exact=False,time=196.3s elapsed=3850.1s
+[checkpoint] joined 90/104 realizations
+[solve 281/320] RD_noise-0.75_trial-2 exact_debiased_dantzig E2=1,exact=False,time=196.3s elapsed=3877.8s
+[solve 282/320] RD_noise-1_trial-2 rate_plugin_dantzig E2=1,exact=False,time=196.3s elapsed=3885.3s
+[solve 283/320] NS_noise-0.2_trial-2 rate_plugin_dantzig E2=0.00075619,exact=False,time=48.6s elapsed=3896.8s
+[solve 284/320] RD_noise-1_trial-2 rate_debiased_dantzig E2=1,exact=False,time=196.3s elapsed=3907.4s
+[solve 285/320] RD_noise-1_trial-2 exact_debiased_dantzig E2=1,exact=False,time=196.3s elapsed=3912.4s
+[solve 286/320] NS_noise-0.2_trial-2 rate_debiased_dantzig E2=0.00094445,exact=False,time=72.7s elapsed=3924.2s
+[solve 287/320] NS_noise-0.5_trial-2 rate_plugin_dantzig E2=0.00077661,exact=False,time=41.2s elapsed=3926.5s
+[solve 288/320] NS_noise-0.2_trial-2 exact_debiased_dantzig E2=0.00094524,exact=False,time=73.7s elapsed=3951.5s
+[checkpoint] joined 93/104 realizations
+[solve 289/320] NS_noise-0.75_trial-2 rate_plugin_dantzig E2=0.00077734,exact=False,time=41.5s elapsed=3953.8s
+[solve 290/320] NS_noise-0.5_trial-2 rate_debiased_dantzig E2=0.10632,exact=False,time=74.7s elapsed=3971.5s
+[solve 291/320] NS_noise-0.5_trial-2 exact_debiased_dantzig E2=0.10801,exact=False,time=73.6s elapsed=3981.1s
+[solve 292/320] NS_noise-0.75_trial-2 rate_debiased_dantzig E2=0.22384,exact=False,time=68.2s elapsed=3992.4s
+[solve 293/320] NS_noise-0.75_trial-2 exact_debiased_dantzig E2=0.22373,exact=False,time=68.9s elapsed=3995.4s
+[solve 294/320] NS_noise-1_trial-2 rate_plugin_dantzig E2=0.0010699,exact=False,time=43.5s elapsed=3996.4s
+[solve 295/320] NS_noise-1_trial-2 rate_debiased_dantzig E2=0.61459,exact=False,time=67.2s elapsed=4021.0s
+[solve 296/320] NS_noise-1_trial-2 exact_debiased_dantzig E2=0.61469,exact=False,time=69.5s elapsed=4041.0s
+[checkpoint] joined 96/104 realizations
+[solve 297/320] HKS_noise-0.2_trial-2 rate_plugin_dantzig E2=1,exact=False,time=82.0s elapsed=4063.2s
+[solve 298/320] HKS_noise-0.2_trial-2 rate_debiased_dantzig E2=1,exact=False,time=81.8s elapsed=4074.3s
+[solve 299/320] HKS_noise-0.2_trial-2 exact_debiased_dantzig E2=1,exact=False,time=81.8s elapsed=4077.2s
+[solve 300/320] HKS_noise-0.5_trial-2 rate_plugin_dantzig E2=1,exact=False,time=88.9s elapsed=4085.3s
+[solve 301/320] HKS_noise-0.5_trial-2 rate_debiased_dantzig E2=1,exact=False,time=93.4s elapsed=4114.4s
+[solve 302/320] HKS_noise-0.5_trial-2 exact_debiased_dantzig E2=1,exact=False,time=86.6s elapsed=4129.0s
+[solve 303/320] HKS_noise-0.75_trial-2 rate_plugin_dantzig E2=1,exact=False,time=82.1s elapsed=4145.3s
+[solve 304/320] HKS_noise-0.75_trial-2 rate_debiased_dantzig E2=1,exact=False,time=86.9s elapsed=4161.1s
+[checkpoint] joined 98/104 realizations
+[solve 305/320] HKS_noise-0.75_trial-2 exact_debiased_dantzig E2=1,exact=False,time=87.0s elapsed=4164.2s
+[solve 306/320] HKS_noise-1_trial-2 rate_plugin_dantzig E2=1,exact=False,time=82.1s elapsed=4167.4s
+[heartbeat] prepared=104/104,solved=306/320, active=6,elapsed=4197.4s
+[solve 307/320] VBG_noise-0.2_trial-2 rate_plugin_dantzig E2=1,exact=False,time=55.1s elapsed=4200.4s
+[solve 308/320] HKS_noise-1_trial-2 rate_debiased_dantzig E2=1,exact=False,time=87.4s elapsed=4201.9s
+[solve 309/320] VBG_noise-0.5_trial-2 rate_plugin_dantzig E2=1,exact=False,time=40.8s elapsed=4208.2s
+[solve 310/320] VBG_noise-0.2_trial-2 rate_debiased_dantzig E2=1,exact=False,time=47.0s elapsed=4209.6s
+[solve 311/320] HKS_noise-1_trial-2 exact_debiased_dantzig E2=1,exact=False,time=87.3s elapsed=4216.3s
+[solve 312/320] VBG_noise-0.2_trial-2 exact_debiased_dantzig E2=0.97984,exact=False,time=58.1s elapsed=4222.3s
+[checkpoint] joined 101/104 realizations
+[solve 313/320] VBG_noise-0.5_trial-2 rate_debiased_dantzig E2=1,exact=False,time=52.6s elapsed=4253.0s
+[solve 314/320] VBG_noise-0.75_trial-2 rate_plugin_dantzig E2=1,exact=False,time=47.7s elapsed=4255.9s
+[solve 315/320] VBG_noise-0.5_trial-2 exact_debiased_dantzig E2=1,exact=False,time=56.5s elapsed=4258.4s
+[solve 316/320] VBG_noise-1_trial-2 rate_plugin_dantzig E2=1,exact=False,time=53.5s elapsed=4277.4s
+[solve 317/320] VBG_noise-0.75_trial-2 rate_debiased_dantzig E2=1,exact=False,time=74.8s elapsed=4284.4s
+[solve 318/320] VBG_noise-0.75_trial-2 exact_debiased_dantzig E2=1,exact=False,time=76.4s elapsed=4292.7s
+[solve 319/320] VBG_noise-1_trial-2 rate_debiased_dantzig E2=1,exact=False,time=52.6s elapsed=4305.5s
+[solve 320/320] VBG_noise-1_trial-2 exact_debiased_dantzig E2=1,exact=False,time=53.3s elapsed=4309.2s
+[checkpoint] joined 104/104 realizations
+Finished: prepared 104/104, solved 320/320, joined 104/104, elapsed=4312.1s

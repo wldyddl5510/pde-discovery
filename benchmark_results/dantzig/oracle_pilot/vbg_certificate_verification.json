@@ -1,0 +1,83 @@
+{
+  "protocol": "independent-exact-VBG-certificate-verification-v1",
+  "passed": true,
+  "created_at_utc": "2026-10-19T15:26:49.730770+00:00",
+  "runtime_seconds": 17.212844708003104,
+  "dictionary_columns": 43,
+  "supports_verified": 123410,
+  "counts": {
+    "assertions": 1234155,
+    "exact_dual_witnesses_verified": 123410,
+    "exact_five_term_primals_verified": 4,
+    "minimum_cardinality_five_certificates": 3
+  },
+  "failures": [],
+  "physical_lambda_at_target": "1099535945696401/162259276829213363391578010288128",
+  "minimum_support_dual_bound": "35555068865178433312135322507907195105165262448280588165751496403733316767/543950930495964205823690632330067690599967472956567725418076687672584373482034629391155200",
+  "minimum_support": [
+    0,
+    6,
+    9,
+    31
+  ],
+  "minimum_dual_bound_over_target": 9.64588110322216,
+  "all_supports_size_at_most_four_excluded": true,
+  "saved_five_term_candidates": [
+    {
+      "lambda_ratio": 1e-05,
+      "physical_lambda": "2748839864241003/40564819207303340847894502572032",
+      "exact_physical_residual": "62990778305329949345653/713623846352979940529142984724747568191373312",
+      "physical_feasible": true,
+      "minimum_cardinality_five_proved": false,
+      "coefficient_e2": 1.2861511316671924e-10,
+      "minimum_dual_bound_over_lambda": 0.9645881103222159,
+      "original_cardinality_flag": false,
+      "original_secondary_flag": true
+    },
+    {
+      "lambda_ratio": 3.162277660168379e-06,
+      "physical_lambda": "3477037957627841/162259276829213363391578010288128",
+      "exact_physical_residual": "51958476787544483243843/730750818665451459101842416358141509827966271488",
+      "physical_feasible": true,
+      "minimum_cardinality_five_proved": true,
+      "coefficient_e2": 2.5256790694130487e-10,
+      "minimum_dual_bound_over_lambda": 3.050295432535976,
+      "original_cardinality_flag": false,
+      "original_secondary_flag": true
+    },
+    {
+      "lambda_ratio": 1e-06,
+      "physical_lambda": "1099535945696401/162259276829213363391578010288128",
+      "exact_physical_residual": "51958476787544483243843/730750818665451459101842416358141509827966271488",
+      "physical_feasible": true,
+      "minimum_cardinality_five_proved": true,
+      "coefficient_e2": 2.5256790694130487e-10,
+      "minimum_dual_bound_over_lambda": 9.64588110322216,
+      "original_cardinality_flag": false,
+      "original_secondary_flag": true
+    },
+    {
+      "lambda_ratio": 5.623413251903491e-06,
+      "physical_lambda": "6183145007973379/162259276829213363391578010288128",
+      "exact_physical_residual": "51958476787544483243843/730750818665451459101842416358141509827966271488",
+      "physical_feasible": true,
+      "minimum_cardinality_five_proved": true,
+      "coefficient_e2": 2.5256790694130487e-10,
+      "minimum_dual_bound_over_lambda": 1.7153071757543497,
+      "original_cardinality_flag": false,
+      "original_secondary_flag": true
+    }
+  ],
+  "provenance": {
+    "verifier_source_sha256": "da919a6efd533f933c24daa3a8d2c49c20840b2112b7f97630099f0058ef2490",
+    "diagnostic_json_sha256": "9d4e621068b6a76d90b621caf343a05a56094c9a6c6a5fada4be53a94f392f81",
+    "certificate_archive_sha256": "da2aeca7fb92af95e2caccc886e04b934526d96dc7decfb828f02e33c5dc4a01",
+    "physical_score_archive_sha256": "284dc8e4718636dad887dcc97d0edf81a372fcac04c51fa0487cd8a13bf29876",
+    "original_saved_solution_sha256": "1540f8e8297e084a063faf91ef0f31e482e042d8b5bba00fcb644afafa917ec2"
+  },
+  "proof": "Physical binary64 values are exact integer ratios. Gaussian elimination solves mass/stationarity, then exact raw-H identities and l1<=1 yield supportwise lower bounds. Every four-support bound exceeds lambda and a feasible five-term primal establishes minimum cardinality5.",
+  "limitations": [
+    "Does not certify secondary residual tie-break optimality or alter main solver flags.",
+    "Certification transfers only to identical saved physical H,b and existing proved beta/lambda candidates; lambda ratio1e-5 is not certified by this exclusion bound."
+  ]
+}

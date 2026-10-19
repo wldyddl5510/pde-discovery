@@ -14,6 +14,7 @@ wsindy/
   regression.py     MSTLS, LassoPath, BestSubset (MIO, gurobipy) with loss "ls" | "debiased";
                     FromAPI(any PySINDy/sklearn optimizer)
   eiv.py            EIV conic estimator (Section 6, scalar polynomial dictionaries), solved with Gurobi
+  dantzig.py        Dantzig: discrete Dantzig selector (Eqs. 9-10) on the (debiased) standardized weak score
   estimators.py     uhat: MovingAverage, SplitPilot, FromPySINDy, FromCallable
 pdes.py             benchmark PDEs (data, dictionary, truth, test functions), noise, seeds, metrics
 run.py              trials -> benchmark_results/runs/<method>/<PDE>.jsonl

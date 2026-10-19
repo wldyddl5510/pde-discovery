@@ -175,6 +175,27 @@ class Regression(unittest.TestCase):
         self.assertAlmostEqual(np.linalg.norm(Y[:, 0]-X@W)**2, best, places=8)
         self.assertEqual(BestSubset().regress(system).coef.shape, (1, 20))
 
+    def test_best_subset_magnitude_prior(self):
+        require_gurobi(self)
+        from types import SimpleNamespace
+        rng = np.random.default_rng(1)
+        X = rng.normal(size=(60, 6))
+        X[:, 1] = X[:, 0]/1e3+1e-5*rng.normal(size=60)   # a rescaled copy, fitted with a coefficient ~1e3
+        y = X[:, 0]+.3*rng.normal(size=60)
+        system = SimpleNamespace(X=X, Y=y[:, None], scales=np.full((6, 1), 2.))
+        self.assertEqual(np.flatnonzero(BestSubset(r=1).regress(system).coef[0]).tolist(), [1])
+        regression = BestSubset(r=1, threshold=.05)
+        lower, upper = regression._bounds(X, y[:, None], system.scales)
+        def clipped(j):   # best |w| in [lower, upper] with the least-squares sign
+            w = X[:, j]@y/(X[:, j]@X[:, j])
+            return np.sign(w)*np.clip(abs(w), lower[j, 0], upper[j, 0])
+        objective = [np.sum((y-X[:, j]*clipped(j))**2) for j in range(6)]
+        c = regression.regress(system).coef[0]
+        (j,) = np.flatnonzero(c)
+        self.assertEqual(j, int(np.argmin(objective)))
+        self.assertEqual(j, 0)
+        self.assertAlmostEqual(c[j], 2*clipped(j), places=6)
+
     def test_best_subset_recovers_advection(self):
         require_gurobi(self)
         U, grid = advection()

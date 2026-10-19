@@ -1,0 +1,118 @@
+{
+  "protocol": "independent-oracle-pilot-audit-v1",
+  "passed": true,
+  "audited_at_utc": "2026-10-19T15:53:51.105024+00:00",
+  "executable": "/opt/homebrew/anaconda3/envs/pde_discovery/bin/python",
+  "numpy": "2.4.6",
+  "complete": true,
+  "expected_realizations": 104,
+  "expected_unique_score_fits": 320,
+  "prepared_realizations": 104,
+  "completed_realizations": 104,
+  "unique_score_fits": 320,
+  "trial_snapshot_sha256": "44431300e5d1c51d28bbbfe2028ce199ee186b259ac52bab30100d9f3a314903",
+  "ignored_in_progress_jsonl_tail": false,
+  "auditor_source_sha256": "d8950399ea3c6d8a0bd758f4635cb5e1f5639b542bc7f3bffe693a6b5ec31c18",
+  "counts": {
+    "assertions": 97550,
+    "actual_oracle_states_reconstructed": 208,
+    "prepared_realizations": 104,
+    "candidate_solutions": 6026,
+    "unique_equation_oracles": 400,
+    "unique_score_fits": 320,
+    "completed_realizations": 104,
+    "oracle_realization_pairs": 208,
+    "new_method_realization_combinations": 416,
+    "report_summary_snapshots_checked": 1
+  },
+  "maxima": {
+    "oracle_energy_over_target": 0.9999999999999741,
+    "rate_error_over_n_quarter": 0.07461864740024347,
+    "candidate_constraint_violation_relative_to_b": 1.3168348124343584e-08
+  },
+  "weak_score_rebuilt_jobs": [],
+  "noiseless_exact_plugin_debiased_relative_difference": {
+    "HKS": {
+      "H": 4.2663802702867546e-16,
+      "b": 1.5517781659649267e-16
+    },
+    "IB": {
+      "H": 4.6162473872534637e-26,
+      "b": 7.060222106924957e-29
+    },
+    "KS": {
+      "H": 3.0703031011667563e-18,
+      "b": 4.988926802471503e-17
+    },
+    "KdV": {
+      "H": 1.0808046810624148e-20,
+      "b": 1.3305015233034103e-16
+    },
+    "NLS": {
+      "H": 2.405429686952225e-16,
+      "b": 2.2966377756248577e-15
+    },
+    "NS": {
+      "H": 8.013545350629436e-18,
+      "b": 1.168344572420426e-17
+    },
+    "RD": {
+      "H": 5.897430777816313e-17,
+      "b": 2.878329025784864e-16
+    },
+    "VBG": {
+      "H": 1.721509319576667e-16,
+      "b": 1.7880997958231967e-16
+    }
+  },
+  "failures": [],
+  "limitations": [
+    "Does not rerun Gurobi or independently reproduce branch-and-bound lower bounds; checks reported bound/certificate consistency.",
+    "Reconstructs all prepared seeds, noisy observations, frozen base pilots, actual oracle states, energies and state hashes; only the explicitly listed jobs rebuild weak FFT score matrices.",
+    "One grid size cannot empirically establish a little-o asymptotic rate or statistical confidence coverage; the oracle family enforces the displayed squared-error bound deterministically."
+  ],
+  "cached_weak_score_rebuild_proof": {
+    "passed": true,
+    "source_proof_file": "audit.rebuild_proof.json",
+    "source_proof_sha256": "055b3555bd78253d00b1e26d5b54904d845f3c86a31d311584f9c1a22e6f3a6a",
+    "partial_audit_file": "audit.partial.json",
+    "partial_audit_sha256": "229caab4e0ed76803a16f29d722c452048ac3de79e67a754a027e94c5e027337",
+    "rebuilt_jobs": [
+      "HKS_noise-0_trial-0",
+      "IB_noise-0.2_trial-0",
+      "IB_noise-0_trial-0",
+      "KS_noise-0_trial-0",
+      "KdV_noise-0_trial-0",
+      "NLS_noise-0_trial-0",
+      "NS_noise-0_trial-0",
+      "RD_noise-0_trial-0",
+      "VBG_noise-0_trial-0"
+    ],
+    "physical_score_pairs": 36,
+    "source_cache_manifest_hashes_unchanged": true
+  },
+  "independent_rational_certificate_links": {
+    "NLS": {
+      "passed": true,
+      "verification_file": "nls_certificate_verification.json",
+      "verification_sha256": "51cb833cf2a60798dd1fd31022b15afc440ca9da1d495e76875726fd9e90faf8",
+      "exact_dual_witnesses": 35910,
+      "source_and_verifier_hashes_unchanged": true
+    },
+    "VBG": {
+      "passed": true,
+      "verification_file": "vbg_certificate_verification.json",
+      "verification_sha256": "d3fab4212c035c3dbf5ae327526fbda9c7f3d6daa867e6f29f0c9b1aa2d7efdf",
+      "exact_dual_witnesses": 123410,
+      "source_and_verifier_hashes_unchanged": true
+    }
+  },
+  "final_supplement_link": {
+    "passed": true,
+    "file": "supplement.json",
+    "sha256": "eea64ff4e880f977b8a20fb7aee1ffa8079d1807fadb4ca1d9994e996d63d191",
+    "matching_candidate_instances": 286,
+    "trial_snapshot_matches_final_audit": true
+  },
+  "scope_note": "All 104 paired realizations, 208 actual oracle states and 320 unique fits complete; cached weak-score and rational certificate proof chains verified unchanged."
+}

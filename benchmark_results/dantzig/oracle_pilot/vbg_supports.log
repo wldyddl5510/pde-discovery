@@ -1,0 +1,225 @@
+[supports 10000/123410] exact exclusions=10000, min ratio=9.6458811e-06, elapsed=25.7s
+[supports 20000/123410] exact exclusions=20000, min ratio=9.6458811e-06, elapsed=49.8s
+[supports 30000/123410] exact exclusions=30000, min ratio=9.6458811e-06, elapsed=73.2s
+[supports 40000/123410] exact exclusions=40000, min ratio=9.6458811e-06, elapsed=96.3s
+[supports 50000/123410] exact exclusions=50000, min ratio=9.6458811e-06, elapsed=119.7s
+[supports 60000/123410] exact exclusions=60000, min ratio=9.6458811e-06, elapsed=142.6s
+[supports 70000/123410] exact exclusions=70000, min ratio=9.6458811e-06, elapsed=165.8s
+[supports 80000/123410] exact exclusions=80000, min ratio=9.6458811e-06, elapsed=188.9s
+[supports 90000/123410] exact exclusions=90000, min ratio=9.6458811e-06, elapsed=211.5s
+[supports 100000/123410] exact exclusions=100000, min ratio=9.6458811e-06, elapsed=234.3s
+[supports 110000/123410] exact exclusions=110000, min ratio=9.6458811e-06, elapsed=256.9s
+[supports 120000/123410] exact exclusions=120000, min ratio=9.6458811e-06, elapsed=280.0s
+{
+  "diagnostic": "exhaustive-four-column-minimax-VBG-exact-plugin-noiseless",
+  "planned_supports": 123410,
+  "visited_supports": 123410,
+  "complete": true,
+  "solved_LPs": 123410,
+  "method": "exact_plugin_dantzig",
+  "target_ratio": 1e-06,
+  "runtime_seconds": 288.6119645831641,
+  "failures": [],
+  "counterexample": null,
+  "exact_witnesses": 123410,
+  "exact_threshold_exclusions": 123410,
+  "all_supports_exactly_excluded_at_target": true,
+  "minimum_four_column_residual_ratio": 9.645881103509301e-06,
+  "best_support": [
+    0,
+    6,
+    9,
+    31
+  ],
+  "best_support_labels": [
+    "1",
+    "u_xxxxx",
+    "(u^2)_x",
+    "(u^5)_xx"
+  ],
+  "best_support_coefficients": [
+    2.501286404467933,
+    2.280517214429786e-07,
+    -0.5006733916067445,
+    0.0005039737464566711
+  ],
+  "minimum_exact_dual_ratio": 9.64588110322216e-06,
+  "minimum_exact_dual_physical": 6.536447843330278e-17,
+  "minimum_exact_dual_fraction": "35555068865178433312135322507907195105165262448280588165751496403733316767/543950930495964205823690632330067690599967472956567725418076687672584373482034629391155200",
+  "minimum_exact_dual_support": [
+    0,
+    6,
+    9,
+    31
+  ],
+  "minimum_exact_dual_over_target": 9.64588110322216,
+  "max_normalized_primal_violation": 2.1931646083906634e-10,
+  "max_normalized_dual_stationarity": 3.090860900556436e-13,
+  "max_dual_mass_excess": 2.7068125518781017e-11,
+  "saved_five_term_candidates": [
+    {
+      "lambda_ratio": 1e-05,
+      "lam": 6.776413448789878e-17,
+      "e2": 1.2861511316671924e-10,
+      "coefficients": [
+        {
+          "index": 0,
+          "term": "1",
+          "value": 1.0000000003192797
+        },
+        {
+          "index": 3,
+          "term": "u_xx",
+          "value": 0.009999999999775225
+        },
+        {
+          "index": 8,
+          "term": "u^2",
+          "value": 1.9999999999698177
+        },
+        {
+          "index": 9,
+          "term": "(u^2)_x",
+          "value": -0.4999999999895766
+        },
+        {
+          "index": 15,
+          "term": "u^3",
+          "value": -0.9999999999792878
+        }
+      ],
+      "exact_physical_residual": 8.826888090588386e-23,
+      "exact_physical_residual_fraction": "62990778305329949345653/713623846352979940529142984724747568191373312",
+      "physical_feasible": true,
+      "independently_certified_minimum_cardinality": null,
+      "minimum_dual_bound_over_lambda": 0.9645881103222159,
+      "original_cardinality_optimal": false
+    },
+    {
+      "lambda_ratio": 3.162277660168379e-06,
+      "lam": 2.1428900865172787e-17,
+      "e2": 2.5256790694130487e-10,
+      "coefficients": [
+        {
+          "index": 0,
+          "term": "1",
+          "value": 1.000000000270311
+        },
+        {
+          "index": 3,
+          "term": "u_xx",
+          "value": 0.00999999999968752
+        },
+        {
+          "index": 8,
+          "term": "u^2",
+          "value": 1.9999999994828364
+        },
+        {
+          "index": 9,
+          "term": "(u^2)_x",
+          "value": -0.5000000000015324
+        },
+        {
+          "index": 15,
+          "term": "u^3",
+          "value": -0.9999999997588185
+        }
+      ],
+      "exact_physical_residual": 7.110286497172143e-26,
+      "exact_physical_residual_fraction": "51958476787544483243843/730750818665451459101842416358141509827966271488",
+      "physical_feasible": true,
+      "independently_certified_minimum_cardinality": 5,
+      "minimum_dual_bound_over_lambda": 3.050295432535976,
+      "original_cardinality_optimal": false
+    },
+    {
+      "lambda_ratio": 1e-06,
+      "lam": 6.776413448789876e-18,
+      "e2": 2.5256790694130487e-10,
+      "coefficients": [
+        {
+          "index": 0,
+          "term": "1",
+          "value": 1.000000000270311
+        },
+        {
+          "index": 3,
+          "term": "u_xx",
+          "value": 0.00999999999968752
+        },
+        {
+          "index": 8,
+          "term": "u^2",
+          "value": 1.9999999994828364
+        },
+        {
+          "index": 9,
+          "term": "(u^2)_x",
+          "value": -0.5000000000015324
+        },
+        {
+          "index": 15,
+          "term": "u^3",
+          "value": -0.9999999997588185
+        }
+      ],
+      "exact_physical_residual": 7.110286497172143e-26,
+      "exact_physical_residual_fraction": "51958476787544483243843/730750818665451459101842416358141509827966271488",
+      "physical_feasible": true,
+      "independently_certified_minimum_cardinality": 5,
+      "minimum_dual_bound_over_lambda": 9.64588110322216,
+      "original_cardinality_optimal": false
+    },
+    {
+      "lambda_ratio": 5.623413251903491e-06,
+      "lam": 3.810657318830203e-17,
+      "e2": 2.5256790694130487e-10,
+      "coefficients": [
+        {
+          "index": 0,
+          "term": "1",
+          "value": 1.000000000270311
+        },
+        {
+          "index": 3,
+          "term": "u_xx",
+          "value": 0.00999999999968752
+        },
+        {
+          "index": 8,
+          "term": "u^2",
+          "value": 1.9999999994828364
+        },
+        {
+          "index": 9,
+          "term": "(u^2)_x",
+          "value": -0.5000000000015324
+        },
+        {
+          "index": 15,
+          "term": "u^3",
+          "value": -0.9999999997588185
+        }
+      ],
+      "exact_physical_residual": 7.110286497172143e-26,
+      "exact_physical_residual_fraction": "51958476787544483243843/730750818665451459101842416358141509827966271488",
+      "physical_feasible": true,
+      "independently_certified_minimum_cardinality": 5,
+      "minimum_dual_bound_over_lambda": 1.7153071757543497,
+      "original_cardinality_optimal": false
+    }
+  ],
+  "provenance": {
+    "metadata_file": "VBG_noise-0_trial-0.json",
+    "metadata_sha256": "9140ad0b5d4479963270734695284e79df0f3c10f83a5c871cb966e8f3dc4ece",
+    "score_file": "VBG_noise-0_trial-0.npz",
+    "score_sha256": "284dc8e4718636dad887dcc97d0edf81a372fcac04c51fa0487cd8a13bf29876",
+    "solution_file": "VBG_noise-0_trial-0__exact_plugin_dantzig.json",
+    "solution_sha256": "1540f8e8297e084a063faf91ef0f31e482e042d8b5bba00fcb644afafa917ec2",
+    "diagnostic_source_sha256": "cdf7a5be86fde0603ba1486f8c111c9a74db725c2b8fb856f7ea05cc9af344f7",
+    "output_archive_sha256": "da2aeca7fb92af95e2caccc886e04b934526d96dc7decfb828f02e33c5dc4a01"
+  },
+  "exact_certificate": "Binary64 H,b are interpreted as exact integer ratios. Clear equation denominators, use signed integer minors to find nonnegative dual weights summing to one that annihilate each original physical support column. Their signed response is an exact residual lower bound.",
+  "interpretation": "Every support of size<=4 is contained in a four-column support. Excluding every such support below lambda and exhibiting an exactly feasible five-term vector certifies minimum cardinality5 for the saved floating score. This diagnostic never changes primary Gurobi flags or proves a residual tie-break."
+}

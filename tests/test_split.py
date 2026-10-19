@@ -124,6 +124,26 @@ class Split(unittest.TestCase):
             SplitSystem(replace(PDE_TEST, tests=replace(PDE_TEST.tests, m=None)), U, grid, X=uhat)
 
 
+class Oracle(unittest.TestCase):
+    def test_oracle_pilot_is_the_clean_state_at_regression_times(self):
+        from pdes import PDES, load, observe
+        from run import OraclePilot
+        pde = PDES["IB"]
+        clean, grid = load("IB", download=False)
+        U, _ = observe(pde, clean, 1., 0)
+        training = np.isnan(estimate(U, grid, pde, SplitPilot())[0][0, :, 0])
+        pilot = estimate(U, grid, pde, OraclePilot())[0]
+        np.testing.assert_array_equal(np.isnan(pilot[0, :, 0]), training)
+        np.testing.assert_array_equal(pilot[:, ~training], clean[:, ~training])
+        split = estimate(U, grid, pde, SplitPilot())[0]
+        rate, info = estimate(U, grid, pde, OraclePilot(rate=.3))
+        n = np.count_nonzero(~training)*U.shape[0]
+        dz = np.prod([g[-1]-g[0] for g in grid])/n
+        self.assertAlmostEqual(dz*np.sum((rate[:, ~training]-clean[:, ~training])**2)/n**-.3, 1, places=8)
+        np.testing.assert_allclose(rate[:, ~training]-clean[:, ~training],   # the split pilot's error, contracted
+                                   info["oracle_scale"]*(split[:, ~training]-clean[:, ~training]), atol=1e-12)
+
+
 class ComparisonReports(unittest.TestCase):
     def test_isolated_comparison_is_read_only_when_selected(self):
         from report import read

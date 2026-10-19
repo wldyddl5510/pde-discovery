@@ -1,0 +1,640 @@
+{
+  "protocol": "paired-oracle-pilot-discrete-dantzig-v1",
+  "pdes": [
+    "IB",
+    "KdV",
+    "KS",
+    "NLS",
+    "RD",
+    "NS",
+    "HKS",
+    "VBG"
+  ],
+  "noise": [
+    0.0,
+    0.2,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "trials": 3,
+  "scope": [
+    [
+      "IB",
+      0.0,
+      0
+    ],
+    [
+      "IB",
+      0.2,
+      0
+    ],
+    [
+      "IB",
+      0.5,
+      0
+    ],
+    [
+      "IB",
+      0.75,
+      0
+    ],
+    [
+      "IB",
+      1.0,
+      0
+    ],
+    [
+      "KdV",
+      0.0,
+      0
+    ],
+    [
+      "KdV",
+      0.2,
+      0
+    ],
+    [
+      "KdV",
+      0.5,
+      0
+    ],
+    [
+      "KdV",
+      0.75,
+      0
+    ],
+    [
+      "KdV",
+      1.0,
+      0
+    ],
+    [
+      "KS",
+      0.0,
+      0
+    ],
+    [
+      "KS",
+      0.2,
+      0
+    ],
+    [
+      "KS",
+      0.5,
+      0
+    ],
+    [
+      "KS",
+      0.75,
+      0
+    ],
+    [
+      "KS",
+      1.0,
+      0
+    ],
+    [
+      "NLS",
+      0.0,
+      0
+    ],
+    [
+      "NLS",
+      0.2,
+      0
+    ],
+    [
+      "NLS",
+      0.5,
+      0
+    ],
+    [
+      "NLS",
+      0.75,
+      0
+    ],
+    [
+      "NLS",
+      1.0,
+      0
+    ],
+    [
+      "RD",
+      0.0,
+      0
+    ],
+    [
+      "RD",
+      0.2,
+      0
+    ],
+    [
+      "RD",
+      0.5,
+      0
+    ],
+    [
+      "RD",
+      0.75,
+      0
+    ],
+    [
+      "RD",
+      1.0,
+      0
+    ],
+    [
+      "NS",
+      0.0,
+      0
+    ],
+    [
+      "NS",
+      0.2,
+      0
+    ],
+    [
+      "NS",
+      0.5,
+      0
+    ],
+    [
+      "NS",
+      0.75,
+      0
+    ],
+    [
+      "NS",
+      1.0,
+      0
+    ],
+    [
+      "HKS",
+      0.0,
+      0
+    ],
+    [
+      "HKS",
+      0.2,
+      0
+    ],
+    [
+      "HKS",
+      0.5,
+      0
+    ],
+    [
+      "HKS",
+      0.75,
+      0
+    ],
+    [
+      "HKS",
+      1.0,
+      0
+    ],
+    [
+      "VBG",
+      0.0,
+      0
+    ],
+    [
+      "VBG",
+      0.2,
+      0
+    ],
+    [
+      "VBG",
+      0.5,
+      0
+    ],
+    [
+      "VBG",
+      0.75,
+      0
+    ],
+    [
+      "VBG",
+      1.0,
+      0
+    ],
+    [
+      "IB",
+      0.2,
+      1
+    ],
+    [
+      "IB",
+      0.5,
+      1
+    ],
+    [
+      "IB",
+      0.75,
+      1
+    ],
+    [
+      "IB",
+      1.0,
+      1
+    ],
+    [
+      "KdV",
+      0.2,
+      1
+    ],
+    [
+      "KdV",
+      0.5,
+      1
+    ],
+    [
+      "KdV",
+      0.75,
+      1
+    ],
+    [
+      "KdV",
+      1.0,
+      1
+    ],
+    [
+      "KS",
+      0.2,
+      1
+    ],
+    [
+      "KS",
+      0.5,
+      1
+    ],
+    [
+      "KS",
+      0.75,
+      1
+    ],
+    [
+      "KS",
+      1.0,
+      1
+    ],
+    [
+      "NLS",
+      0.2,
+      1
+    ],
+    [
+      "NLS",
+      0.5,
+      1
+    ],
+    [
+      "NLS",
+      0.75,
+      1
+    ],
+    [
+      "NLS",
+      1.0,
+      1
+    ],
+    [
+      "RD",
+      0.2,
+      1
+    ],
+    [
+      "RD",
+      0.5,
+      1
+    ],
+    [
+      "RD",
+      0.75,
+      1
+    ],
+    [
+      "RD",
+      1.0,
+      1
+    ],
+    [
+      "NS",
+      0.2,
+      1
+    ],
+    [
+      "NS",
+      0.5,
+      1
+    ],
+    [
+      "NS",
+      0.75,
+      1
+    ],
+    [
+      "NS",
+      1.0,
+      1
+    ],
+    [
+      "HKS",
+      0.2,
+      1
+    ],
+    [
+      "HKS",
+      0.5,
+      1
+    ],
+    [
+      "HKS",
+      0.75,
+      1
+    ],
+    [
+      "HKS",
+      1.0,
+      1
+    ],
+    [
+      "VBG",
+      0.2,
+      1
+    ],
+    [
+      "VBG",
+      0.5,
+      1
+    ],
+    [
+      "VBG",
+      0.75,
+      1
+    ],
+    [
+      "VBG",
+      1.0,
+      1
+    ],
+    [
+      "IB",
+      0.2,
+      2
+    ],
+    [
+      "IB",
+      0.5,
+      2
+    ],
+    [
+      "IB",
+      0.75,
+      2
+    ],
+    [
+      "IB",
+      1.0,
+      2
+    ],
+    [
+      "KdV",
+      0.2,
+      2
+    ],
+    [
+      "KdV",
+      0.5,
+      2
+    ],
+    [
+      "KdV",
+      0.75,
+      2
+    ],
+    [
+      "KdV",
+      1.0,
+      2
+    ],
+    [
+      "KS",
+      0.2,
+      2
+    ],
+    [
+      "KS",
+      0.5,
+      2
+    ],
+    [
+      "KS",
+      0.75,
+      2
+    ],
+    [
+      "KS",
+      1.0,
+      2
+    ],
+    [
+      "NLS",
+      0.2,
+      2
+    ],
+    [
+      "NLS",
+      0.5,
+      2
+    ],
+    [
+      "NLS",
+      0.75,
+      2
+    ],
+    [
+      "NLS",
+      1.0,
+      2
+    ],
+    [
+      "RD",
+      0.2,
+      2
+    ],
+    [
+      "RD",
+      0.5,
+      2
+    ],
+    [
+      "RD",
+      0.75,
+      2
+    ],
+    [
+      "RD",
+      1.0,
+      2
+    ],
+    [
+      "NS",
+      0.2,
+      2
+    ],
+    [
+      "NS",
+      0.5,
+      2
+    ],
+    [
+      "NS",
+      0.75,
+      2
+    ],
+    [
+      "NS",
+      1.0,
+      2
+    ],
+    [
+      "HKS",
+      0.2,
+      2
+    ],
+    [
+      "HKS",
+      0.5,
+      2
+    ],
+    [
+      "HKS",
+      0.75,
+      2
+    ],
+    [
+      "HKS",
+      1.0,
+      2
+    ],
+    [
+      "VBG",
+      0.2,
+      2
+    ],
+    [
+      "VBG",
+      0.5,
+      2
+    ],
+    [
+      "VBG",
+      0.75,
+      2
+    ],
+    [
+      "VBG",
+      1.0,
+      2
+    ]
+  ],
+  "expected_realizations": 104,
+  "expected_unique_score_fits": 320,
+  "modes": [
+    "rate",
+    "exact"
+  ],
+  "options": {
+    "ratios": [
+      1e-06,
+      3.162277660168379e-06,
+      1e-05,
+      3.1622776601683795e-05,
+      0.0001,
+      0.00031622776601683794,
+      0.001,
+      0.0031622776601683794,
+      0.01,
+      0.03162277660168379,
+      0.1,
+      0.31622776601683794,
+      1.0
+    ],
+    "time_limit": 5.0,
+    "mip_gap": 0.0,
+    "refinements": 1
+  },
+  "oracle_exponent": 0.5,
+  "oracle_cap": 1.0,
+  "n_definition": "regression spacetime nodes, excluding component multiplicity",
+  "energy": "Delta z times SplitSystem time weights times squared vector error; raw sum also saved",
+  "rate_bound": "energy <= cap*n_regression**(-exponent), exponent>1/4",
+  "pilot": "SplitPilot(ratio=.5, prior=.01), same mask as original study",
+  "truth_use": "clean state constructs oracle pilots; true beta only lambda choice/evaluation",
+  "no_refit": true,
+  "exact_plugin_reuse": "one identical physical score per PDE",
+  "inputs": {
+    "sources": {
+      "benchmark_results/dantzig/oracle_pilot/run_study.py": "2b034731abf4719135051a62585ae76229913bf59abfe4cf98e992fe08fb56a6",
+      "wsindy/oracle_pilot.py": "d4d2ea2b9c02f5236bcf86acd3c3caa824cd5e786374d6674e755218d7b55a6d",
+      "benchmark_results/dantzig/sanity/run_study.py": "12ace4226bb8c6206d21a010900ea968bf26a2107908b5d32c3b8f3b770473fb",
+      "pdes.py": "dc171651f3513ba4ebf41422aba64d0d4bb13ed76aab636de9040d462c2111fa",
+      "wsindy/scores.py": "3870d11f7c12edc0ee865122e79c71b365114b40678df162791db5a1f77f8cf4",
+      "wsindy/dantzig.py": "741b650116f6739dcbfc9cb7282badd995145de224608e00ad54114e9637265e",
+      "wsindy/system.py": "a93ce40109cf33b009e560e178fea1dcbf8ee1322840f65d9113b5231d2750d9",
+      "wsindy/regression.py": "9f05da26f4b5222d3906ec4581f48a70b06fe03fe7bc28a1be52515ef9f90cfb",
+      "wsindy/estimators.py": "52ac5d1002cc02d7922d037fb5e09d6a402b122c2814801d9e2539b3072ea884",
+      "wsindy/dictionary.py": "ec619ddcdc735049af1bb78bb158422ec6d95e505b1a850e2c5354afde970f7f",
+      "wsindy/testfunctions.py": "998a48d2453642b2386b116770b57af09a0aeb39e27b8a44211008bf83f46f30"
+    },
+    "packages": {
+      "numpy": "2.4.6",
+      "scipy": "1.17.1",
+      "pysindy": "2.1.0",
+      "gurobipy": "13.0.3",
+      "scikit-learn": "1.7.2",
+      "matplotlib": "3.11.0"
+    },
+    "data": {
+      "IB": {
+        "file": "burgers.mat",
+        "sha256": "3a73282e2cd1cd34715ad59e78092d57da87d54f69da3d43d112f91ccd9ace62"
+      },
+      "KdV": {
+        "file": "KdV.mat",
+        "sha256": "0dfc143cbcb1639b26b8f59e385b2538c8bafe94281778a1e445bceb1622f8ac"
+      },
+      "KS": {
+        "file": "KS.mat",
+        "sha256": "afa3430910edf118d4c6c425a2cfb79a69f788755bc37c32b628f11d2dfe0c36"
+      },
+      "NLS": {
+        "file": "NLS.mat",
+        "sha256": "b0ab4259bb07aef72089f744e01413ed048f081723a3ce26183174fea8d9d5d4"
+      },
+      "RD": {
+        "file": "rxn_diff.mat",
+        "sha256": "31d182ba7fec838c04f8f3747b6a7dc6117ee335771ecb6cf33fb5dfeac375bf"
+      },
+      "NS": {
+        "file": "Nav_Stokes.mat",
+        "sha256": "399b57abdd816960eb4b664077134f65b4cd101f863c4909b6e7f161e2dcd34d"
+      },
+      "HKS": {
+        "file": "hyper_ks.npz",
+        "sha256": "0e2e420df0bf29d7fe106076078adbb06a616fcee4d3ddec832f7773cafeae1c"
+      },
+      "VBG": {
+        "file": "viscous_burgers_growth.npz",
+        "sha256": "0cd1d14fdb67e60b62a7071396b8793c6e3b42f33302ec2ae6698a98927a55fb"
+      }
+    },
+    "old_study": {
+      "manifest.json": "7b3f9b14bd0281c5f518d1c461ef6bbd6883aac5be61b445be8219d3d686d002",
+      "preparation_manifest.json": "d9451e4005496a07a30c7f6395405c45730151b885d1812338ca2f4dfa41bf6f",
+      "trials.jsonl": "996fb1ea025abd90065d4be5727e244475696da6fde6d1cf25ba9e4e71f08dd0"
+    }
+  }
+}

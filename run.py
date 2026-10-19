@@ -21,7 +21,7 @@ import subprocess
 from time import perf_counter
 import numpy as np
 from pdes import PDES, load, metrics, observe, trial_seed
-from wsindy import (EIV, BestSubset, LassoPath, MSTLS, MovingAverage, SplitPilot, SplitSystem, StrongSystem, WeakSystem,
+from wsindy import (EIV, BestSubset, Dantzig, LassoPath, MSTLS, MovingAverage, SplitPilot, SplitSystem, StrongSystem, WeakSystem,
                     estimate, fit)
 
 
@@ -32,6 +32,24 @@ class Method:
     Y: str = "U"               # state for the time-derivative side
     regression: object = "mstls"
     system: type = WeakSystem  # or StrongSystem (pointwise SINDy / PDE-FIND)
+
+
+@dataclass
+class OraclePilot(SplitPilot):
+    """Sanity check: uhat = u* + a (SplitPilot - u*) at the regression times (NaN at the training times), with
+    the largest a <= 1 such that dz * sum_i |uhat(z_i) - u*(z_i)|^2 <= n^-rate over the n regression nodes,
+    dz = |Omega|/n. rate=None gives uhat = u*."""
+    rate: float | None = None
+
+    def __call__(self, U, grid, pde):
+        pilot, info = super().__call__(U, grid, pde)
+        clean = load(pde.name)[0]
+        error = pilot-clean   # NaN at the training times
+        n = int(np.count_nonzero(~np.isnan(error[..., 0])))
+        energy = float(np.prod([g[-1]-g[0] for g in grid])*np.nanmean(np.sum(error**2, axis=-1)))
+        a = 0. if self.rate is None or not energy else min(1., np.sqrt(n**-self.rate/energy))
+        return clean+a*error, dict(info, oracle_rate=self.rate, oracle_scale=a, oracle_energy=a*a*energy,
+                                   regression_nodes=n)
 
 
 # Best-subset sparsity r per PDE and equation: the true r, as in the PDE experiments of arXiv:2206.00176.
@@ -50,6 +68,16 @@ METHODS = {
     "best-subset": Method(regression=BestSubset(r=TRUE_R)),
     "filtered-best-subset": Method(MovingAverage(), "uhat", "uhat", BestSubset(r=TRUE_R)),
     "debiased-best-subset": Method(SplitPilot(), "uhat", "U", BestSubset(r=TRUE_R, loss="debiased"), SplitSystem),
+    # Sanity check: the debiased methods with the true state as the pilot (oracle-only information).
+    "oracle-debiased": Method(OraclePilot(), "uhat", "U", MSTLS(loss="debiased"), SplitSystem),
+    "oracle-debiased-lasso": Method(OraclePilot(), "uhat", "U", LassoPath(loss="debiased"), SplitSystem),
+    "oracle-debiased-best-subset": Method(OraclePilot(), "uhat", "U", BestSubset(r=TRUE_R, loss="debiased"), SplitSystem),
+    # Discrete Dantzig selector (Eqs. 9-10) with the oracle lambda; OraclePilot(rate=.3) has
+    # dz * sum |uhat - u*|^2 <= n^-0.3 = o(n^-1/4).
+    "dantzig": Method(SplitPilot(), "uhat", "U", Dantzig(), SplitSystem),
+    "oracle-dantzig": Method(OraclePilot(rate=.3), "uhat", "U", Dantzig(), SplitSystem),
+    "oracle-plugin-dantzig": Method(OraclePilot(rate=.3), "uhat", "uhat", Dantzig(loss="ls"), SplitSystem),
+    "wsindy-dantzig": Method(regression=Dantzig(loss="ls")),
 }
 
 

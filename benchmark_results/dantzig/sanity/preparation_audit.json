@@ -1,0 +1,12 @@
+{
+  "prepared_realizations": 104,
+  "paired_mstls_fits": 208,
+  "physical_score_systems": 208,
+  "per_file_sha256": true,
+  "source_sha256": true,
+  "data_sha256": true,
+  "dimensions_finite": true,
+  "baseline_metrics_recomputed": true,
+  "paired_seeds_recomputed": true,
+  "truth_score_residuals_recomputed": true
+}

@@ -2,13 +2,15 @@
   "method": "Method(estimator=SplitPilot(ratio=0.5, prior=0.01), X='uhat', Y='U', regression=MSTLS(thresholds=None, rule=None, allow_empty=None, loss='debiased'), system=<class 'wsindy.system.SplitSystem'>)",
   "noise_ratios": [
     0.0,
+    0.1,
     0.2,
     0.5,
     0.75,
-    1.0
+    1.0,
+    2.0
   ],
   "trials": 100,
-  "commit": "692abac322c64c9a2d4b90bc238881b2be990af8",
+  "commit": "50c44700254da8ceb34a9a7c010645cfc7b7cdbe",
   "pdes": {
     "IB": {
       "terms": [

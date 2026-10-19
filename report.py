@@ -1,6 +1,7 @@
 """Comparison tables from saved trial records (no fitting).
 
-    python report.py benchmark_results -o results.md --plot results.png
+    python report.py benchmark_results -o results.md --plot results.png --pdes IB KdV KS NLS RD NS \
+        --include benchmark_results/ib_seeds/IB_raw_noise1.md
 
 Every <PDE>.jsonl below the given paths is read, including runs saved by earlier
 versions. Each row summarizes all trials of one method; trials shared by several
@@ -17,7 +18,9 @@ import numpy as np
 from pdes import PDES, load
 
 ORDER = ("wsindy", "filtered", "debiased", "crossfit-debiased", "lasso", "filtered-lasso", "debiased-lasso",
-         "crossfit-debiased-lasso", "best-subset", "filtered-best-subset", "debiased-best-subset", "eiv", "eiv-rownorm", "eiv-formula")
+         "crossfit-debiased-lasso", "best-subset", "filtered-best-subset", "debiased-best-subset", "oracle-debiased",
+         "oracle-debiased-lasso", "oracle-debiased-best-subset", "eiv", "eiv-rownorm", "eiv-formula", "wsindy-dantzig",
+         "dantzig", "oracle-plugin-dantzig", "oracle-dantzig")
 # Earlier debiased runs pooled a time-parity cross-fit pilot with both parities in every integral.
 LEGACY = {("wsindy", "lasso"): "lasso", ("filtered-wsindy", "mstls"): "filtered",
           ("filtered-wsindy", "lasso"): "filtered-lasso", ("debiased-wsindy", "mstls"): "crossfit-debiased",
@@ -25,8 +28,11 @@ LEGACY = {("wsindy", "lasso"): "lasso", ("filtered-wsindy", "mstls"): "filtered"
 
 
 # Saved runs left out of reports unless named with --methods: earlier pooled cross-fit debiasing,
-# row-normalized EIV, and the EIV sanity study with the removed tolerance formula.
-EXCLUDED = ("crossfit-debiased", "crossfit-debiased-lasso", "eiv-rownorm", "eiv-formula")
+# row-normalized EIV, the EIV sanity study with the removed tolerance formula, the oracle-pilot sanity check
+# and the Dantzig selectors with the oracle lambda.
+EXCLUDED = ("crossfit-debiased", "crossfit-debiased-lasso", "eiv-rownorm", "eiv-formula",
+            "oracle-debiased", "oracle-debiased-lasso", "oracle-debiased-best-subset",
+            "wsindy-dantzig", "dantzig", "oracle-plugin-dantzig", "oracle-dantzig")
 
 
 def method_of(record):
@@ -154,8 +160,8 @@ def summary(rows):
 
 def _style(method):
     """Color: state handling (raw, filtered, debiased, cross-fit); line: regression."""
-    state = next((s for s in ("crossfit", "filtered", "debiased", "eiv") if method.startswith(s)), method)
-    color = {"crossfit": "C3", "filtered": "C1", "debiased": "C2", "eiv": "C4", "sindy": "C5"}.get(state, "C0")
+    state = next((s for s in ("crossfit", "filtered", "debiased", "eiv", "oracle") if method.startswith(s)), method)
+    color = {"crossfit": "C3", "filtered": "C1", "debiased": "C2", "eiv": "C4", "sindy": "C5", "oracle": "C6"}.get(state, "C0")
     line = ("--" if method.endswith("lasso") else ":" if method.endswith("best-subset")
             else "-." if method.endswith("rownorm") else "-")
     return dict(color=color, linestyle=line, marker=".", label=method)
@@ -193,6 +199,8 @@ def main():
     parser.add_argument("--methods", nargs="+", help="Only these methods (default: all found)")
     parser.add_argument("--pdes", nargs="+", help="Only these PDEs in tables and plots (default: all found)")
     parser.add_argument("--plot-pdes", nargs="+", help="Only these PDEs in the plot (default: all in the tables)")
+    parser.add_argument("--include", nargs="+", type=Path, default=[],
+                        help="Markdown sections inserted after the summary (e.g. benchmark_results/ib_seeds/*.md)")
     args = parser.parse_args()
     runs = {key: run for key, run in read(args.paths).items()
             if (key[1] in args.methods if args.methods else key[1] not in EXCLUDED)
@@ -204,7 +212,8 @@ def main():
               "over trials, failures included. Seconds cover estimation, weak system and regression. "
               "Mean lambda / r: mean selected LASSO penalty, or best-subset sparsity bound r, per equation.", ""]
     figure = [f"![Exact support rate and mean E2]({os.path.relpath(args.plot, args.output.parent)})", ""] if args.plot else []
-    args.output.write_text("\n".join(header+_seeds(rows)+figure+summary(rows)+lines))
+    included = [path.read_text().rstrip("\n")+"\n" for path in args.include]
+    args.output.write_text("\n".join(header+_seeds(rows)+figure+summary(rows)+included+lines))
     with args.output.with_suffix(".summary.csv").open("w", newline="") as sink:
         writer = csv.DictWriter(sink, fieldnames=list(rows[0]))
         writer.writeheader()

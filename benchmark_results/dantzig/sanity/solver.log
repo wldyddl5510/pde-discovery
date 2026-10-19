@@ -1,0 +1,229 @@
+Cached-only solver: 0/104 done, workers=2, ratios=13, primary time limit=5s
+[solve 1/104; 55 prepared] IB noise=0.2 trial=0: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=0.9s; elapsed=2.2s
+[solve 2/104; 55 prepared] IB noise=0 trial=0: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=1.6s; elapsed=2.9s
+[solve 3/104; 55 prepared] IB noise=0.2 trial=1: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=0.8s; elapsed=3.0s
+[solve 4/104; 55 prepared] IB noise=0.5 trial=0: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=1.2s; elapsed=4.2s
+[solve 5/104; 56 prepared] IB noise=0.2 trial=2: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=1.8s; elapsed=4.7s
+[solve 6/104; 56 prepared] IB noise=0.5 trial=1: E2 plugin/db=1/0.1239; incumbent=1/0.1239; exact=True; solver_stage=0.8s; elapsed=5.0s
+[solve 7/104; 56 prepared] IB noise=0.5 trial=2: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=1.1s; elapsed=5.9s
+[solve 8/104; 56 prepared] IB noise=0.75 trial=1: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=1.8s; elapsed=7.7s
+[solve 9/104; 56 prepared] IB noise=0.75 trial=2: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=0.8s; elapsed=8.5s
+[solve 10/104; 56 prepared] IB noise=1 trial=0: E2 plugin/db=0.1804/0.1517; incumbent=0.1804/0.1517; exact=True; solver_stage=1.2s; elapsed=9.7s
+[solve 11/104; 56 prepared] IB noise=1 trial=1: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=0.8s; elapsed=10.5s
+[solve 12/104; 56 prepared] IB noise=1 trial=2: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=1.0s; elapsed=11.6s
+[solve 13/104; 56 prepared] IB noise=0.75 trial=0: E2 plugin/db=0.2396/1; incumbent=0.2396/1; exact=False; solver_stage=7.5s; elapsed=12.5s
+Solver progress: 13/104 done, 2 running, 56/104 prepared; elapsed=42.7s
+[solve 14/104; 56 prepared] KdV noise=0 trial=0: E2 plugin/db=0.1411/0.02048; incumbent=0.01622/0.001831; exact=True; solver_stage=49.9s; elapsed=61.5s
+Solver progress: 14/104 done, 2 running, 58/104 prepared; elapsed=91.8s
+[solve 15/104; 58 prepared] KdV noise=0.2 trial=0: E2 plugin/db=1/1; incumbent=1/0.9901; exact=False; solver_stage=102.1s; elapsed=114.6s
+Solver progress: 15/104 done, 2 running, 58/104 prepared; elapsed=144.8s
+[solve 16/104; 58 prepared] KdV noise=0.2 trial=1: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=84.4s; elapsed=145.9s
+Solver progress: 16/104 done, 2 running, 60/104 prepared; elapsed=176.1s
+
+Interrupt request received
+
+Interrupt request received
+Traceback (most recent call last):
+  File "/Users/jiyoungpark/postdoc/ai4science/pde-discovery/benchmark_results/dantzig/sanity/drain_prepared.py", line 110, in <module>
+    main()
+  File "/Users/jiyoungpark/postdoc/ai4science/pde-discovery/benchmark_results/dantzig/sanity/drain_prepared.py", line 71, in main
+    finished, _ = wait(futures, timeout=2., return_when=FIRST_COMPLETED)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/envs/pde_discovery/lib/python3.11/concurrent/futures/_base.py", line 305, in wait
+    waiter.event.wait(timeout)
+  File "/opt/homebrew/anaconda3/envs/pde_discovery/lib/python3.11/threading.py", line 629, in wait
+    signaled = self._cond.wait(timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/anaconda3/envs/pde_discovery/lib/python3.11/threading.py", line 331, in wait
+    gotit = waiter.acquire(True, timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Cached-only solver: 16/104 done, workers=4, ratios=13, primary time limit=5s, pid=19866
+Solver progress: 16/104 done, 2 running, 62/104 prepared; elapsed=30.3s
+Solver progress: 16/104 done, 2 running, 64/104 prepared; elapsed=60.6s
+Solver progress: 16/104 done, 2 running, 65/104 prepared; elapsed=90.8s
+Solver progress: 16/104 done, 2 running, 66/104 prepared; elapsed=121.1s
+[solve 17/104; 68 prepared] KS noise=0 trial=0: E2 plugin/db=0.8934/0.02162; incumbent=0.0656/0.02162; exact=True; solver_stage=140.2s; elapsed=141.2s
+Solver progress: 17/104 done, 2 running, 70/104 prepared; elapsed=171.5s
+Solver progress: 17/104 done, 2 running, 72/104 prepared; elapsed=201.8s
+Solver progress: 17/104 done, 2 running, 74/104 prepared; elapsed=232.1s
+Solver progress: 17/104 done, 2 running, 76/104 prepared; elapsed=262.4s
+Solver progress: 17/104 done, 4 running, 104/104 prepared; elapsed=292.7s
+Solver progress: 17/104 done, 4 running, 104/104 prepared; elapsed=323.0s
+Solver progress: 17/104 done, 4 running, 104/104 prepared; elapsed=353.4s
+[solve 18/104; 104 prepared] NLS noise=0 trial=0: E2 plugin/db=1/1; incumbent=0.007751/0.01102; exact=False; solver_stage=373.5s; elapsed=374.6s
+Solver progress: 18/104 done, 4 running, 104/104 prepared; elapsed=404.9s
+[solve 19/104; 104 prepared] NS noise=0 trial=0: E2 plugin/db=0.003485/0.002492; incumbent=0.003485/0.001908; exact=True; solver_stage=120.3s; elapsed=407.9s
+Solver progress: 19/104 done, 4 running, 104/104 prepared; elapsed=438.2s
+[solve 20/104; 104 prepared] HKS noise=0 trial=0: E2 plugin/db=1/1; incumbent=0.2631/0.1527; exact=False; solver_stage=161.8s; elapsed=449.4s
+[solve 21/104; 104 prepared] VBG noise=0 trial=0: E2 plugin/db=1/1; incumbent=0.08298/0.005233; exact=False; solver_stage=83.7s; elapsed=458.3s
+[solve 22/104; 104 prepared] KS noise=0.2 trial=0: E2 plugin/db=0.9362/1; incumbent=0.9362/1; exact=False; solver_stage=70.5s; elapsed=478.5s
+Solver progress: 22/104 done, 4 running, 104/104 prepared; elapsed=508.8s
+[solve 23/104; 104 prepared] RD noise=0 trial=0: E2 plugin/db=1/1; incumbent=0.01525/0.001188; exact=False; solver_stage=392.5s; elapsed=533.7s
+Solver progress: 23/104 done, 4 running, 104/104 prepared; elapsed=564.1s
+Solver progress: 23/104 done, 4 running, 104/104 prepared; elapsed=594.4s
+[solve 24/104; 104 prepared] NS noise=0.2 trial=0: E2 plugin/db=0.008741/0.1937; incumbent=0.008741/0.003447; exact=False; solver_stage=131.4s; elapsed=609.8s
+Solver progress: 24/104 done, 4 running, 104/104 prepared; elapsed=640.2s
+[solve 25/104; 104 prepared] HKS noise=0.2 trial=0: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=123.4s; elapsed=657.1s
+Solver progress: 25/104 done, 4 running, 104/104 prepared; elapsed=687.5s
+[solve 26/104; 104 prepared] VBG noise=0.2 trial=0: E2 plugin/db=1/1; incumbent=0.622/0.9258; exact=False; solver_stage=98.1s; elapsed=708.0s
+Solver progress: 26/104 done, 4 running, 104/104 prepared; elapsed=738.3s
+[solve 27/104; 104 prepared] KdV noise=0.5 trial=0: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=86.6s; elapsed=743.8s
+Solver progress: 27/104 done, 4 running, 104/104 prepared; elapsed=774.1s
+[solve 28/104; 104 prepared] KS noise=0.5 trial=0: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=75.0s; elapsed=783.0s
+[solve 29/104; 104 prepared] NLS noise=0.2 trial=0: E2 plugin/db=1/1; incumbent=0.3158/0.9425; exact=False; solver_stage=349.2s; elapsed=798.7s
+Solver progress: 29/104 done, 4 running, 104/104 prepared; elapsed=829.0s
+[solve 30/104; 104 prepared] RD noise=0.2 trial=0: E2 plugin/db=1/1; incumbent=0.03595/0.4813; exact=False; solver_stage=392.4s; elapsed=850.8s
+Solver progress: 30/104 done, 4 running, 104/104 prepared; elapsed=881.1s
+Solver progress: 30/104 done, 4 running, 104/104 prepared; elapsed=911.4s
+[solve 31/104; 104 prepared] NS noise=0.5 trial=0: E2 plugin/db=0.3038/1; incumbent=0.0181/0.03869; exact=False; solver_stage=117.5s; elapsed=916.2s
+Solver progress: 31/104 done, 4 running, 104/104 prepared; elapsed=946.6s
+[solve 32/104; 104 prepared] HKS noise=0.5 trial=0: E2 plugin/db=1/1; incumbent=0.9685/1; exact=False; solver_stage=125.7s; elapsed=976.5s
+[solve 33/104; 104 prepared] VBG noise=0.5 trial=0: E2 plugin/db=1/1; incumbent=0.9993/1; exact=False; solver_stage=85.6s; elapsed=1001.8s
+Solver progress: 33/104 done, 4 running, 104/104 prepared; elapsed=1032.2s
+[solve 34/104; 104 prepared] KdV noise=0.75 trial=0: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=82.6s; elapsed=1059.1s
+[solve 35/104; 104 prepared] KS noise=0.75 trial=0: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=71.3s; elapsed=1073.2s
+[solve 36/104; 104 prepared] NLS noise=0.5 trial=0: E2 plugin/db=1/1; incumbent=0.82/0.9486; exact=False; solver_stage=358.3s; elapsed=1102.0s
+Solver progress: 36/104 done, 4 running, 104/104 prepared; elapsed=1132.4s
+Solver progress: 36/104 done, 4 running, 104/104 prepared; elapsed=1162.7s
+[solve 37/104; 104 prepared] RD noise=0.5 trial=0: E2 plugin/db=1/1; incumbent=0.159/0.716; exact=False; solver_stage=382.1s; elapsed=1165.1s
+Solver progress: 37/104 done, 4 running, 104/104 prepared; elapsed=1195.5s
+[solve 38/104; 104 prepared] NS noise=0.75 trial=0: E2 plugin/db=0.7723/1; incumbent=0.04287/0.05368; exact=False; solver_stage=115.1s; elapsed=1217.1s
+Solver progress: 38/104 done, 4 running, 104/104 prepared; elapsed=1247.5s
+Solver progress: 38/104 done, 4 running, 104/104 prepared; elapsed=1277.8s
+[solve 39/104; 104 prepared] HKS noise=0.75 trial=0: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=133.7s; elapsed=1298.8s
+Solver progress: 39/104 done, 4 running, 104/104 prepared; elapsed=1329.2s
+[solve 40/104; 104 prepared] VBG noise=0.75 trial=0: E2 plugin/db=1/1; incumbent=1/0.8785; exact=False; solver_stage=126.0s; elapsed=1343.1s
+Solver progress: 40/104 done, 4 running, 104/104 prepared; elapsed=1373.5s
+[solve 41/104; 104 prepared] KdV noise=1 trial=0: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=84.3s; elapsed=1383.1s
+[solve 42/104; 104 prepared] NLS noise=0.75 trial=0: E2 plugin/db=1/1; incumbent=0.9532/0.8959; exact=False; solver_stage=339.3s; elapsed=1398.4s
+Solver progress: 42/104 done, 4 running, 104/104 prepared; elapsed=1428.8s
+[solve 43/104; 104 prepared] KS noise=1 trial=0: E2 plugin/db=1/1; incumbent=0.98/1; exact=False; solver_stage=88.5s; elapsed=1431.7s
+Solver progress: 43/104 done, 4 running, 104/104 prepared; elapsed=1462.0s
+[solve 44/104; 104 prepared] RD noise=0.75 trial=0: E2 plugin/db=1/1; incumbent=0.1319/0.485; exact=False; solver_stage=390.4s; elapsed=1463.6s
+Solver progress: 44/104 done, 4 running, 104/104 prepared; elapsed=1493.9s
+Solver progress: 44/104 done, 4 running, 104/104 prepared; elapsed=1524.3s
+[solve 45/104; 104 prepared] NS noise=1 trial=0: E2 plugin/db=0.7786/1; incumbent=0.07066/0.04247; exact=False; solver_stage=120.5s; elapsed=1552.2s
+Solver progress: 45/104 done, 4 running, 104/104 prepared; elapsed=1582.5s
+[solve 46/104; 104 prepared] HKS noise=1 trial=0: E2 plugin/db=1/1; incumbent=1/0.9475; exact=False; solver_stage=128.2s; elapsed=1591.8s
+Solver progress: 46/104 done, 4 running, 104/104 prepared; elapsed=1622.2s
+Solver progress: 46/104 done, 4 running, 104/104 prepared; elapsed=1652.6s
+Solver progress: 46/104 done, 4 running, 104/104 prepared; elapsed=1682.9s
+[solve 47/104; 104 prepared] KS noise=0.2 trial=1: E2 plugin/db=0.9375/1; incumbent=0.9375/0.8994; exact=False; solver_stage=94.6s; elapsed=1686.5s
+[solve 48/104; 104 prepared] VBG noise=1 trial=0: E2 plugin/db=1/1; incumbent=0.4538/0.5301; exact=False; solver_stage=145.7s; elapsed=1697.9s
+[solve 49/104; 104 prepared] NLS noise=1 trial=0: E2 plugin/db=1/1; incumbent=0.8401/0.9321; exact=False; solver_stage=342.7s; elapsed=1725.9s
+Solver progress: 49/104 done, 4 running, 104/104 prepared; elapsed=1756.2s
+[solve 50/104; 104 prepared] RD noise=1 trial=0: E2 plugin/db=1/1; incumbent=0.1598/0.788; exact=False; solver_stage=387.3s; elapsed=1785.8s
+Solver progress: 50/104 done, 4 running, 104/104 prepared; elapsed=1816.1s
+Solver progress: 50/104 done, 4 running, 104/104 prepared; elapsed=1846.5s
+[solve 51/104; 104 prepared] NS noise=0.2 trial=1: E2 plugin/db=0.002995/1; incumbent=0.002995/0.001865; exact=False; solver_stage=134.7s; elapsed=1860.7s
+Solver progress: 51/104 done, 4 running, 104/104 prepared; elapsed=1891.0s
+[solve 52/104; 104 prepared] HKS noise=0.2 trial=1: E2 plugin/db=1/1; incumbent=0.9678/1; exact=False; solver_stage=125.7s; elapsed=1911.5s
+Solver progress: 52/104 done, 4 running, 104/104 prepared; elapsed=1941.8s
+[solve 53/104; 104 prepared] VBG noise=0.2 trial=1: E2 plugin/db=1/1; incumbent=0.5289/0.89; exact=False; solver_stage=101.0s; elapsed=1961.7s
+Solver progress: 53/104 done, 4 running, 104/104 prepared; elapsed=1992.0s
+[solve 54/104; 104 prepared] KdV noise=0.5 trial=1: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=89.6s; elapsed=2001.1s
+[solve 55/104; 104 prepared] NLS noise=0.2 trial=1: E2 plugin/db=1/1; incumbent=0.3531/0.9397; exact=False; solver_stage=341.0s; elapsed=2027.5s
+[solve 56/104; 104 prepared] KS noise=0.5 trial=1: E2 plugin/db=1/1; incumbent=0.9681/1; exact=False; solver_stage=94.8s; elapsed=2056.5s
+[solve 57/104; 104 prepared] RD noise=0.2 trial=1: E2 plugin/db=1/1; incumbent=0.1157/0.5532; exact=False; solver_stage=385.7s; elapsed=2083.7s
+Solver progress: 57/104 done, 4 running, 104/104 prepared; elapsed=2114.0s
+Solver progress: 57/104 done, 4 running, 104/104 prepared; elapsed=2144.3s
+[solve 58/104; 104 prepared] NS noise=0.5 trial=1: E2 plugin/db=0.2671/1; incumbent=0.02238/0.04199; exact=False; solver_stage=116.5s; elapsed=2173.1s
+Solver progress: 58/104 done, 4 running, 104/104 prepared; elapsed=2203.4s
+[solve 59/104; 104 prepared] HKS noise=0.5 trial=1: E2 plugin/db=1/1; incumbent=0.9276/1; exact=False; solver_stage=141.4s; elapsed=2225.1s
+Solver progress: 59/104 done, 4 running, 104/104 prepared; elapsed=2255.4s
+[solve 60/104; 104 prepared] VBG noise=0.5 trial=1: E2 plugin/db=1/1; incumbent=0.7612/1; exact=False; solver_stage=100.0s; elapsed=2273.1s
+Solver progress: 60/104 done, 4 running, 104/104 prepared; elapsed=2303.4s
+[solve 61/104; 104 prepared] KdV noise=0.75 trial=1: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=79.4s; elapsed=2304.5s
+Solver progress: 61/104 done, 4 running, 104/104 prepared; elapsed=2334.8s
+[solve 62/104; 104 prepared] NLS noise=0.5 trial=1: E2 plugin/db=1/1; incumbent=1/0.8827; exact=False; solver_stage=335.8s; elapsed=2336.9s
+[solve 63/104; 104 prepared] KS noise=0.75 trial=1: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=75.8s; elapsed=2348.9s
+Solver progress: 63/104 done, 4 running, 104/104 prepared; elapsed=2379.2s
+Solver progress: 63/104 done, 4 running, 104/104 prepared; elapsed=2409.6s
+[solve 64/104; 104 prepared] RD noise=0.5 trial=1: E2 plugin/db=1/1; incumbent=0.1929/0.1514; exact=False; solver_stage=392.4s; elapsed=2420.0s
+Solver progress: 64/104 done, 4 running, 104/104 prepared; elapsed=2450.3s
+[solve 65/104; 104 prepared] NS noise=0.75 trial=1: E2 plugin/db=0.7793/1; incumbent=0.04702/0.05389; exact=False; solver_stage=125.0s; elapsed=2473.9s
+Solver progress: 65/104 done, 4 running, 104/104 prepared; elapsed=2504.2s
+Solver progress: 65/104 done, 4 running, 104/104 prepared; elapsed=2534.6s
+[solve 66/104; 104 prepared] HKS noise=0.75 trial=1: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=119.4s; elapsed=2539.4s
+Solver progress: 66/104 done, 4 running, 104/104 prepared; elapsed=2569.7s
+Solver progress: 66/104 done, 4 running, 104/104 prepared; elapsed=2600.0s
+[solve 67/104; 104 prepared] VBG noise=0.75 trial=1: E2 plugin/db=1/1; incumbent=0.1846/0.9244; exact=False; solver_stage=126.6s; elapsed=2600.5s
+[solve 68/104; 104 prepared] KdV noise=1 trial=1: E2 plugin/db=1/1; incumbent=1/0.9657; exact=False; solver_stage=90.0s; elapsed=2629.4s
+[solve 69/104; 104 prepared] NLS noise=0.75 trial=1: E2 plugin/db=1/1; incumbent=1/0.9025; exact=False; solver_stage=334.2s; elapsed=2638.7s
+Solver progress: 69/104 done, 4 running, 104/104 prepared; elapsed=2669.0s
+[solve 70/104; 104 prepared] KS noise=1 trial=1: E2 plugin/db=1/1; incumbent=0.9934/1; exact=False; solver_stage=84.9s; elapsed=2685.4s
+Solver progress: 70/104 done, 4 running, 104/104 prepared; elapsed=2715.8s
+[solve 71/104; 104 prepared] RD noise=0.75 trial=1: E2 plugin/db=1/1; incumbent=0.1553/0.5393; exact=False; solver_stage=389.1s; elapsed=2726.1s
+Solver progress: 71/104 done, 4 running, 104/104 prepared; elapsed=2756.4s
+Solver progress: 71/104 done, 4 running, 104/104 prepared; elapsed=2786.8s
+[solve 72/104; 104 prepared] NS noise=1 trial=1: E2 plugin/db=0.7777/1; incumbent=0.03472/0.05064; exact=False; solver_stage=105.3s; elapsed=2790.8s
+Solver progress: 72/104 done, 4 running, 104/104 prepared; elapsed=2821.1s
+Solver progress: 72/104 done, 4 running, 104/104 prepared; elapsed=2851.4s
+[solve 73/104; 104 prepared] HKS noise=1 trial=1: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=127.9s; elapsed=2854.0s
+Solver progress: 73/104 done, 4 running, 104/104 prepared; elapsed=2884.4s
+Solver progress: 73/104 done, 4 running, 104/104 prepared; elapsed=2914.7s
+[solve 74/104; 104 prepared] VBG noise=1 trial=1: E2 plugin/db=1/1; incumbent=0.5123/0.8776; exact=False; solver_stage=124.2s; elapsed=2914.9s
+Solver progress: 74/104 done, 4 running, 104/104 prepared; elapsed=2945.3s
+[solve 75/104; 104 prepared] KdV noise=0.2 trial=2: E2 plugin/db=1/1; incumbent=1/0.984; exact=False; solver_stage=101.6s; elapsed=2955.7s
+[solve 76/104; 104 prepared] NLS noise=1 trial=1: E2 plugin/db=1/1; incumbent=0.9093/0.9219; exact=False; solver_stage=340.7s; elapsed=2970.1s
+[solve 77/104; 104 prepared] KS noise=0.2 trial=2: E2 plugin/db=0.937/1; incumbent=0.4503/1; exact=False; solver_stage=72.7s; elapsed=2987.6s
+Solver progress: 77/104 done, 4 running, 104/104 prepared; elapsed=3018.0s
+[solve 78/104; 104 prepared] RD noise=1 trial=1: E2 plugin/db=0.8371/1; incumbent=0.5938/0.4945; exact=False; solver_stage=387.0s; elapsed=3025.7s
+Solver progress: 78/104 done, 4 running, 104/104 prepared; elapsed=3056.1s
+Solver progress: 78/104 done, 4 running, 104/104 prepared; elapsed=3086.4s
+[solve 79/104; 104 prepared] NS noise=0.2 trial=2: E2 plugin/db=0.005462/0.003358; incumbent=0.005462/0.003358; exact=False; solver_stage=127.5s; elapsed=3115.1s
+Solver progress: 79/104 done, 4 running, 104/104 prepared; elapsed=3145.4s
+[solve 80/104; 104 prepared] HKS noise=0.2 trial=2: E2 plugin/db=1/1; incumbent=0.963/1; exact=False; solver_stage=126.3s; elapsed=3152.0s
+Solver progress: 80/104 done, 4 running, 104/104 prepared; elapsed=3182.3s
+Solver progress: 80/104 done, 4 running, 104/104 prepared; elapsed=3212.7s
+[solve 81/104; 104 prepared] VBG noise=0.2 trial=2: E2 plugin/db=1/0.9798; incumbent=0.9525/0.9374; exact=False; solver_stage=98.0s; elapsed=3213.1s
+[solve 82/104; 104 prepared] KdV noise=0.5 trial=2: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=82.7s; elapsed=3234.7s
+Solver progress: 82/104 done, 4 running, 104/104 prepared; elapsed=3265.1s
+Solver progress: 82/104 done, 4 running, 104/104 prepared; elapsed=3295.4s
+[solve 83/104; 104 prepared] NLS noise=0.2 trial=2: E2 plugin/db=1/1; incumbent=0.3091/0.7543; exact=False; solver_stage=343.7s; elapsed=3299.5s
+[solve 84/104; 104 prepared] KS noise=0.5 trial=2: E2 plugin/db=1/1; incumbent=0.9801/1; exact=False; solver_stage=89.6s; elapsed=3302.7s
+Solver progress: 84/104 done, 4 running, 104/104 prepared; elapsed=3333.0s
+[solve 85/104; 104 prepared] RD noise=0.2 trial=2: E2 plugin/db=1/1; incumbent=0.05701/0.1202; exact=False; solver_stage=388.8s; elapsed=3359.0s
+Solver progress: 85/104 done, 4 running, 104/104 prepared; elapsed=3389.3s
+[solve 86/104; 104 prepared] NS noise=0.5 trial=2: E2 plugin/db=0.2748/1; incumbent=0.01962/0.03151; exact=False; solver_stage=113.4s; elapsed=3416.1s
+Solver progress: 86/104 done, 4 running, 104/104 prepared; elapsed=3446.5s
+Solver progress: 86/104 done, 4 running, 104/104 prepared; elapsed=3476.8s
+[solve 87/104; 104 prepared] HKS noise=0.5 trial=2: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=133.2s; elapsed=3492.2s
+[solve 88/104; 104 prepared] VBG noise=0.5 trial=2: E2 plugin/db=1/1; incumbent=0.941/1; exact=False; solver_stage=95.7s; elapsed=3511.8s
+Solver progress: 88/104 done, 4 running, 104/104 prepared; elapsed=3542.1s
+Solver progress: 88/104 done, 4 running, 104/104 prepared; elapsed=3572.5s
+[solve 89/104; 104 prepared] KdV noise=0.75 trial=2: E2 plugin/db=1/1; incumbent=1/0.9731; exact=False; solver_stage=93.9s; elapsed=3586.1s
+[solve 90/104; 104 prepared] NLS noise=0.5 trial=2: E2 plugin/db=1/1; incumbent=0.8579/1; exact=False; solver_stage=354.6s; elapsed=3589.3s
+[solve 91/104; 104 prepared] KS noise=0.75 trial=2: E2 plugin/db=0.9059/0.9783; incumbent=0.9059/0.9783; exact=False; solver_stage=85.5s; elapsed=3597.3s
+Solver progress: 91/104 done, 4 running, 104/104 prepared; elapsed=3627.6s
+Solver progress: 91/104 done, 4 running, 104/104 prepared; elapsed=3658.0s
+[solve 92/104; 104 prepared] RD noise=0.5 trial=2: E2 plugin/db=1/1; incumbent=0.1008/0.8108; exact=False; solver_stage=386.4s; elapsed=3685.9s
+[solve 93/104; 104 prepared] NS noise=0.75 trial=2: E2 plugin/db=0.7704/1; incumbent=0.04677/0.05231; exact=False; solver_stage=116.2s; elapsed=3713.5s
+Solver progress: 93/104 done, 4 running, 104/104 prepared; elapsed=3743.8s
+Solver progress: 93/104 done, 4 running, 104/104 prepared; elapsed=3774.2s
+Solver progress: 93/104 done, 4 running, 104/104 prepared; elapsed=3804.5s
+[solve 94/104; 104 prepared] HKS noise=0.75 trial=2: E2 plugin/db=1/1; incumbent=1/0.9602; exact=False; solver_stage=133.9s; elapsed=3819.8s
+Solver progress: 94/104 done, 4 running, 104/104 prepared; elapsed=3850.2s
+[solve 95/104; 104 prepared] VBG noise=0.75 trial=2: E2 plugin/db=1/1; incumbent=0.2815/0.9735; exact=False; solver_stage=139.4s; elapsed=3852.9s
+Solver progress: 95/104 done, 4 running, 104/104 prepared; elapsed=3883.2s
+Solver progress: 95/104 done, 4 running, 104/104 prepared; elapsed=3913.6s
+[solve 96/104; 104 prepared] KdV noise=1 trial=2: E2 plugin/db=1/1; incumbent=1/0.9858; exact=False; solver_stage=95.6s; elapsed=3915.5s
+[solve 97/104; 104 prepared] NLS noise=0.75 trial=2: E2 plugin/db=1/1; incumbent=0.8694/1; exact=False; solver_stage=351.0s; elapsed=3937.1s
+[solve 98/104; 104 prepared] KS noise=1 trial=2: E2 plugin/db=1/1; incumbent=0.9868/1; exact=False; solver_stage=94.5s; elapsed=3947.4s
+Solver progress: 98/104 done, 4 running, 104/104 prepared; elapsed=3977.7s
+[solve 99/104; 104 prepared] RD noise=0.75 trial=2: E2 plugin/db=1/1; incumbent=0.1995/0.431; exact=False; solver_stage=388.8s; elapsed=3978.2s
+Solver progress: 99/104 done, 4 running, 104/104 prepared; elapsed=4008.5s
+Solver progress: 99/104 done, 4 running, 104/104 prepared; elapsed=4038.9s
+[solve 100/104; 104 prepared] NS noise=1 trial=2: E2 plugin/db=0.7705/1; incumbent=0.04851/0.03852; exact=False; solver_stage=119.4s; elapsed=4066.8s
+Solver progress: 100/104 done, 4 running, 104/104 prepared; elapsed=4097.1s
+[solve 101/104; 104 prepared] HKS noise=1 trial=2: E2 plugin/db=1/1; incumbent=1/1; exact=False; solver_stage=130.0s; elapsed=4108.2s
+Solver progress: 101/104 done, 3 running, 104/104 prepared; elapsed=4138.5s
+Solver progress: 101/104 done, 3 running, 104/104 prepared; elapsed=4168.8s
+[solve 102/104; 104 prepared] VBG noise=1 trial=2: E2 plugin/db=1/0.9801; incumbent=0.6152/0.9695; exact=False; solver_stage=127.9s; elapsed=4194.7s
+Solver progress: 102/104 done, 2 running, 104/104 prepared; elapsed=4224.9s
+Solver progress: 102/104 done, 2 running, 104/104 prepared; elapsed=4255.2s
+[solve 103/104; 104 prepared] NLS noise=1 trial=2: E2 plugin/db=1/1; incumbent=0.9663/0.8224; exact=False; solver_stage=351.7s; elapsed=4267.2s
+Solver progress: 103/104 done, 1 running, 104/104 prepared; elapsed=4297.5s
+[solve 104/104; 104 prepared] RD noise=1 trial=2: E2 plugin/db=1/1; incumbent=0.1856/0.7144; exact=False; solver_stage=373.0s; elapsed=4310.2s
+Completed 104 cached solver realizations in 4311.3s

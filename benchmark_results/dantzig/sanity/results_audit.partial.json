@@ -1,0 +1,20 @@
+{
+  "completed_realizations": 45,
+  "expected_realizations": 104,
+  "numerical_source_hashes_match": true,
+  "data_hashes_match": true,
+  "cache_hashes_match": true,
+  "no_duplicate_realizations": true,
+  "seeds_match": true,
+  "baseline_and_dantzig_metrics_recomputed": true,
+  "candidate_e2_recomputed": true,
+  "candidate_feasibility_recomputed": true,
+  "nested_oracle_errors_monotone": true,
+  "main_selected_equations": 106,
+  "cardinality_selected_equations": 106,
+  "candidates": 1553,
+  "validated_candidates": 1544,
+  "max_relative_constraint_violation": 2.9450900752106252e-09,
+  "uncertified_candidates_with_unused_indicators": 9,
+  "main_all_zero_models": 70
+}

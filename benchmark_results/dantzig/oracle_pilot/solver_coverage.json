@@ -1,0 +1,73 @@
+{
+  "completed_unique_score_paths": 320,
+  "expected_unique_score_paths": 320,
+  "definition": "Unique source solves over every noise condition; reused exact-plugin paths count once per PDE.",
+  "methods": {
+    "rate_plugin_dantzig": {
+      "unique_score_paths": 104,
+      "equation_paths": 130,
+      "candidates": 1963,
+      "validated_candidates": 1943,
+      "cardinality_certified_candidates": 967,
+      "lexicographic_certified_candidates": 856,
+      "nonanalytic_candidates": 1833,
+      "cardinality_certified_nonanalytic": 837,
+      "lexicographic_certified_nonanalytic": 726,
+      "status_counts": {
+        "AnalyticZero": 130,
+        "Optimal": 727,
+        "ValidIncumbent": 1106
+      }
+    },
+    "rate_debiased_dantzig": {
+      "unique_score_paths": 104,
+      "equation_paths": 130,
+      "candidates": 1953,
+      "validated_candidates": 1937,
+      "cardinality_certified_candidates": 836,
+      "lexicographic_certified_candidates": 613,
+      "nonanalytic_candidates": 1823,
+      "cardinality_certified_nonanalytic": 706,
+      "lexicographic_certified_nonanalytic": 483,
+      "status_counts": {
+        "AnalyticZero": 130,
+        "Optimal": 489,
+        "ValidIncumbent": 1330,
+        "PrimaryFallback": 4
+      }
+    },
+    "exact_plugin_dantzig": {
+      "unique_score_paths": 8,
+      "equation_paths": 10,
+      "candidates": 153,
+      "validated_candidates": 150,
+      "cardinality_certified_candidates": 91,
+      "lexicographic_certified_candidates": 83,
+      "nonanalytic_candidates": 143,
+      "cardinality_certified_nonanalytic": 81,
+      "lexicographic_certified_nonanalytic": 73,
+      "status_counts": {
+        "AnalyticZero": 10,
+        "Optimal": 75,
+        "ValidIncumbent": 68
+      }
+    },
+    "exact_debiased_dantzig": {
+      "unique_score_paths": 104,
+      "equation_paths": 130,
+      "candidates": 1957,
+      "validated_candidates": 1941,
+      "cardinality_certified_candidates": 823,
+      "lexicographic_certified_candidates": 625,
+      "nonanalytic_candidates": 1827,
+      "cardinality_certified_nonanalytic": 693,
+      "lexicographic_certified_nonanalytic": 495,
+      "status_counts": {
+        "AnalyticZero": 130,
+        "Optimal": 500,
+        "ValidIncumbent": 1317,
+        "PrimaryFallback": 10
+      }
+    }
+  }
+}

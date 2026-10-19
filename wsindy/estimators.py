@@ -84,18 +84,25 @@ class SplitPilot(Estimator):
     ratio: float = .5
     prior: float = .01
 
+    def training(self, n_times):
+        """Boolean mask of the training times among n_times time points."""
+        if not 0 < self.ratio < 1:
+            raise ValueError("SplitPilot needs 0 < ratio < 1")
+        a, b = Fraction(self.ratio).limit_denominator(1000).as_integer_ratio()
+        training = ((np.arange(n_times)+1)*a+(b-1)//2) % b < a
+        if training.sum() < 7 or training.sum() > n_times-2:
+            raise ValueError(f"ratio {self.ratio} leaves too few training or regression times")
+        return training
+
     def __call__(self, U, grid, pde):
-        if not 0 < self.ratio < 1 or self.prior <= 0:
-            raise ValueError("SplitPilot needs 0 < ratio < 1 and prior > 0")
+        if self.prior <= 0:
+            raise ValueError("SplitPilot needs prior > 0")
         if pde.tests.m is None:
             raise ValueError("SplitPilot requires fixed Tests.m; data-dependent supports would use the regression times")
         components, dims, m = _components(U), U.ndim-1, pde.tests.m
-        a, b = Fraction(self.ratio).limit_denominator(1000).as_integer_ratio()
         steps = np.arange(U.shape[-2])
-        training = ((steps+1)*a+(b-1)//2) % b < a
+        training = self.training(len(steps))
         times = steps[training]
-        if len(times) < 7 or len(times) > len(steps)-2:
-            raise ValueError(f"ratio {self.ratio} leaves too few training or regression times")
         reach = int(np.abs(steps[:, None]-times[None, :]).min(axis=1).max())   # farthest time from training
         estimates = [noise_std(v[..., training], times) for v in components]
         target = 2*(comb(pde.degree, 2)*max(estimates)**2/self.prior)**(1/dims)
